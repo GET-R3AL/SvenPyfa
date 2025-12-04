@@ -191,14 +191,15 @@ class GraphCanvasPanel(wx.Panel):
                             
                             # Determine color and line style based on ammo style mode
                             if ammoStyle == 'color' and getAmmoColorFunc:
-                                # Color mode: use ammo-specific colors, solid lines
+                                # Color mode: use ammo-specific colors, use target's line style
                                 ammoColor = getAmmoColorFunc(ammoName)
                                 if ammoColor:
                                     segColor = ammoColor
                                 else:
                                     # Fallback to base color if no ammo color defined
                                     segColor = baseRgbColor
-                                segLineStyle = 'solid'
+                                # Use the target's line style selection
+                                segLineStyle = lineStyle
                             elif ammoStyle == 'pattern':
                                 # Pattern mode: use base color, vary line patterns
                                 segColor = baseRgbColor

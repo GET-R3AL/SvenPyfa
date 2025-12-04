@@ -270,7 +270,7 @@ class FitAmmoOptimalDpsGraph(FitGraph):
             return inputDef.defaultRange
         
         # Add 5% buffer and convert to km
-        max_range_km = (max_range_m * 1.05) / 1000
+        max_range_km = (max_range_m * 1.10) / 1000
         
         # Cap at 300km (EVE's max lock range)
         max_range_km = min(max_range_km, 300)

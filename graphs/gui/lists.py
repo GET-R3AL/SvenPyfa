@@ -22,6 +22,7 @@
 import wx
 
 import gui.display
+import gui.globalEvents as GE
 from eos.saveddata.targetProfile import TargetProfile
 from graphs.style import BASE_COLORS, LIGHTNESSES, STYLES
 from graphs.wrapper import SourceWrapper, TargetWrapper
@@ -242,23 +243,33 @@ class BaseWrapperList(gui.display.Display):
             return
         if self.containsFitID(fit.ID):
             return
+        # Ensure fit is fully recalculated before adding to graph
+        sFit = Fit.getInstance()
+        sFit.recalc(fit)
         self.appendItem(fit)
         self.updateView()
-        self.graphFrame.draw()
+        # Trigger FIT_CHANGED event to refresh all caches and views
+        wx.PostEvent(self.graphFrame.mainFrame, GE.FitChanged(fitIDs=(fit.ID,)))
 
     def getExistingFitIDs(self):
         return [w.item.ID for w in self._wrappers if w.isFit]
 
     def addFitsByIDs(self, fitIDs):
         sFit = Fit.getInstance()
+        addedFitIDs = []
         for fitID in fitIDs:
             if self.containsFitID(fitID):
                 continue
             fit = sFit.getFit(fitID)
             if fit is not None:
+                # Ensure fit is fully recalculated before adding to graph
+                sFit.recalc(fit)
                 self.appendItem(fit)
+                addedFitIDs.append(fitID)
         self.updateView()
-        self.graphFrame.draw()
+        # Trigger FIT_CHANGED event to refresh all caches and views
+        if addedFitIDs:
+            wx.PostEvent(self.graphFrame.mainFrame, GE.FitChanged(fitIDs=tuple(addedFitIDs)))
 
 
 class SourceWrapperList(BaseWrapperList):
@@ -329,24 +340,107 @@ class TargetWrapperList(BaseWrapperList):
         self.appendItem(TargetProfile.getIdeal())
         self.updateView()
 
+    def getFilteredDefaultCols(self):
+        """Return default columns filtered based on current ammo style.
+        
+        For the Application Profile graph (hasSegments=True):
+        - 'color' mode: Ammo determines line color, so hide Lightness (show Line Style only)
+        - 'pattern' mode: Ammo determines line pattern, so hide Line Style (show Lightness only)
+        - 'none' mode: Show both columns
+        
+        For other graphs, always show both columns.
+        """
+        view = self.graphFrame.getView()
+        hasSegments = getattr(view, 'hasSegments', False)
+        
+        if not hasSegments:
+            return self.DEFAULT_COLS
+        
+        ammoStyle = self.graphFrame.ctrlPanel.ammoStyle
+        
+        if ammoStyle == 'color':
+            # Color mode: ammo color differentiates, use line style for targets
+            return tuple(c for c in self.DEFAULT_COLS if c != 'Graph Lightness')
+        elif ammoStyle == 'pattern':
+            # Pattern mode: ammo pattern differentiates, use lightness for targets
+            return tuple(c for c in self.DEFAULT_COLS if c != 'Graph Line Style')
+        else:
+            # None mode: show both
+            return self.DEFAULT_COLS
+
+    def refreshDefaultColumns(self):
+        """Refresh the default columns based on current ammo style.
+        
+        Rebuilds all columns in correct order to maintain proper column positions.
+        """
+        filteredCols = self.getFilteredDefaultCols()
+        
+        # Get base names of columns that should be shown
+        colNamesToShow = set()
+        for colName in filteredCols:
+            if ":" in colName:
+                colName = colName.split(":", 1)[0]
+            colNamesToShow.add(colName)
+        
+        # Check if we need to make any changes
+        currentStyleCols = [col.name for col in self.activeColumns 
+                           if col.name in ('Graph Lightness', 'Graph Line Style')]
+        targetStyleCols = [c for c in ('Graph Lightness', 'Graph Line Style') if c in colNamesToShow]
+        
+        if currentStyleCols == targetStyleCols:
+            # No changes needed
+            return
+        
+        # Save any extra columns (non-default columns added by the view)
+        extraCols = [col.name for col in self.activeColumns 
+                    if col.name not in ('Graph Lightness', 'Graph Line Style', 'Base Icon', 'Base Name')]
+        
+        # Remove ALL columns
+        while self.activeColumns:
+            self.removeColumn(self.activeColumns[0])
+        
+        # Re-add columns in correct order using filtered defaults
+        for colName in filteredCols:
+            self.appendColumnBySpec(colName)
+        
+        # Re-add any extra columns
+        for colName in extraCols:
+            self.appendColumnBySpec(colName)
+        
+        self.refreshView()
+
     def appendItem(self, item):
-        # Find out least used lightness
-        lightnessUseMap = {(l, s): 0 for l in LIGHTNESSES for s in STYLES}
+        # Find least used line style and least used lightness independently
+        # This ensures both properties iterate even when only one is visible
+        
+        # Count line style usage
+        lineStyleUseMap = {s: 0 for s in STYLES}
         for wrapper in self._wrappers:
-            key = (wrapper.lightnessID, wrapper.lineStyleID)
-            if key not in lightnessUseMap:
-                continue
-            lightnessUseMap[key] += 1
-
-        def getDefaultParams():
-            leastUses = min(lightnessUseMap.values(), default=0)
-            for lineStyleID in STYLES:
-                for lightnessID in LIGHTNESSES:
-                    if leastUses == lightnessUseMap.get((lightnessID, lineStyleID), 0):
-                        return lightnessID, lineStyleID
-            return None, None
-
-        lightnessID, lineStyleID = getDefaultParams()
+            if wrapper.lineStyleID in lineStyleUseMap:
+                lineStyleUseMap[wrapper.lineStyleID] += 1
+        
+        # Count lightness usage
+        lightnessUseMap = {l: 0 for l in LIGHTNESSES}
+        for wrapper in self._wrappers:
+            if wrapper.lightnessID in lightnessUseMap:
+                lightnessUseMap[wrapper.lightnessID] += 1
+        
+        # Find least used line style
+        leastLineStyleUses = min(lineStyleUseMap.values(), default=0)
+        lineStyleID = None
+        for sid in STYLES:
+            if lineStyleUseMap.get(sid, 0) == leastLineStyleUses:
+                lineStyleID = sid
+                break
+        
+        # Find least used lightness
+        leastLightnessUses = min(lightnessUseMap.values(), default=0)
+        lightnessID = None
+        for lid in LIGHTNESSES:
+            if lightnessUseMap.get(lid, 0) == leastLightnessUses:
+                lightnessID = lid
+                break
+        
         self._wrappers.append(TargetWrapper(item=item, lightnessID=lightnessID, lineStyleID=lineStyleID))
 
     def spawnMenu(self, event):

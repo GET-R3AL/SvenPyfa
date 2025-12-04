@@ -426,15 +426,7 @@ def calculate_best_dps_at_distance(charge_data, distance, start_index=0):
     """
     Find the best charge for a turret at a specific distance.
     Uses pre-computed charge data (sorted by raw_dps descending) for efficiency.
-    
-    Assumes perfect tracking (stationary target, infinite sig radius).
-    Uses full turret damage formula including wrecking shots.
-    
-    Optimizations:
-    - start_index: skip charges that have already been "pruned" (lost at shorter distances)
-    - If best charge is within optimal (range_factor=1), skip remaining charges
-      since no lower-DPS charge can beat it
-    
+
     Args:
         charge_data: List of charge dicts, sorted by raw_dps descending
         distance: Distance in meters
@@ -467,7 +459,8 @@ def calculate_best_dps_at_distance(charge_data, distance, start_index=0):
         else:
             # Outside optimal, calculate range factor then turret damage multiplier
             # With perfect tracking: chanceToHit = rangeFactor
-            range_factor = calculateRangeFactor(cd['effective_optimal'], cd['effective_falloff'], distance)
+            # restrictedRange=False: turrets can fire at any range (damage just falls off)
+            range_factor = calculateRangeFactor(cd['effective_optimal'], cd['effective_falloff'], distance, restrictedRange=False)
             turret_mult = calcTurretDamageMult(range_factor)
             effective_dps = cd['raw_dps'] * turret_mult
             
@@ -572,7 +565,8 @@ def get_dps_at_distance_fast(transitions, charge_data, distance):
         dps = cd['raw_dps'] * turret_mult
     else:
         # With perfect tracking: chanceToHit = rangeFactor
-        range_factor = calculateRangeFactor(cd['effective_optimal'], cd['effective_falloff'], distance)
+        # restrictedRange=False: turrets can fire at any range (damage just falls off)
+        range_factor = calculateRangeFactor(cd['effective_optimal'], cd['effective_falloff'], distance, restrictedRange=False)
         turret_mult = calcTurretDamageMult(range_factor)
         dps = cd['raw_dps'] * turret_mult
     
@@ -613,7 +607,8 @@ def get_volley_at_distance_fast(transitions, charge_data, distance):
         volley = cd['raw_volley'] * turret_mult
     else:
         # With perfect tracking: chanceToHit = rangeFactor
-        range_factor = calculateRangeFactor(cd['effective_optimal'], cd['effective_falloff'], distance)
+        # restrictedRange=False: turrets can fire at any range (damage just falls off)
+        range_factor = calculateRangeFactor(cd['effective_optimal'], cd['effective_falloff'], distance, restrictedRange=False)
         turret_mult = calcTurretDamageMult(range_factor)
         volley = cd['raw_volley'] * turret_mult
     

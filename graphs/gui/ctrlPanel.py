@@ -371,6 +371,8 @@ class GraphControlPanel(wx.Panel):
         view = self.graphFrame.getView()
         self.sourceList.refreshExtraColumns(view.srcExtraCols)
         self.targetList.refreshExtraColumns(view.tgtExtraCols)
+        # Also refresh default columns for target list based on ammo style
+        self.targetList.refreshDefaultColumns()
         self.srcTgtSizer.Detach(self.sourceList)
         self.srcTgtSizer.Detach(self.targetList)
         self.srcTgtSizer.Add(self.sourceList, self.sourceList.getWidthProportion(), wx.EXPAND | wx.ALL, 0)
@@ -383,6 +385,8 @@ class GraphControlPanel(wx.Panel):
 
     def OnAmmoStyleChange(self, event):
         event.Skip()
+        # Refresh target list columns to show/hide lightness/line style based on ammo style
+        self.targetList.refreshDefaultColumns()
         self.graphFrame.draw()
 
     def OnAmmoQualityChange(self, event):
