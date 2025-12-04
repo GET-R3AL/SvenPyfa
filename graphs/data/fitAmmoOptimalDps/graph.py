@@ -37,56 +37,77 @@ from service.settings import GraphSettings
 pyfalog = Logger(__name__)
 
 
-# Ammo color definitions (RGB tuples, 0-1 range)
+# Ammo color definitions (RGB tuples, 0-255 range)
 # Colors are assigned based on ammo base name (without size suffix)
 AMMO_COLORS = {
     # Hybrid - Short Range
-    "Null": (0.7, 0.7, 0.65),
-    "Void": (0.5, 0.1, 0.2),
+    "Null": (179, 179, 166),
+    "Void": (128, 26, 51),
     # Hybrid - Long Range
-    "Spike": (0.761, 1, 0.169),
-    "Javelin": (0.439, 0.984, 0),
+    "Spike": (194, 255, 43),
+    "Javelin": (112, 251, 0),
     # Hybrid - Standard
-    "Antimatter": (0.7, 0.1, 0.7),
-    "Iridium": (0.1, 0.7, 0.7),
-    "Lead": (0.7, 0.7, 0.1),
-    "Plutonium": (0.431, 0.871, 1),
-    "Thorium": (0.7, 0.1, 0.1),
-    "Uranium": (0.102, 0.839, 0.631),
-    "Tungsten": (0.3, 0.3, 0.6),
-    "Iron": (0.6, 0.3, 0.3),
+    "Antimatter": (179, 26, 179),
+    "Iridium": (26, 179, 179),
+    "Lead": (179, 179, 26),
+    "Plutonium": (110, 222, 255),
+    "Thorium": (179, 26, 26),
+    "Uranium": (26, 214, 161),
+    "Tungsten": (77, 77, 153),
+    "Iron": (153, 77, 77),
     
     # Laser - Short Range
-    "Scorch": (0.922, 0.31, 1),
-    "Conflagration": (0, 0.722, 0.251),
+    "Scorch": (235, 79, 255),
+    "Conflagration": (0, 184, 64),
     # Laser - Long Range
-    "Gleam": (0.71, 0.569, 0.369),
-    "Aurora": (0.651, 0.071, 0.216),
+    "Gleam": (181, 145, 94),
+    "Aurora": (166, 18, 55),
     # Laser - Standard
-    "Multifrequency": (0.8, 0.8, 0.8),
-    "Gamma": (0.02, 0.4, 0.949),
-    "Xray": (0, 0.741, 0.525),
-    "Ultraviolet": (0.42, 0, 0.741),
-    "Standard": (0.9, 0.7, 0.0),
-    "Infrared": (0.949, 0.251, 0.02),
-    "Microwave": (0.949, 0.557, 0.02),
-    "Radio": (0.89, 0.039, 0.039),
+    "Multifrequency": (204, 204, 204),
+    "Gamma": (5, 102, 242),
+    "Xray": (0, 189, 134),
+    "Ultraviolet": (107, 0, 189),
+    "Standard": (230, 179, 0),
+    "Infrared": (242, 64, 5),
+    "Microwave": (242, 142, 5),
+    "Radio": (227, 10, 10),
     
     # Projectile - Short Range
-    "Quake": (0.78, 0.604, 0.322),
-    "Hail": (1.0, 0.6, 0),
+    "Quake": (199, 154, 82),
+    "Hail": (255, 153, 0),
     # Projectile - Long Range
-    "Tremor": (0.29, 0.251, 0.184),
-    "Barrage": (0.769, 0.325, 0.008),
+    "Tremor": (74, 64, 47),
+    "Barrage": (196, 83, 2),
     # Projectile - Standard
-    "Carbonized Lead": (0.753, 0.318, 0.839),
-    "Depleted Uranium": (0.404, 0, 0.812),
-    "EMP": (0.098, 0.761, 0.761),
-    "Fusion": (0.871, 0.549, 0.129),
-    "Nuclear": (0.478, 0.722, 0.059),
-    "Phased Plasma": (0.722, 0.059, 0.212),
-    "Proton": (0.216, 0.455, 0.459),
-    "Titanium Sabot": (0.212, 0.294, 0.369),
+    "Carbonized Lead": (192, 81, 214),
+    "Depleted Uranium": (103, 0, 207),
+    "EMP": (25, 194, 194),
+    "Fusion": (222, 140, 33),
+    "Nuclear": (122, 184, 15),
+    "Phased Plasma": (184, 15, 54),
+    "Proton": (55, 116, 117),
+    "Titanium Sabot": (54, 75, 94),
+
+    # Exotic Plasma - Advanced
+    "Occult": (189,0,38),
+    "Mystic": (252,174,145),
+
+    # Exotic Plasma - Standard
+    "Tetryon": (240,59,32),
+    "Baryon": (253,141,60),
+    "Meson": (254,204,92),
+
+    # Vorton Charges - Advanced
+    "ElectroPunch Ultra": (37,52,148),
+    "StrikeSnipe Ultra": (103,169,207),
+
+    # Vorton Charges - Standard
+    "BlastShot Condenser Pack": (49,163,84),
+    "GalvaSurge Condenser Pack": (44,127,184),
+    "MesmerFlux Condenser Pack": (65,182,196),
+    "SlamBolt Condenser Pack": (194,230,153),
+
+
 }
 
 
@@ -126,17 +147,25 @@ def get_ammo_base_name(ammo_name):
 def get_ammo_color(ammo_name):
     """
     Get RGB color tuple for an ammo type.
-    Returns None if no color defined for this ammo.
+    Returns color in 0-1 range for matplotlib, or None if no color defined.
     """
     base_name = get_ammo_base_name(ammo_name)
+    if not base_name:
+        return None
+    
+    color = None
     if base_name in AMMO_COLORS:
-        return AMMO_COLORS[base_name]
+        color = AMMO_COLORS[base_name]
+    else:
+        # Try partial match for ammo names that might have extra words
+        for key in AMMO_COLORS:
+            if key in base_name or base_name in key:
+                color = AMMO_COLORS[key]
+                break
     
-    # Try partial match for ammo names that might have extra words
-    for key in AMMO_COLORS:
-        if key in base_name or base_name in key:
-            return AMMO_COLORS[key]
-    
+    # Convert from 0-255 to 0-1 range for matplotlib
+    if color:
+        return (color[0] / 255, color[1] / 255, color[2] / 255)
     return None
 
 
@@ -147,14 +176,18 @@ class FitAmmoOptimalDpsGraph(FitGraph):
     name = 'Application Profile'
     xDefs = [
         XDef(handle='distance', unit='km', label='Distance', mainInput=('distance', 'km'))]
-    yDefs = [
-        YDef(handle='dps', unit=None, label='DPS'),
-        YDef(handle='volley', unit=None, label='Volley')]
     inputs = [
         Input(handle='distance', unit='km', label='Distance', iconID=None, defaultValue=None, defaultRange=(0, 100), mainTooltip='Distance to target')]
     sources = {Fit}
     _limitToOutgoingProjected = True
     hasTargets = True
+
+    @property
+    def yDefs(self):
+        ignoreResists = GraphSettings.getInstance().get('ammoOptimalIgnoreResists')
+        return [
+            YDef(handle='dps', unit=None, label='DPS' if ignoreResists else 'Effective DPS'),
+            YDef(handle='volley', unit=None, label='Volley' if ignoreResists else 'Effective Volley')]
 
     # Normalizers convert input values to internal units (km to meters)
     _normalizers = {
@@ -177,6 +210,14 @@ class FitAmmoOptimalDpsGraph(FitGraph):
     
     # Ammo color mode: True = use ammo-specific colors, False = use line patterns
     useAmmoColors = True
+
+    @property
+    def tgtExtraCols(self):
+        """Show target resists in the target list when not ignoring them."""
+        cols = []
+        if not GraphSettings.getInstance().get('ammoOptimalIgnoreResists'):
+            cols.append('Target Resists')
+        return cols
 
     def __init__(self):
         super().__init__()
@@ -324,7 +365,7 @@ class FitAmmoOptimalDpsGraph(FitGraph):
             y = self._denormalizeValue(value=y, axisSpec=ySpec, src=src, tgt=tgt)
             return y, {}
 
-    def getAmmoNameFast(self, x, xSpec, src):
+    def getAmmoNameFast(self, x, xSpec, src, tgt=None):
         """
         Ultra-fast ammo name lookup using cached transition data.
         
@@ -338,9 +379,24 @@ class FitAmmoOptimalDpsGraph(FitGraph):
         if distance is None:
             return None
         
-        # Look up in cache
-        cache_key = id(src.item)
-        if not hasattr(self, '_ammo_turret_cache') or cache_key not in self._ammo_turret_cache:
+        # Look up in cache - cache key is (fit_id, quality_tier, tgt_resists)
+        if not hasattr(self, '_ammo_turret_cache'):
+            return None
+        
+        # Build the same cache key used in the getter
+        fit_id = id(src.item)
+        quality_tier = getattr(self, '_ammoQuality', 'all')
+        
+        # Get target resists if not ignoring them
+        ignore_resists = GraphSettings.getInstance().get('ammoOptimalIgnoreResists')
+        if ignore_resists or tgt is None:
+            tgt_resists = None
+        else:
+            tgt_resists = tgt.getResists()
+        
+        cache_key = (fit_id, quality_tier, tgt_resists)
+        
+        if cache_key not in self._ammo_turret_cache:
             return None
         
         turret_cache = self._ammo_turret_cache[cache_key]

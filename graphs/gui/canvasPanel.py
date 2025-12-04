@@ -231,9 +231,12 @@ class GraphCanvasPanel(wx.Panel):
                         
                         # Add legend entries
                         if ammoStyle == 'color':
-                            # Add legend entry for each ammo type
+                            # Add legend entry for each ammo type (avoid duplicates across targets)
+                            existingLabels = [ld[2] for ld in legendData]
                             for segColor, segLineStyle, ammoName in legendSegments:
-                                legendData.append((segColor, segLineStyle, ammoName))
+                                if ammoName not in existingLabels:
+                                    legendData.append((segColor, segLineStyle, ammoName))
+                                    existingLabels.append(ammoName)
                         else:
                             # Single legend entry for this source (none or pattern mode)
                             if target is None:
@@ -374,7 +377,7 @@ class GraphCanvasPanel(wx.Panel):
                         extraStr = None
                         if hasattr(view, 'getAmmoNameFast'):
                             try:
-                                extraStr = view.getAmmoNameFast(x=xMark, xSpec=chosenX, src=source)
+                                extraStr = view.getAmmoNameFast(x=xMark, xSpec=chosenX, src=source, tgt=target)
                             except (KeyboardInterrupt, SystemExit):
                                 raise
                             except Exception:
@@ -392,11 +395,21 @@ class GraphCanvasPanel(wx.Panel):
                 # Draw Y values with optional extra info
                 # First, collect all labels to determine the widest one
                 labelData = []  # List of (yMark, labelText)
+                
+                # For DPS graphs (Damage Stats and Application Profile), show integers
+                isDpsGraph = view.internalName in ('dmgStatsGraph', 'ammoOptimalDpsGraph')
+                
                 for yMark, extraInfo in yMarks.items():
-                    if extraInfo:
-                        labelText = '{} ({})'.format(yMark, extraInfo)
+                    # Format yMark as integer for DPS graphs
+                    if isDpsGraph:
+                        yMarkStr = '{:.0f}'.format(yMark)
                     else:
-                        labelText = '{}'.format(yMark)
+                        yMarkStr = '{}'.format(yMark)
+                    
+                    if extraInfo:
+                        labelText = '{} ({})'.format(yMarkStr, extraInfo)
+                    else:
+                        labelText = yMarkStr
                     labelData.append((yMark, labelText))
                 
                 # Determine alignment based on position in data range

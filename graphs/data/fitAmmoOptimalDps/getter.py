@@ -31,8 +31,11 @@ Optimizations:
 3. Calculate transition points (where optimal ammo changes) ONCE
 4. Use binary search to find relevant ammo at any distance
 5. Apply skill bonus multiplier from loaded charge to all charges
+6. Apply target resists early in the pipeline (multiply damage by 1-resist)
+7. Group projectile ammo by damage band to reduce redundant calculations
 """
 
+import re
 from bisect import bisect_right
 from functools import lru_cache
 from logbook import Logger
@@ -40,6 +43,7 @@ from logbook import Logger
 from eos.calc import calculateRangeFactor
 from eos.const import FittingHardpoint
 from graphs.data.base import SmoothPointGetter
+from service.settings import GraphSettings
 
 pyfalog = Logger(__name__)
 
@@ -59,6 +63,104 @@ CAPITAL_NAVY_PREFIXES = (
     'Arch Angel',
     'Shadow'
 )
+
+# Projectile ammo damage bands - ammo within the same band has identical damage type ratios
+# When using resists, we only need to test one ammo per band (the highest damage one)
+# Key: band name, Value: tuple of base ammo names (without size suffix or faction prefix)
+PROJECTILE_DAMAGE_BANDS = {
+    'hail': ('Hail',),
+    'quake': ('Quake',),
+    'emp_plasma_fusion': ('EMP', 'Phased Plasma', 'Fusion'),
+    'du_sabot': ('Depleted Uranium', 'Titanium Sabot'),
+    'proton_nuclear_carbonized': ('Proton', 'Nuclear', 'Carbonized Lead'),
+    'barrage': ('Barrage',),
+    'tremor': ('Tremor',),
+}
+
+# Reverse lookup: ammo base name -> band name
+PROJECTILE_AMMO_TO_BAND = {}
+for band_name, ammo_names in PROJECTILE_DAMAGE_BANDS.items():
+    for ammo_name in ammo_names:
+        PROJECTILE_AMMO_TO_BAND[ammo_name] = band_name
+
+
+def get_ammo_base_name_for_band(charge_name):
+    """
+    Extract base ammo name for damage band lookup.
+    Removes size suffix and faction prefixes.
+    """
+    # Remove size suffix
+    cleaned = re.sub(r'\s+(S|M|L|XL)$', '', charge_name, flags=re.IGNORECASE)
+    cleaned = re.sub(r'\s+Charge$', '', cleaned, flags=re.IGNORECASE)
+    
+    # Remove faction prefixes
+    faction_prefixes = [
+        'Republic Fleet ', 'Imperial Navy ', 'Caldari Navy ', 'Federation Navy ',
+        'Dread Guristas ', 'True Sansha ', 'Shadow Serpentis ', 'Domination ',
+        'Dark Blood ', "Arch Angel ", 'Guristas ', 'Sansha ', 'Serpentis ',
+        'Blood ', 'Angel '
+    ]
+    for prefix in faction_prefixes:
+        if cleaned.startswith(prefix):
+            cleaned = cleaned[len(prefix):]
+            break
+    
+    return cleaned
+
+
+def filter_projectile_by_band(charges, tgt_resists):
+    """
+    Filter projectile charges to only include the best ammo per damage band.
+    
+    When resists are active, ammo within the same damage band will have the same
+    damage type ratios, so only the highest effective damage one matters.
+    
+    Args:
+        charges: List of charge items (should be projectile ammo only)
+        tgt_resists: Tuple of (em, therm, kin, explo) resist values (0-1 range)
+    
+    Returns:
+        Filtered list of charges with only the best per band
+    """
+    if not tgt_resists or all(r == 0 for r in tgt_resists):
+        # No resists, no filtering needed
+        return charges
+    
+    em_res, therm_res, kin_res, explo_res = tgt_resists
+    
+    # Group charges by band and calculate effective damage
+    bands = {}  # band_name -> [(effective_damage, charge), ...]
+    non_banded = []  # Charges not in any band
+    
+    for charge in charges:
+        base_name = get_ammo_base_name_for_band(charge.name)
+        band = PROJECTILE_AMMO_TO_BAND.get(base_name)
+        
+        if band is None:
+            # Not a projectile ammo or unknown band - keep it
+            non_banded.append(charge)
+            continue
+        
+        # Calculate effective damage with resists
+        em = (charge.getAttribute('emDamage') or 0) * (1 - em_res)
+        therm = (charge.getAttribute('thermalDamage') or 0) * (1 - therm_res)
+        kin = (charge.getAttribute('kineticDamage') or 0) * (1 - kin_res)
+        explo = (charge.getAttribute('explosiveDamage') or 0) * (1 - explo_res)
+        effective_damage = em + therm + kin + explo
+        
+        if band not in bands:
+            bands[band] = []
+        bands[band].append((effective_damage, charge))
+    
+    # Pick the best charge from each band
+    filtered = list(non_banded)
+    for band_name, band_charges in bands.items():
+        # Sort by effective damage descending, pick the best
+        band_charges.sort(key=lambda x: x[0], reverse=True)
+        if band_charges:
+            filtered.append(band_charges[0][1])
+    
+    return filtered
 
 
 def filter_charges_by_quality(charges, quality_tier):
@@ -203,6 +305,41 @@ def get_charge_stats(charge):
     }
 
 
+def apply_resists_to_charge_stats(charge_stats, tgt_resists):
+    """
+    Apply target resists to charge stats, returning effective damage values.
+    
+    This modifies the damage values by multiplying each by (1 - resist).
+    
+    Args:
+        charge_stats: Dict from get_charge_stats()
+        tgt_resists: Tuple of (em, therm, kin, explo) resist values (0-1 range)
+    
+    Returns:
+        New dict with resist-adjusted damage values
+    """
+    if not tgt_resists:
+        return charge_stats
+    
+    em_res, therm_res, kin_res, explo_res = tgt_resists
+    
+    em = charge_stats['emDamage'] * (1 - em_res)
+    thermal = charge_stats['thermalDamage'] * (1 - therm_res)
+    kinetic = charge_stats['kineticDamage'] * (1 - kin_res)
+    explosive = charge_stats['explosiveDamage'] * (1 - explo_res)
+    total_damage = em + thermal + kinetic + explosive
+    
+    return {
+        'emDamage': em,
+        'thermalDamage': thermal,
+        'kineticDamage': kinetic,
+        'explosiveDamage': explosive,
+        'totalDamage': total_damage,
+        'rangeMultiplier': charge_stats['rangeMultiplier'],
+        'falloffMultiplier': charge_stats['falloffMultiplier']
+    }
+
+
 def get_charge_skill_multiplier(module):
     """
     Calculate the skill bonus multiplier for charge damage.
@@ -236,7 +373,7 @@ def get_charge_skill_multiplier(module):
     return mod_total / raw_total
 
 
-def precompute_charge_data(turret_base, charges, cycle_time_ms, skill_multiplier=1.0):
+def precompute_charge_data(turret_base, charges, cycle_time_ms, skill_multiplier=1.0, tgt_resists=None):
     """
     Pre-compute constant values for each charge.
     
@@ -251,10 +388,15 @@ def precompute_charge_data(turret_base, charges, cycle_time_ms, skill_multiplier
         charges: List of charge items
         cycle_time_ms: Turret cycle time in milliseconds
         skill_multiplier: Multiplier for charge damage from skills (default 1.0)
+        tgt_resists: Target resist tuple (em, therm, kin, explo) in 0-1 range, or None to ignore
     """
     charge_data = []
     for charge in charges:
         charge_stats = get_charge_stats(charge)
+        
+        # Apply target resists if provided (early in pipeline for efficiency)
+        if tgt_resists:
+            charge_stats = apply_resists_to_charge_stats(charge_stats, tgt_resists)
         
         # These are constant regardless of distance
         effective_optimal = turret_base['optimal'] * charge_stats['rangeMultiplier']
@@ -712,9 +854,16 @@ class XDistanceMixin(SmoothPointGetter):
         # Get ammo quality tier from graph (set by canvasPanel before drawing)
         quality_tier = getattr(self.graph, '_ammoQuality', 'all')
         
+        # Get target resists if not ignoring them
+        ignore_resists = GraphSettings.getInstance().get('ammoOptimalIgnoreResists')
+        if ignore_resists or tgt is None:
+            tgt_resists = None
+        else:
+            tgt_resists = tgt.getResists()  # (em, therm, kin, explo) in 0-1 range
+        
         # Cache on the GRAPH object (persists across getter instances)
-        # Include quality tier in cache key so different settings get different caches
-        cache_key = (id(src.item), quality_tier)
+        # Include quality tier and resists in cache key so different settings get different caches
+        cache_key = (id(src.item), quality_tier, tgt_resists)
         
         # Initialize cache on graph if needed
         if not hasattr(self.graph, '_ammo_turret_cache'):
@@ -754,9 +903,15 @@ class XDistanceMixin(SmoothPointGetter):
                 if not charges:
                     continue
                 
-                # Get skill multiplier and compute charge data
+                # If using resists, filter projectile ammo by damage band
+                # This optimization avoids testing redundant ammo types
+                if tgt_resists:
+                    charges = filter_projectile_by_band(charges, tgt_resists)
+                
+                # Get skill multiplier and compute charge data with resists applied
                 skill_mult = get_charge_skill_multiplier(mod)
-                charge_data = precompute_charge_data(turret_base, charges, cycle_time_ms, skill_mult)
+                charge_data = precompute_charge_data(
+                    turret_base, charges, cycle_time_ms, skill_mult, tgt_resists)
                 
                 # Pre-compute transition points (this is the key optimization!)
                 transitions = calculate_transition_points(charge_data)
