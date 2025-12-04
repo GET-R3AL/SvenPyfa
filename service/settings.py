@@ -538,6 +538,7 @@ class GraphSettings:
             'ignoreDCR': False,
             'ignoreResists': True,
             'ammoOptimalIgnoreResists': True,
+            'ammoOptimalApplyProjected': True,
             'ignoreLockRange': True,
             'applyProjected': True}
         self.settings = SettingsProvider.getInstance().getSettings('graphSettings', defaults)

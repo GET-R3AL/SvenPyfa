@@ -44,6 +44,7 @@ from logbook import Logger
 from eos.calc import calculateRangeFactor
 from eos.const import FittingHardpoint
 from graphs.data.base import SmoothPointGetter
+from graphs.data.fitDamageStats.calc.projected import getScramRange, getScrammables, getTackledSpeed, getSigRadiusMult
 from service.settings import GraphSettings
 
 pyfalog = Logger(__name__)
@@ -1014,18 +1015,43 @@ class XDistanceMixin(SmoothPointGetter):
         else:
             tgt_resists = tgt.getResists()  # (em, therm, kin, explo) in 0-1 range
         
+        # Get projected effects setting
+        applyProjected = GraphSettings.getInstance().get('ammoOptimalApplyProjected')
+        
         # Cache on the GRAPH object (persists across getter instances)
-        # Include quality tier and resists in cache key so different settings get different caches
-        cache_key = (id(src.item), quality_tier, tgt_resists)
+        # Include quality tier, resists, and projected setting in cache key
+        cache_key = (id(src.item), quality_tier, tgt_resists, applyProjected)
         
         # Initialize cache on graph if needed
         if not hasattr(self.graph, '_ammo_turret_cache'):
             self.graph._ammo_turret_cache = {}
             self.graph._ammo_analysis_done = set()
         
-        # Return cached data if available
+        # Build common data dict
+        commonData = {
+            'src_radius': src.getRadius(),
+            'applyProjected': applyProjected,
+        }
+        
+        # Add projected effect data if enabled
+        if applyProjected:
+            commonData['srcScramRange'] = getScramRange(src=src)
+            commonData['tgtScrammables'] = getScrammables(tgt=tgt) if tgt else ()
+            # Get projected mod/drone/fighter data from cache
+            webMods, tpMods = self.graph._projectedCache.getProjModData(src)
+            webDrones, tpDrones = self.graph._projectedCache.getProjDroneData(src)
+            webFighters, tpFighters = self.graph._projectedCache.getProjFighterData(src)
+            commonData['webMods'] = webMods
+            commonData['tpMods'] = tpMods
+            commonData['webDrones'] = webDrones
+            commonData['tpDrones'] = tpDrones
+            commonData['webFighters'] = webFighters
+            commonData['tpFighters'] = tpFighters
+        
+        # Return cached turret data if available
         if cache_key in self.graph._ammo_turret_cache:
-            return {'turret_cache': self.graph._ammo_turret_cache[cache_key], 'src_radius': src.getRadius()}
+            commonData['turret_cache'] = self.graph._ammo_turret_cache[cache_key]
+            return commonData
         
         # Run analysis once per fit (for logging purposes only)
         analysis_key = id(src.item)
@@ -1083,34 +1109,59 @@ class XDistanceMixin(SmoothPointGetter):
         # Cache on graph for future calls
         self.graph._ammo_turret_cache[cache_key] = turret_cache
         
-        # Store source ship radius in commonData for tracking calculations
-        return {'turret_cache': turret_cache, 'src_radius': src.getRadius()}
+        # Add turret cache to commonData and return
+        commonData['turret_cache'] = turret_cache
+        return commonData
 
-    def _buildTrackingParams(self, distance, miscParams, tgt, commonData):
+    def _buildTrackingParams(self, distance, miscParams, src, tgt, commonData):
         """
         Build tracking parameters dict if velocity vectors are specified.
         
         Returns None if no tracking should be applied (both speeds are 0),
         otherwise returns a dict with all tracking calculation parameters.
+        
+        If projected effects are enabled, applies webs and target painters.
         """
         # Get speeds (default to 0 if not specified)
         atkSpeed = miscParams.get('atkSpeed', 0) or 0
         tgtSpeed = miscParams.get('tgtSpeed', 0) or 0
         
+        # Get target signature radius
+        tgtSigRadius = tgt.getSigRadius() if tgt else 0
+        if tgtSigRadius == 0:
+            return None  # Can't calculate tracking without target sig
+        
+        # Apply projected effects (webs and target painters) if enabled
+        if commonData.get('applyProjected'):
+            tgtSpeed = getTackledSpeed(
+                src=src,
+                tgt=tgt,
+                currentUntackledSpeed=tgtSpeed,
+                srcScramRange=commonData.get('srcScramRange'),
+                tgtScrammables=commonData.get('tgtScrammables', ()),
+                webMods=commonData.get('webMods', ()),
+                webDrones=commonData.get('webDrones', ()),
+                webFighters=commonData.get('webFighters', ()),
+                distance=distance)
+            tgtSigRadius = tgtSigRadius * getSigRadiusMult(
+                src=src,
+                tgt=tgt,
+                tgtSpeed=tgtSpeed,
+                srcScramRange=commonData.get('srcScramRange'),
+                tgtScrammables=commonData.get('tgtScrammables', ()),
+                tpMods=commonData.get('tpMods', ()),
+                tpDrones=commonData.get('tpDrones', ()),
+                tpFighters=commonData.get('tpFighters', ()),
+                distance=distance)
+        
         # Optimization: if both speeds are 0, no angular velocity, perfect tracking
-        if atkSpeed == 0 and tgtSpeed == 0:
+        # But we still need to return params if sig radius was modified by TPs
+        if atkSpeed == 0 and tgtSpeed == 0 and not commonData.get('applyProjected'):
             return None
         
         # Get angles (default to 0)
         atkAngle = miscParams.get('atkAngle', 0) or 0
         tgtAngle = miscParams.get('tgtAngle', 0) or 0
-        
-        # Get target signature radius and ship radius
-        tgtSigRadius = miscParams.get('tgtSigRad')
-        if tgtSigRadius is None and tgt is not None:
-            tgtSigRadius = tgt.getSigRadius()
-        if tgtSigRadius is None or tgtSigRadius == 0:
-            return None  # Can't calculate tracking without target sig
         
         tgtRadius = tgt.getRadius() if tgt else 0
         srcRadius = commonData.get('src_radius', 0)
@@ -1131,7 +1182,7 @@ class XDistanceMixin(SmoothPointGetter):
         turret_cache = commonData.get('turret_cache')
         
         # Build tracking params (None if no velocity, meaning perfect tracking)
-        tracking_base = self._buildTrackingParams(distance, miscParams, tgt, commonData)
+        tracking_base = self._buildTrackingParams(distance, miscParams, src, tgt, commonData)
         
         if hasattr(self, '_getOptimalDpsAtDistance'):
             return self._getOptimalDpsAtDistance(src, distance, turret_cache, tracking_base)
@@ -1146,7 +1197,7 @@ class XDistanceMixin(SmoothPointGetter):
         turret_cache = commonData.get('turret_cache')
         
         # Build tracking params (None if no velocity, meaning perfect tracking)
-        tracking_base = self._buildTrackingParams(distance, miscParams, tgt, commonData)
+        tracking_base = self._buildTrackingParams(distance, miscParams, src, tgt, commonData)
         
         if hasattr(self, '_getOptimalDpsWithAmmoAtDistance'):
             dps, ammo_name = self._getOptimalDpsWithAmmoAtDistance(src, distance, turret_cache, tracking_base)

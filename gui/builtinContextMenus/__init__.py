@@ -53,6 +53,7 @@ from gui.builtinContextMenus.targetProfile import switcher
 from gui.builtinContextMenus import graphDmgApplyProjected
 from gui.builtinContextMenus import graphDmgIgnoreResists
 from gui.builtinContextMenus import graphAmmoOptimalIgnoreResists
+from gui.builtinContextMenus import graphAmmoOptimalApplyProjected
 from gui.builtinContextMenus import graphLockRange
 from gui.builtinContextMenus import graphDroneControlRange
 from gui.builtinContextMenus import graphDmgDroneMode

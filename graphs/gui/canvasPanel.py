@@ -227,9 +227,9 @@ class GraphCanvasPanel(wx.Panel):
                             segmentXs.extend(xs)
                             segmentYs.extend(ys)
                             
-                            # Track for legend (color mode only)
+                            # Track for legend (color mode only) - always use solid lines in legend
                             if ammoStyle == 'color' and ammoName not in [ls[2] for ls in legendSegments]:
-                                legendSegments.append((segColor, segLineStyle, ammoName))
+                                legendSegments.append((segColor, 'solid', ammoName))
                         
                         # Store combined data for X mark lookup
                         if segmentXs and segmentYs:
@@ -243,7 +243,7 @@ class GraphCanvasPanel(wx.Panel):
                             existingLabels = [ld[2] for ld in legendData]
                             for segColor, segLineStyle, ammoName in legendSegments:
                                 if ammoName not in existingLabels:
-                                    legendData.append((segColor, segLineStyle, ammoName))
+                                    legendData.append((segColor, 'solid', ammoName))
                                     existingLabels.append(ammoName)
                         else:
                             # Single legend entry for this source (none or pattern mode)
