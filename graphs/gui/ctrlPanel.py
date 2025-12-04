@@ -72,10 +72,20 @@ class GraphControlPanel(wx.Panel):
         self.showLegendCb.SetValue(True)
         self.showLegendCb.Bind(wx.EVT_CHECKBOX, self.OnShowLegendChange)
         commonOptsSizer.Add(self.showLegendCb, 0, wx.EXPAND | wx.TOP, 5)
-        self.showY0Cb = wx.CheckBox(self, wx.ID_ANY, _t('Always show Y = 0'), wx.DefaultPosition, wx.DefaultSize, 0)
-        self.showY0Cb.SetValue(True)
-        self.showY0Cb.Bind(wx.EVT_CHECKBOX, self.OnShowY0Change)
-        commonOptsSizer.Add(self.showY0Cb, 0, wx.EXPAND | wx.TOP, 5)
+
+        # Ammo style selection dropdown (only shown for graphs with segments)
+        self.ammoStyleSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.ammoStyleText = wx.StaticText(self, wx.ID_ANY, _t('Ammo:'))
+        self.ammoStyleSizer.Add(self.ammoStyleText, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
+        self.ammoStyleSelection = wx.Choice(self, wx.ID_ANY)
+        # Options: None (solid lines), Pattern (varied line styles), Color (ammo-specific colors)
+        self.ammoStyleSelection.Append(_t('None'), 'none')
+        self.ammoStyleSelection.Append(_t('Pattern'), 'pattern')
+        self.ammoStyleSelection.Append(_t('Color'), 'color')
+        self.ammoStyleSelection.SetSelection(2)  # Default to Color
+        self.ammoStyleSelection.Bind(wx.EVT_CHOICE, self.OnAmmoStyleChange)
+        self.ammoStyleSizer.Add(self.ammoStyleSelection, 1, wx.EXPAND | wx.ALL, 0)
+        commonOptsSizer.Add(self.ammoStyleSizer, 0, wx.EXPAND | wx.TOP, 5)
         optsSizer.Add(commonOptsSizer, 0, wx.EXPAND | wx.RIGHT, 10)
 
         graphOptsSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -158,6 +168,11 @@ class GraphControlPanel(wx.Panel):
         # Source and target list
         self.refreshColumns(layout=False)
         self.targetList.Show(view.hasTargets)
+
+        # Ammo style dropdown (only for graphs with segments)
+        hasSegments = getattr(view, 'hasSegments', False)
+        self.ammoStyleText.Show(hasSegments)
+        self.ammoStyleSelection.Show(hasSegments)
 
         # Inputs
         self._updateInputs(storeInputs=False)
@@ -323,7 +338,7 @@ class GraphControlPanel(wx.Panel):
         event.Skip()
         self.graphFrame.draw()
 
-    def OnShowY0Change(self, event):
+    def OnAmmoStyleChange(self, event):
         event.Skip()
         self.graphFrame.draw()
 
@@ -398,8 +413,9 @@ class GraphControlPanel(wx.Panel):
         return self.showLegendCb.GetValue()
 
     @property
-    def showY0(self):
-        return self.showY0Cb.GetValue()
+    def ammoStyle(self):
+        """Returns ammo style: 'none', 'pattern', or 'color'"""
+        return self.ammoStyleSelection.GetClientData(self.ammoStyleSelection.GetSelection())
 
     @property
     def yType(self):

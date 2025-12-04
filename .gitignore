@@ -126,4 +126,11 @@ gitversion
 /locale/progress.json
 
 # vscode settings
-.vscode
+.
+
+archive/
+tests/
+test_output/
+PLAN.md
+LLM_README.md
+.github/

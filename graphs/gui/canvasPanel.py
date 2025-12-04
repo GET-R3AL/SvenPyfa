@@ -51,6 +51,7 @@ try:
     from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as Canvas
     from matplotlib.figure import Figure
     from matplotlib.colors import hsv_to_rgb
+    import matplotlib.patheffects as PathEffects
 except ImportError as e:
     pyfalog.warning('Matplotlib failed to import.  Likely missing or incompatible version.')
     graphFrame_enabled = False
@@ -122,6 +123,9 @@ class GraphCanvasPanel(wx.Panel):
         else:
             iterList = tuple((f, None) for f in sources)
 
+        # Check if this view supports segmented plotting
+        hasSegments = getattr(view, 'hasSegments', False)
+
         # Draw plot lines and get data for legend
         for source, target in iterList:
             # Get line style data
@@ -130,7 +134,7 @@ class GraphCanvasPanel(wx.Panel):
             except KeyError:
                 pyfalog.warning('Invalid color "{}" for "{}"'.format(source.colorID, source.name))
                 continue
-            color = colorData.hsl
+            baseColor = colorData.hsl
             lineStyle = 'solid'
             if target is not None:
                 try:
@@ -138,51 +142,146 @@ class GraphCanvasPanel(wx.Panel):
                 except KeyError:
                     pyfalog.warning('Invalid lightness "{}" for "{}"'.format(target.lightnessID, target.name))
                     continue
-                color = lightnessData.func(color)
+                baseColor = lightnessData.func(baseColor)
                 try:
                     lineStyleData = STYLES[target.lineStyleID]
                 except KeyError:
                     pyfalog.warning('Invalid line style "{}" for "{}"'.format(target.lightnessID, target.name))
                     continue
                 lineStyle = lineStyleData.mplSpec
-            color = hsv_to_rgb(hsl_to_hsv(color))
 
-            # Get point data
-            try:
-                xs, ys = view.getPlotPoints(
-                    mainInput=mainInput,
-                    miscInputs=miscInputs,
-                    xSpec=chosenX,
-                    ySpec=chosenY,
-                    src=source,
-                    tgt=target)
-                if not self.__checkNumbers(xs, ys):
-                    pyfalog.warning('Failed to plot "{}" vs "{}" due to inf or NaN in values'.format(source.name, '' if target is None else target.name))
-                    continue
-                plotData[(source, target)] = (xs, ys)
-                allXs.update(xs)
-                allYs.update(ys)
-                # If we have single data point, show marker - otherwise line won't be shown
-                if len(xs) == 1 and len(ys) == 1:
-                    self.subplot.plot(xs, ys, color=color, linestyle=lineStyle, marker='.')
-                else:
-                    self.subplot.plot(xs, ys, color=color, linestyle=lineStyle)
-                # Fill data for legend
-                if target is None:
-                    legendData.append((color, lineStyle, source.shortName))
-                else:
-                    legendData.append((color, lineStyle, '{} vs {}'.format(source.shortName, target.shortName)))
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except Exception:
-                pyfalog.warning('Failed to plot "{}" vs "{}"'.format(source.name, '' if target is None else target.name))
-                self.canvas.draw()
-                self.Refresh()
-                return
+            # Try segmented plotting first if supported
+            segmentsPlotted = False
+            if hasSegments:
+                try:
+                    segments = view.getPlotSegments(
+                        mainInput=mainInput,
+                        miscInputs=miscInputs,
+                        xSpec=chosenX,
+                        ySpec=chosenY,
+                        src=source,
+                        tgt=target)
+                    if segments:
+                        segmentsPlotted = True
+                        # Base color from source/target selection
+                        baseRgbColor = hsv_to_rgb(hsl_to_hsv(baseColor))
+                        styleKeys = list(STYLES.keys())
+                        
+                        # Get ammo style from control panel ('none', 'pattern', 'color')
+                        ammoStyle = self.graphFrame.ctrlPanel.ammoStyle
+                        getAmmoColorFunc = getattr(view, 'getAmmoColor', None)
+                        
+                        segmentXs = []
+                        segmentYs = []
+                        legendSegments = []  # Track segments for legend
+                        
+                        for segment in segments:
+                            xs = segment['xs']
+                            ys = segment['ys']
+                            ammoName = segment.get('ammo', 'Unknown')
+                            ammoIndex = segment.get('ammoIndex', 0)
+                            
+                            if not self.__checkNumbers(xs, ys):
+                                continue
+                            
+                            # Determine color and line style based on ammo style mode
+                            if ammoStyle == 'color' and getAmmoColorFunc:
+                                # Color mode: use ammo-specific colors, solid lines
+                                ammoColor = getAmmoColorFunc(ammoName)
+                                if ammoColor:
+                                    segColor = ammoColor
+                                else:
+                                    # Fallback to base color if no ammo color defined
+                                    segColor = baseRgbColor
+                                segLineStyle = 'solid'
+                            elif ammoStyle == 'pattern':
+                                # Pattern mode: use base color, vary line patterns
+                                segColor = baseRgbColor
+                                segStyleKey = styleKeys[ammoIndex % len(styleKeys)]
+                                segStyleData = STYLES[segStyleKey]
+                                segLineStyle = segStyleData.mplSpec
+                            else:
+                                # None mode: solid single color line
+                                segColor = baseRgbColor
+                                segLineStyle = 'solid'
+                            
+                            # Plot this segment
+                            if len(xs) == 1 and len(ys) == 1:
+                                self.subplot.plot(xs, ys, color=segColor, linestyle=segLineStyle, marker='.', linewidth=2)
+                            else:
+                                self.subplot.plot(xs, ys, color=segColor, linestyle=segLineStyle, linewidth=2)
+                            
+                            segmentXs.extend(xs)
+                            segmentYs.extend(ys)
+                            
+                            # Track for legend (color mode only)
+                            if ammoStyle == 'color' and ammoName not in [ls[2] for ls in legendSegments]:
+                                legendSegments.append((segColor, segLineStyle, ammoName))
+                        
+                        # Store combined data for X mark lookup
+                        if segmentXs and segmentYs:
+                            plotData[(source, target)] = (segmentXs, segmentYs)
+                            allXs.update(segmentXs)
+                            allYs.update(segmentYs)
+                        
+                        # Add legend entries
+                        if ammoStyle == 'color':
+                            # Add legend entry for each ammo type
+                            for segColor, segLineStyle, ammoName in legendSegments:
+                                legendData.append((segColor, segLineStyle, ammoName))
+                        else:
+                            # Single legend entry for this source (none or pattern mode)
+                            if target is None:
+                                legendData.append((baseRgbColor, 'solid', source.shortName))
+                            else:
+                                legendData.append((baseRgbColor, 'solid', '{} vs {}'.format(source.shortName, target.shortName)))
+                except (KeyboardInterrupt, SystemExit):
+                    raise
+                except Exception as e:
+                    pyfalog.warning('Failed to get segments for "{}" vs "{}": {}'.format(
+                        source.name, '' if target is None else target.name, e))
 
-        # Setting Y limits for canvas
-        if self.graphFrame.ctrlPanel.showY0:
-            allYs.add(0)
+            # Fall back to regular plotting if segments not available or failed
+            if not segmentsPlotted:
+                color = hsv_to_rgb(hsl_to_hsv(baseColor))
+                try:
+                    xs, ys = view.getPlotPoints(
+                        mainInput=mainInput,
+                        miscInputs=miscInputs,
+                        xSpec=chosenX,
+                        ySpec=chosenY,
+                        src=source,
+                        tgt=target)
+                    if not self.__checkNumbers(xs, ys):
+                        pyfalog.warning('Failed to plot "{}" vs "{}" due to inf or NaN in values'.format(source.name, '' if target is None else target.name))
+                        continue
+                    plotData[(source, target)] = (xs, ys)
+                    allXs.update(xs)
+                    allYs.update(ys)
+                    # If we have single data point, show marker - otherwise line won't be shown
+                    if len(xs) == 1 and len(ys) == 1:
+                        self.subplot.plot(xs, ys, color=color, linestyle=lineStyle, marker='.')
+                    else:
+                        self.subplot.plot(xs, ys, color=color, linestyle=lineStyle)
+                    # Fill data for legend
+                    if target is None:
+                        legendData.append((color, lineStyle, source.shortName))
+                    else:
+                        legendData.append((color, lineStyle, '{} vs {}'.format(source.shortName, target.shortName)))
+                except (KeyboardInterrupt, SystemExit):
+                    raise
+                except Exception:
+                    pyfalog.warning('Failed to plot "{}" vs "{}"'.format(source.name, '' if target is None else target.name))
+                    self.canvas.draw()
+                    self.Refresh()
+                    return
+
+        # Setting Y limits for canvas (always include Y=0 in range)
+        allYs.add(0)
+        # Include the user's input range in X limits so axis extends to full range
+        if mainInput and mainInput.value:
+            allXs.add(min(mainInput.value))
+            allXs.add(max(mainInput.value))
         canvasMinY, canvasMaxY = self._getLimits(allYs, minExtra=0.05, maxExtra=0.1)
         canvasMinX, canvasMaxX = self._getLimits(allXs, minExtra=0.02, maxExtra=0.02)
         self.subplot.set_ylim(bottom=canvasMinY, top=canvasMaxY)
@@ -196,29 +295,23 @@ class GraphCanvasPanel(wx.Panel):
                 maxY = max(allYs, default=None)
                 yDiff = (maxY or 0) - (minY or 0)
                 xMark = max(min(self.xMark, maxX), minX)
-                # If in top 10% of X coordinates, align labels differently
-                if xMark > canvasMinX + 0.9 * (canvasMaxX - canvasMinX):
-                    labelAlignment = 'right'
-                    labelPrefix = ''
-                    labelSuffix = ' '
-                else:
-                    labelAlignment = 'left'
-                    labelPrefix = ' '
-                    labelSuffix = ''
-                # Draw line
+                
+                # Draw line first
                 self.subplot.axvline(x=xMark, linestyle='dotted', linewidth=1, color=(0, 0, 0))
-                # Draw its X position
+                
+                # Prepare X label text (without prefix/suffix yet)
                 if chosenX.unit is None:
-                    xLabel = '{}{}{}'.format(labelPrefix, roundToPrec(xMark, 4), labelSuffix)
+                    xLabelCore = '{}'.format(roundToPrec(xMark, 4))
                 else:
-                    xLabel = '{}{} {}{}'.format(labelPrefix, roundToPrec(xMark, 4), chosenX.unit, labelSuffix)
-                self.subplot.annotate(
-                    xLabel, xy=(xMark, canvasMaxY - 0.01 * (canvasMaxY - canvasMinY)), xytext=(0, 0), annotation_clip=False,
-                    textcoords='offset pixels', ha=labelAlignment, va='top', fontsize='small')
-                # Get Y values
-                yMarks = set()
+                    xLabelCore = '{} {}'.format(roundToPrec(xMark, 4), chosenX.unit)
+                
+                # Text outline effect for better visibility
+                textOutline = [PathEffects.withStroke(linewidth=3, foreground='white')]
+                
+                # Get Y values with optional extra info (like ammo name)
+                yMarks = {}  # {rounded_value: extra_info_str}
 
-                def addYMark(val):
+                def addYMark(val, extraInfo=None):
                     if val is None:
                         return
                     # Round according to shown Y range - the bigger the range,
@@ -230,23 +323,40 @@ class GraphCanvasPanel(wx.Panel):
                     # If due to some bug or insufficient plot density we're
                     # out of bounds, do not add anything
                     if minY <= val <= maxY or minY <= rounded <= maxY:
-                        yMarks.add(rounded)
+                        yMarks[rounded] = extraInfo
 
                 for source, target in iterList:
+                    if (source, target) not in plotData:
+                        continue
                     xs, ys = plotData[(source, target)]
                     if not xs or xMark < min(xs) or xMark > max(xs):
                         continue
                     # Fetch values from graphs when we're asked to provide accurate data
                     if accurateMarks:
                         try:
-                            y = view.getPoint(
-                                x=xMark,
-                                miscInputs=miscInputs,
-                                xSpec=chosenX,
-                                ySpec=chosenY,
-                                src=source,
-                                tgt=target)
-                            addYMark(y)
+                            # Try extended point info first (for ammo name etc.)
+                            if hasattr(view, 'getPointExtended'):
+                                y, extraInfo = view.getPointExtended(
+                                    x=xMark,
+                                    miscInputs=miscInputs,
+                                    xSpec=chosenX,
+                                    ySpec=chosenY,
+                                    src=source,
+                                    tgt=target)
+                                # Build extra info string
+                                extraStr = None
+                                if extraInfo and extraInfo.get('ammo'):
+                                    extraStr = extraInfo['ammo']
+                                addYMark(y, extraStr)
+                            else:
+                                y = view.getPoint(
+                                    x=xMark,
+                                    miscInputs=miscInputs,
+                                    xSpec=chosenX,
+                                    ySpec=chosenY,
+                                    src=source,
+                                    tgt=target)
+                                addYMark(y)
                         except (KeyboardInterrupt, SystemExit):
                             raise
                         except Exception:
@@ -255,20 +365,83 @@ class GraphCanvasPanel(wx.Panel):
                             continue
                     # Otherwise just do linear interpolation between two points
                     else:
+                        # Try fast ammo name lookup (O(log n) using cached transitions)
+                        extraStr = None
+                        if hasattr(view, 'getAmmoNameFast'):
+                            try:
+                                extraStr = view.getAmmoNameFast(x=xMark, xSpec=chosenX, src=source)
+                            except (KeyboardInterrupt, SystemExit):
+                                raise
+                            except Exception:
+                                pass  # Silently ignore - just won't show ammo name
+                        
                         if xMark in xs:
                             # We might have multiples of the same value in our sequence, pick value for the last one
                             idx = len(xs) - xs[::-1].index(xMark) - 1
-                            addYMark(ys[idx])
+                            addYMark(ys[idx], extraStr)
                             continue
                         idx = bisect(xs, xMark)
                         yMark = self._interpolateX(x=xMark, x1=xs[idx - 1], y1=ys[idx - 1], x2=xs[idx], y2=ys[idx])
-                        addYMark(yMark)
+                        addYMark(yMark, extraStr)
 
-                # Draw Y values
-                for yMark in yMarks:
+                # Draw Y values with optional extra info
+                # First, collect all labels to determine the widest one
+                labelData = []  # List of (yMark, labelText)
+                for yMark, extraInfo in yMarks.items():
+                    if extraInfo:
+                        labelText = '{} ({})'.format(yMark, extraInfo)
+                    else:
+                        labelText = '{}'.format(yMark)
+                    labelData.append((yMark, labelText))
+                
+                # Determine alignment based on position in data range
+                # Use a simple percentage-based approach but factor in text length
+                # by using a smaller threshold for longer text
+                xRange = canvasMaxX - canvasMinX
+                xPosRatio = (xMark - canvasMinX) / xRange if xRange > 0 else 0
+                
+                # Find the longest label to estimate how early we need to flip
+                maxLabelLen = len(xLabelCore)
+                for yMark, labelText in labelData:
+                    maxLabelLen = max(maxLabelLen, len(labelText))
+                
+                # Adjust threshold based on label length
+                # Short labels (< 15 chars): flip at 80%
+                # Medium labels (15-30 chars): flip at 65%  
+                # Long labels (> 30 chars): flip at 50%
+                if maxLabelLen < 15:
+                    flipThreshold = 0.80
+                elif maxLabelLen < 30:
+                    flipThreshold = 0.65
+                else:
+                    flipThreshold = 0.50
+                
+                if xPosRatio > flipThreshold:
+                    labelAlignment = 'right'
+                    labelPrefix = ''
+                    labelSuffix = ' '
+                else:
+                    labelAlignment = 'left'
+                    labelPrefix = ' '
+                    labelSuffix = ''
+                
+                # Now draw all labels with the chosen alignment
+                textOutline = [PathEffects.withStroke(linewidth=3, foreground='white')]
+                
+                # Draw X label
+                xLabel = '{}{}{}'.format(labelPrefix, xLabelCore, labelSuffix)
+                self.subplot.annotate(
+                    xLabel, xy=(xMark, canvasMaxY - 0.01 * (canvasMaxY - canvasMinY)), xytext=(0, 0), annotation_clip=False,
+                    textcoords='offset pixels', ha=labelAlignment, va='top', fontsize='small',
+                    path_effects=textOutline)
+                
+                # Draw Y labels
+                for yMark, labelText in labelData:
+                    label = '{}{}{}'.format(labelPrefix, labelText, labelSuffix)
                     self.subplot.annotate(
-                        '{}{}{}'.format(labelPrefix, yMark, labelSuffix), xy=(xMark, yMark), xytext=(0, 0),
-                        textcoords='offset pixels', ha=labelAlignment, va='center', fontsize='small')
+                        label, xy=(xMark, yMark), xytext=(0, 0),
+                        textcoords='offset pixels', ha=labelAlignment, va='center', fontsize='small',
+                        path_effects=textOutline)
 
         legendLines = []
         for i, iData in enumerate(legendData):
