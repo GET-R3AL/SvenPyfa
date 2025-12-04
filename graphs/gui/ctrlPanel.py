@@ -52,45 +52,71 @@ class GraphControlPanel(wx.Panel):
         optsSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         commonOptsSizer = wx.BoxSizer(wx.VERTICAL)
+        
+        # Row 1: Y axis
         ySubSelectionSizer = wx.BoxSizer(wx.HORIZONTAL)
         yText = wx.StaticText(self, wx.ID_ANY, _t('Axis Y:'))
         ySubSelectionSizer.Add(yText, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
         self.ySubSelection = wx.Choice(self, wx.ID_ANY)
         self.ySubSelection.Bind(wx.EVT_CHOICE, self.OnYTypeUpdate)
-        ySubSelectionSizer.Add(self.ySubSelection, 1, wx.EXPAND | wx.ALL, 0)
-        commonOptsSizer.Add(ySubSelectionSizer, 0, wx.EXPAND | wx.ALL, 0)
+        ySubSelectionSizer.Add(self.ySubSelection, 1, wx.EXPAND, 0)
+        commonOptsSizer.Add(ySubSelectionSizer, 0, wx.EXPAND, 0)
 
-        xSubSelectionSizer = wx.BoxSizer(wx.HORIZONTAL)
-        xText = wx.StaticText(self, wx.ID_ANY, _t('Axis X:'))
-        xSubSelectionSizer.Add(xText, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
+        # Row 2: X axis (hidden for segment graphs)
+        self.xSubSelectionSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.xText = wx.StaticText(self, wx.ID_ANY, _t('Axis X:'))
+        self.xSubSelectionSizer.Add(self.xText, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
         self.xSubSelection = wx.Choice(self, wx.ID_ANY)
         self.xSubSelection.Bind(wx.EVT_CHOICE, self.OnXTypeUpdate)
-        xSubSelectionSizer.Add(self.xSubSelection, 1, wx.EXPAND | wx.ALL, 0)
-        commonOptsSizer.Add(xSubSelectionSizer, 0, wx.EXPAND | wx.TOP, 5)
+        self.xSubSelectionSizer.Add(self.xSubSelection, 1, wx.EXPAND, 0)
+        commonOptsSizer.Add(self.xSubSelectionSizer, 0, wx.EXPAND | wx.TOP, 5)
 
-        self.showLegendCb = wx.CheckBox(self, wx.ID_ANY, _t('Show legend'), wx.DefaultPosition, wx.DefaultSize, 0)
-        self.showLegendCb.SetValue(True)
-        self.showLegendCb.Bind(wx.EVT_CHECKBOX, self.OnShowLegendChange)
-        commonOptsSizer.Add(self.showLegendCb, 0, wx.EXPAND | wx.TOP, 5)
-
-        # Ammo style selection dropdown (only shown for graphs with segments)
+        # Row 3: Color dropdown (only shown for graphs with segments) - Quality is in right column
         self.ammoStyleSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.ammoStyleText = wx.StaticText(self, wx.ID_ANY, _t('Ammo:'))
+        self.ammoStyleText = wx.StaticText(self, wx.ID_ANY, _t('Style:'))
         self.ammoStyleSizer.Add(self.ammoStyleText, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
         self.ammoStyleSelection = wx.Choice(self, wx.ID_ANY)
-        # Options: None (solid lines), Pattern (varied line styles), Color (ammo-specific colors)
         self.ammoStyleSelection.Append(_t('None'), 'none')
         self.ammoStyleSelection.Append(_t('Pattern'), 'pattern')
         self.ammoStyleSelection.Append(_t('Color'), 'color')
         self.ammoStyleSelection.SetSelection(2)  # Default to Color
         self.ammoStyleSelection.Bind(wx.EVT_CHOICE, self.OnAmmoStyleChange)
-        self.ammoStyleSizer.Add(self.ammoStyleSelection, 1, wx.EXPAND | wx.ALL, 0)
+        self.ammoStyleSizer.Add(self.ammoStyleSelection, 1, wx.EXPAND, 0)
         commonOptsSizer.Add(self.ammoStyleSizer, 0, wx.EXPAND | wx.TOP, 5)
+
+        # Row 4: Show legend checkbox
+        self.showLegendCb = wx.CheckBox(self, wx.ID_ANY, _t('Show legend'), wx.DefaultPosition, wx.DefaultSize, 0)
+        self.showLegendCb.SetValue(True)
+        self.showLegendCb.Bind(wx.EVT_CHECKBOX, self.OnShowLegendChange)
+        commonOptsSizer.Add(self.showLegendCb, 0, wx.TOP, 5)
+
         optsSizer.Add(commonOptsSizer, 0, wx.EXPAND | wx.RIGHT, 10)
 
+        # Right column: inputs and ammo quality
         graphOptsSizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        # Container for inputs (normal graphs) and quality dropdown (segment graphs)
+        self.rightColumnSizer = wx.BoxSizer(wx.VERTICAL)
+        
+        # Input fields sizer (shown for normal graphs) - at the top
         self.inputsSizer = wx.BoxSizer(wx.VERTICAL)
-        graphOptsSizer.Add(self.inputsSizer, 1, wx.EXPAND | wx.ALL, 0)
+        self.rightColumnSizer.Add(self.inputsSizer, 0, wx.EXPAND, 0)
+        
+        # Quality dropdown sizer (shown for segment graphs)
+        # This should align with Color dropdown row (row 2 when X axis is hidden)
+        self.ammoQualitySizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.ammoQualityText = wx.StaticText(self, wx.ID_ANY, _t('Ammo Meta:'))
+        self.ammoQualitySizer.Add(self.ammoQualityText, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
+        self.ammoQualitySelection = wx.Choice(self, wx.ID_ANY)
+        self.ammoQualitySelection.Append(_t('T1'), 't1')
+        self.ammoQualitySelection.Append(_t('Navy'), 'navy')
+        self.ammoQualitySelection.Append(_t('All'), 'all')
+        self.ammoQualitySelection.SetSelection(1)  # Default to Navy
+        self.ammoQualitySelection.Bind(wx.EVT_CHOICE, self.OnAmmoQualityChange)
+        self.ammoQualitySizer.Add(self.ammoQualitySelection, 0, wx.ALIGN_CENTER_VERTICAL, 0)
+        self.rightColumnSizer.Add(self.ammoQualitySizer, 0, 0, 0)
+        
+        graphOptsSizer.Add(self.rightColumnSizer, 1, wx.EXPAND | wx.ALL, 0)
 
         vectorSize = 90 if 'wxGTK' in wx.PlatformInfo else 75
         self.srcVectorSizer = wx.BoxSizer(wx.VERTICAL)
@@ -169,10 +195,20 @@ class GraphControlPanel(wx.Panel):
         self.refreshColumns(layout=False)
         self.targetList.Show(view.hasTargets)
 
-        # Ammo style dropdown (only for graphs with segments)
+        # Ammo options and X axis visibility (only for graphs with segments)
         hasSegments = getattr(view, 'hasSegments', False)
+        # Hide X axis dropdown for segment graphs (Application Profile)
+        self.xText.Show(not hasSegments)
+        self.xSubSelection.Show(not hasSegments)
+        self.xSubSelectionSizer.ShowItems(not hasSegments)
+        # Show ammo style (Color) dropdown for segment graphs (left column)
         self.ammoStyleText.Show(hasSegments)
         self.ammoStyleSelection.Show(hasSegments)
+        self.ammoStyleSizer.ShowItems(hasSegments)
+        # Show ammo quality dropdown for segment graphs (right column)
+        self.ammoQualityText.Show(hasSegments)
+        self.ammoQualitySelection.Show(hasSegments)
+        self.ammoQualitySizer.ShowItems(hasSegments)
 
         # Inputs
         self._updateInputs(storeInputs=False)
@@ -244,7 +280,14 @@ class GraphControlPanel(wx.Panel):
         fieldSizer = wx.BoxSizer(wx.HORIZONTAL)
         tooltipText = (inputDef.mainTooltip if mainInput else inputDef.secondaryTooltip) or ''
         if mainInput:
-            fieldTextBox = FloatRangeBox(self, self._storedRanges.get((inputDef.handle, inputDef.unit), inputDef.defaultRange))
+            # Check if view has a dynamic default range method
+            view = self.graphFrame.getView()
+            defaultRange = inputDef.defaultRange
+            if hasattr(view, 'getDefaultInputRange'):
+                dynamicRange = view.getDefaultInputRange(inputDef, self.sources)
+                if dynamicRange is not None:
+                    defaultRange = dynamicRange
+            fieldTextBox = FloatRangeBox(self, self._storedRanges.get((inputDef.handle, inputDef.unit), defaultRange))
             fieldTextBox.Bind(wx.EVT_TEXT, self.OnMainInputChanged)
         else:
             fieldTextBox = FloatBox(self, self._storedConsts.get((inputDef.handle, inputDef.unit), inputDef.defaultValue))
@@ -342,6 +385,12 @@ class GraphControlPanel(wx.Panel):
         event.Skip()
         self.graphFrame.draw()
 
+    def OnAmmoQualityChange(self, event):
+        event.Skip()
+        # Clear cache when quality changes since we need to recalculate with different ammo
+        self.graphFrame.clearCache(reason=GraphCacheCleanupReason.inputChanged)
+        self.graphFrame.draw()
+
     def OnYTypeUpdate(self, event):
         event.Skip()
         self._updateInputs()
@@ -416,6 +465,11 @@ class GraphControlPanel(wx.Panel):
     def ammoStyle(self):
         """Returns ammo style: 'none', 'pattern', or 'color'"""
         return self.ammoStyleSelection.GetClientData(self.ammoStyleSelection.GetSelection())
+
+    @property
+    def ammoQuality(self):
+        """Returns ammo quality tier: 't1', 'navy', or 'all'"""
+        return self.ammoQualitySelection.GetClientData(self.ammoQualitySelection.GetSelection())
 
     @property
     def yType(self):

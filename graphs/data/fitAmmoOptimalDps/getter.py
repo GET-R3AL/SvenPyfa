@@ -44,6 +44,77 @@ from graphs.data.base import SmoothPointGetter
 pyfalog = Logger(__name__)
 
 
+# Navy faction ammo prefixes (for S/M/L ammo)
+NAVY_PREFIXES = (
+    'Imperial Navy',
+    'Republic Fleet', 
+    'Caldari Navy',
+    'Federation Navy'
+)
+
+# Capital (XL) "navy-tier" faction ammo prefixes
+# There is no empire Navy XL ammo, so pirate faction serves as the "navy" tier for capitals
+CAPITAL_NAVY_PREFIXES = (
+    'Sansha',
+    'Arch Angel',
+    'Shadow'
+)
+
+
+def filter_charges_by_quality(charges, quality_tier):
+    """
+    Filter charges based on quality tier selection.
+    
+    Args:
+        charges: List of charge items
+        quality_tier: 't1', 'navy', or 'all'
+    
+    Returns:
+        Filtered list of charges
+        
+    Tiers are cumulative:
+        - 't1': Tech I (metaGroup 1) + Tech II (metaGroup 2)
+        - 'navy': t1 + Navy faction ammo (Imperial Navy, Republic Fleet, Caldari Navy, Federation Navy)
+                  For XL (capital) ammo: includes pirate faction (Sansha, Arch Angel, Shadow)
+        - 'all': Everything including high-tier faction (Blood, Dark Blood, True Sansha, etc.)
+    
+    Tech II ammo is always included as it's a distinct ammo type, not a "better" variant.
+    """
+    if quality_tier == 'all':
+        return charges
+    
+    filtered = []
+    for charge in charges:
+        mg = charge.metaGroup
+        mg_id = mg.ID if mg else None
+        
+        # Tech I (metaGroup 1) - always included
+        if mg_id == 1:
+            filtered.append(charge)
+            continue
+        
+        # Tech II (metaGroup 2) - always included (distinct ammo type like Conflagration, Void, etc.)
+        if mg_id == 2:
+            filtered.append(charge)
+            continue
+        
+        # For 'navy' tier, include Navy faction ammo
+        if quality_tier == 'navy' and mg_id == 4:  # Faction
+            # Check if it's XL (capital) ammo by name suffix
+            is_capital = charge.name.endswith(' XL')
+            
+            if is_capital:
+                # For capital ammo, use pirate faction prefixes as "navy" tier
+                if any(charge.name.startswith(prefix) for prefix in CAPITAL_NAVY_PREFIXES):
+                    filtered.append(charge)
+            else:
+                # For subcap ammo, use empire Navy prefixes
+                if any(charge.name.startswith(prefix) for prefix in NAVY_PREFIXES):
+                    filtered.append(charge)
+    
+    return filtered
+
+
 # Turret damage multiplier calculation (from fitDamageStats)
 # Accounts for wrecking shots and hit quality distribution
 @lru_cache(maxsize=100)
@@ -638,9 +709,12 @@ class XDistanceMixin(SmoothPointGetter):
     _extraDepth = 1
 
     def _getCommonData(self, miscParams, src, tgt):
+        # Get ammo quality tier from graph (set by canvasPanel before drawing)
+        quality_tier = getattr(self.graph, '_ammoQuality', 'all')
+        
         # Cache on the GRAPH object (persists across getter instances)
-        # because a new getter instance is created for each getPoint() call
-        cache_key = id(src.item)
+        # Include quality tier in cache key so different settings get different caches
+        cache_key = (id(src.item), quality_tier)
         
         # Initialize cache on graph if needed
         if not hasattr(self.graph, '_ammo_turret_cache'):
@@ -652,8 +726,9 @@ class XDistanceMixin(SmoothPointGetter):
             return {'turret_cache': self.graph._ammo_turret_cache[cache_key]}
         
         # Run analysis once per fit (for logging purposes only)
-        if cache_key not in self.graph._ammo_analysis_done and hasattr(self, '_runFullAnalysis'):
-            self.graph._ammo_analysis_done.add(cache_key)
+        analysis_key = id(src.item)
+        if analysis_key not in self.graph._ammo_analysis_done and hasattr(self, '_runFullAnalysis'):
+            self.graph._ammo_analysis_done.add(analysis_key)
             self._runFullAnalysis(src)
         
         # Build turret cache with pre-computed transitions
@@ -672,7 +747,10 @@ class XDistanceMixin(SmoothPointGetter):
                 if cycle_params is None:
                     continue
                 cycle_time_ms = cycle_params.averageTime
-                charges = list(mod.getValidCharges())
+                
+                # Get all valid charges and filter by quality tier
+                all_charges = list(mod.getValidCharges())
+                charges = filter_charges_by_quality(all_charges, quality_tier)
                 if not charges:
                     continue
                 

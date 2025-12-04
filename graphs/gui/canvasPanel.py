@@ -117,6 +117,11 @@ class GraphCanvasPanel(wx.Panel):
 
         mainInput, miscInputs = self.graphFrame.ctrlPanel.getValues()
         view = self.graphFrame.getView()
+        
+        # Set ammo quality on view for segmented graphs
+        if hasattr(view, 'hasSegments') and view.hasSegments:
+            view._ammoQuality = self.graphFrame.ctrlPanel.ammoQuality
+        
         sources = self.graphFrame.ctrlPanel.sources
         if view.hasTargets:
             iterList = tuple(itertools.product(sources, self.graphFrame.ctrlPanel.targets))

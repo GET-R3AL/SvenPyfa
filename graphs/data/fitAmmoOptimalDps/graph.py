@@ -21,12 +21,15 @@ import re
 import math
 from logbook import Logger
 
+from eos.const import FittingHardpoint
 from eos.saveddata.fit import Fit
 from graphs.data.base import FitGraph, XDef, YDef, Input
 from graphs.data.fitAmmoOptimalDps.getter import (
     Distance2OptimalAmmoDpsGetter,
     Distance2OptimalAmmoVolleyGetter,
-    get_ammo_name_at_distance_fast)
+    get_ammo_name_at_distance_fast,
+    get_turret_base_stats,
+    get_charge_stats)
 from graphs.data.fitDamageStats.cache import ProjectedDataCache
 from service.const import GraphCacheCleanupReason
 from service.settings import GraphSettings
@@ -38,7 +41,7 @@ pyfalog = Logger(__name__)
 # Colors are assigned based on ammo base name (without size suffix)
 AMMO_COLORS = {
     # Hybrid - Short Range
-    "Null": (0.1, 0.2, 0.5),
+    "Null": (0.7, 0.7, 0.65),
     "Void": (0.5, 0.1, 0.2),
     # Hybrid - Long Range
     "Spike": (0.761, 1, 0.169),
@@ -182,6 +185,59 @@ class FitAmmoOptimalDpsGraph(FitGraph):
     def getAmmoColor(self, ammoName):
         """Get RGB color tuple for an ammo type."""
         return get_ammo_color(ammoName)
+
+    def getDefaultInputRange(self, inputDef, sources):
+        """
+        Calculate dynamic default range based on the turrets' max effective range.
+        
+        Returns (min, max) tuple in the input's units (km for distance).
+        The max is the longest range ammo's optimal+falloff*2 + 5%, capped at 300km.
+        """
+        if inputDef.handle != 'distance' or not sources:
+            return inputDef.defaultRange
+        
+        max_range_m = 0
+        
+        for src in sources:
+            fit = src.item
+            if fit is None:
+                continue
+            
+            # Check all turrets and their compatible charges
+            for mod in fit.activeModulesIter():
+                if mod.hardpoint != FittingHardpoint.TURRET:
+                    continue
+                if mod.getModifiedItemAttr('miningAmount'):
+                    continue
+                
+                # Get turret base stats
+                turret_base = get_turret_base_stats(mod)
+                
+                # Check all compatible charges for this turret
+                for charge in mod.getValidCharges():
+                    charge_stats = get_charge_stats(charge)
+                    
+                    # Calculate effective optimal + 2*falloff (where DPS drops to ~6%)
+                    effective_optimal = turret_base['optimal'] * charge_stats['rangeMultiplier']
+                    effective_falloff = turret_base['falloff'] * charge_stats['falloffMultiplier']
+                    effective_max = effective_optimal + effective_falloff * 2
+                    
+                    if effective_max > max_range_m:
+                        max_range_m = effective_max
+        
+        if max_range_m <= 0:
+            return inputDef.defaultRange
+        
+        # Add 5% buffer and convert to km
+        max_range_km = (max_range_m * 1.05) / 1000
+        
+        # Cap at 300km (EVE's max lock range)
+        max_range_km = min(max_range_km, 300)
+        
+        # Round to nice number
+        max_range_km = int(max_range_km + 0.5)
+        
+        return (0, max_range_km)
 
     def _clearInternalCache(self, reason, extraData):
         if reason in (GraphCacheCleanupReason.fitChanged, GraphCacheCleanupReason.fitRemoved):
