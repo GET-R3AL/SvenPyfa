@@ -35,6 +35,7 @@ Optimizations:
 7. Group projectile ammo by damage band to reduce redundant calculations
 """
 
+import math
 import re
 from bisect import bisect_right
 from functools import lru_cache
@@ -245,6 +246,55 @@ def calcTurretDamageMult(chanceToHit):
     return totalMult
 
 
+def calcAngularSpeed(atkSpeed, atkAngle, atkRadius, distance, tgtSpeed, tgtAngle, tgtRadius):
+    """
+    Calculate angular speed based on mobility parameters of two ships.
+    
+    Args:
+        atkSpeed: Attacker's absolute speed (m/s)
+        atkAngle: Attacker's movement angle in degrees (0 = towards target)
+        atkRadius: Attacker ship's radius
+        distance: Surface-to-surface distance between ships
+        tgtSpeed: Target's absolute speed (m/s)  
+        tgtAngle: Target's movement angle in degrees (0 = towards attacker)
+        tgtRadius: Target ship's radius
+    
+    Returns:
+        Angular speed in radians/second
+    """
+    if distance is None:
+        return 0
+    atkAngleRad = atkAngle * math.pi / 180
+    tgtAngleRad = tgtAngle * math.pi / 180
+    ctcDistance = atkRadius + distance + tgtRadius  # center-to-center
+    # Target is to the right of the attacker, so transversal is projection onto Y axis
+    transSpeed = abs(atkSpeed * math.sin(atkAngleRad) - tgtSpeed * math.sin(tgtAngleRad))
+    if ctcDistance == 0:
+        return 0 if transSpeed == 0 else math.inf
+    else:
+        return transSpeed / ctcDistance
+
+
+def calcTrackingFactor(atkTracking, atkOptimalSigRadius, angularSpeed, tgtSigRadius):
+    """
+    Calculate tracking chance to hit component.
+    
+    Formula: 0.5 ^ (((angularSpeed * optimalSigRadius) / (tracking * targetSig)) ^ 2)
+    
+    Args:
+        atkTracking: Turret's tracking speed (rad/s)
+        atkOptimalSigRadius: Turret's optimal signature radius
+        angularSpeed: Angular speed between attacker and target (rad/s)
+        tgtSigRadius: Target's signature radius
+    
+    Returns:
+        Tracking factor (0-1), where 1 = perfect tracking
+    """
+    if atkTracking == 0 or tgtSigRadius == 0:
+        return 0
+    return 0.5 ** (((angularSpeed * atkOptimalSigRadius) / (atkTracking * tgtSigRadius)) ** 2)
+
+
 def get_turret_base_stats(module):
     """
     Get turret stats with ship/skill bonuses but WITHOUT charge modifiers.
@@ -252,12 +302,13 @@ def get_turret_base_stats(module):
     If a charge is loaded, it affects maxRange and falloff via multipliers.
     We need to undo those effects to get the true base turret stats.
     
-    Returns dict with: optimal, falloff, tracking, damageMultiplier
+    Returns dict with: optimal, falloff, tracking, optimalSigRadius, damageMultiplier
     """
     # Get the modified values (includes charge effects if charge is loaded)
     optimal = module.getModifiedItemAttr('maxRange') or 0
     falloff = module.getModifiedItemAttr('falloff') or 0
     tracking = module.getModifiedItemAttr('trackingSpeed') or 0
+    optimal_sig_radius = module.getModifiedItemAttr('optimalSigRadius') or 0
     damage_mult = module.getModifiedItemAttr('damageMultiplier') or 1
     
     # If a charge is loaded, undo its range/falloff multiplier effects
@@ -275,6 +326,7 @@ def get_turret_base_stats(module):
         'optimal': optimal,
         'falloff': falloff,
         'tracking': tracking,
+        'optimalSigRadius': optimal_sig_radius,
         'damageMultiplier': damage_mult
     }
 
@@ -530,16 +582,27 @@ def calculate_transition_points(charge_data, max_distance=300000, resolution=100
     return transitions
 
 
-def get_dps_at_distance_fast(transitions, charge_data, distance):
+def get_dps_at_distance_fast(transitions, charge_data, distance, tracking_params=None):
     """
     Fast O(log n) lookup of DPS at a specific distance using pre-computed transitions.
     
-    Uses full turret damage formula (with wrecking shots) assuming perfect tracking.
+    Uses full turret damage formula (with wrecking shots).
+    Optionally applies tracking factor if tracking_params is provided.
     
     Args:
         transitions: List of (distance, charge_index, charge_name, dps) tuples
         charge_data: Pre-computed charge data (for recalculating DPS at exact distance)
         distance: Distance in meters
+        tracking_params: Optional dict with tracking parameters:
+            - atkSpeed: Attacker absolute speed (m/s)
+            - atkAngle: Attacker movement angle (degrees)
+            - atkRadius: Attacker ship radius
+            - tgtSpeed: Target absolute speed (m/s)
+            - tgtAngle: Target movement angle (degrees)
+            - tgtRadius: Target ship radius
+            - tgtSigRadius: Target signature radius
+            - turretTracking: Turret tracking speed
+            - turretOptimalSigRadius: Turret optimal signature radius
     
     Returns: (dps, charge_name)
     """
@@ -559,21 +622,42 @@ def get_dps_at_distance_fast(transitions, charge_data, distance):
     
     # Calculate exact DPS at this distance using that charge
     cd = charge_data[charge_idx]
+    
+    # Calculate range factor
     if distance <= cd['effective_optimal']:
-        # Within optimal: CTH = 1.0
-        turret_mult = calcTurretDamageMult(1.0)
-        dps = cd['raw_dps'] * turret_mult
+        range_factor = 1.0
     else:
-        # With perfect tracking: chanceToHit = rangeFactor
-        # restrictedRange=False: turrets can fire at any range (damage just falls off)
         range_factor = calculateRangeFactor(cd['effective_optimal'], cd['effective_falloff'], distance, restrictedRange=False)
-        turret_mult = calcTurretDamageMult(range_factor)
-        dps = cd['raw_dps'] * turret_mult
+    
+    # Calculate tracking factor if params provided
+    if tracking_params:
+        angular_speed = calcAngularSpeed(
+            tracking_params['atkSpeed'],
+            tracking_params['atkAngle'],
+            tracking_params['atkRadius'],
+            distance,
+            tracking_params['tgtSpeed'],
+            tracking_params['tgtAngle'],
+            tracking_params['tgtRadius']
+        )
+        tracking_factor = calcTrackingFactor(
+            tracking_params['turretTracking'],
+            tracking_params['turretOptimalSigRadius'],
+            angular_speed,
+            tracking_params['tgtSigRadius']
+        )
+    else:
+        tracking_factor = 1.0  # Perfect tracking
+    
+    # chanceToHit = rangeFactor * trackingFactor
+    cth = range_factor * tracking_factor
+    turret_mult = calcTurretDamageMult(cth)
+    dps = cd['raw_dps'] * turret_mult
     
     return dps, cd['name']
 
 
-def get_volley_at_distance_fast(transitions, charge_data, distance):
+def get_volley_at_distance_fast(transitions, charge_data, distance, tracking_params=None):
     """
     Fast O(log n) lookup of volley at a specific distance using pre-computed transitions.
     
@@ -583,6 +667,7 @@ def get_volley_at_distance_fast(transitions, charge_data, distance):
         transitions: List of (distance, charge_index, charge_name, dps) tuples
         charge_data: Pre-computed charge data (for recalculating at exact distance)
         distance: Distance in meters
+        tracking_params: Optional dict with tracking parameters (see get_dps_at_distance_fast)
     
     Returns: (volley, charge_name)
     """
@@ -601,16 +686,37 @@ def get_volley_at_distance_fast(transitions, charge_data, distance):
     
     # Calculate exact volley at this distance using that charge
     cd = charge_data[charge_idx]
+    
+    # Calculate range factor
     if distance <= cd['effective_optimal']:
-        # Within optimal: CTH = 1.0
-        turret_mult = calcTurretDamageMult(1.0)
-        volley = cd['raw_volley'] * turret_mult
+        range_factor = 1.0
     else:
-        # With perfect tracking: chanceToHit = rangeFactor
-        # restrictedRange=False: turrets can fire at any range (damage just falls off)
         range_factor = calculateRangeFactor(cd['effective_optimal'], cd['effective_falloff'], distance, restrictedRange=False)
-        turret_mult = calcTurretDamageMult(range_factor)
-        volley = cd['raw_volley'] * turret_mult
+    
+    # Calculate tracking factor if params provided
+    if tracking_params:
+        angular_speed = calcAngularSpeed(
+            tracking_params['atkSpeed'],
+            tracking_params['atkAngle'],
+            tracking_params['atkRadius'],
+            distance,
+            tracking_params['tgtSpeed'],
+            tracking_params['tgtAngle'],
+            tracking_params['tgtRadius']
+        )
+        tracking_factor = calcTrackingFactor(
+            tracking_params['turretTracking'],
+            tracking_params['turretOptimalSigRadius'],
+            angular_speed,
+            tracking_params['tgtSigRadius']
+        )
+    else:
+        tracking_factor = 1.0  # Perfect tracking
+    
+    # chanceToHit = rangeFactor * trackingFactor
+    cth = range_factor * tracking_factor
+    turret_mult = calcTurretDamageMult(cth)
+    volley = cd['raw_volley'] * turret_mult
     
     return volley, cd['name']
 
@@ -644,10 +750,16 @@ def get_ammo_name_at_distance_fast(transitions, distance):
 class YOptimalAmmoDpsMixin:
     """Calculate DPS using optimal ammo selection for turrets."""
 
-    def _getOptimalDpsAtDistance(self, src, distance, turret_cache=None):
+    def _getOptimalDpsAtDistance(self, src, distance, turret_cache=None, tracking_base=None):
         """
         Get total DPS with optimal ammo selection at a specific distance.
         Uses pre-computed transition points for O(log n) lookup.
+        
+        Args:
+            src: Source fit wrapper
+            distance: Distance in meters
+            turret_cache: Pre-computed turret data (charge_data, transitions, tracking stats)
+            tracking_base: Base tracking params dict (without turret-specific stats), or None for perfect tracking
         """
         total_dps = 0
         
@@ -658,7 +770,14 @@ class YOptimalAmmoDpsMixin:
                 charge_data = group_info['charge_data']
                 count = group_info['count']
                 
-                dps, _ = get_dps_at_distance_fast(transitions, charge_data, distance)
+                # Build full tracking params by adding turret-specific stats
+                tracking_params = None
+                if tracking_base is not None:
+                    tracking_params = tracking_base.copy()
+                    tracking_params['turretTracking'] = group_info.get('tracking', 0)
+                    tracking_params['turretOptimalSigRadius'] = group_info.get('optimalSigRadius', 0)
+                
+                dps, _ = get_dps_at_distance_fast(transitions, charge_data, distance, tracking_params)
                 total_dps += dps * count
             return total_dps
         
@@ -698,10 +817,16 @@ class YOptimalAmmoDpsMixin:
         
         return total_dps
 
-    def _getOptimalDpsWithAmmoAtDistance(self, src, distance, turret_cache=None):
+    def _getOptimalDpsWithAmmoAtDistance(self, src, distance, turret_cache=None, tracking_base=None):
         """
         Get total DPS and optimal ammo name at a specific distance.
         Returns (total_dps, ammo_name) tuple.
+        
+        Args:
+            src: Source fit wrapper
+            distance: Distance in meters
+            turret_cache: Pre-computed turret data
+            tracking_base: Base tracking params dict, or None for perfect tracking
         """
         total_dps = 0
         ammo_name = None
@@ -713,7 +838,14 @@ class YOptimalAmmoDpsMixin:
                 charge_data = group_info['charge_data']
                 count = group_info['count']
                 
-                dps, name = get_dps_at_distance_fast(transitions, charge_data, distance)
+                # Build full tracking params by adding turret-specific stats
+                tracking_params = None
+                if tracking_base is not None:
+                    tracking_params = tracking_base.copy()
+                    tracking_params['turretTracking'] = group_info.get('tracking', 0)
+                    tracking_params['turretOptimalSigRadius'] = group_info.get('optimalSigRadius', 0)
+                
+                dps, name = get_dps_at_distance_fast(transitions, charge_data, distance, tracking_params)
                 total_dps += dps * count
                 # Use the first turret group's ammo name (most common case is single turret type)
                 if ammo_name is None:
@@ -794,10 +926,16 @@ class YOptimalAmmoDpsMixin:
 class YOptimalAmmoVolleyMixin:
     """Calculate volley using optimal ammo selection."""
 
-    def _getOptimalVolleyAtDistance(self, src, distance, turret_cache=None):
+    def _getOptimalVolleyAtDistance(self, src, distance, turret_cache=None, tracking_base=None):
         """
         Get total volley with optimal ammo selection at a specific distance.
         Uses pre-computed transition points for O(log n) lookup.
+        
+        Args:
+            src: Source fit wrapper
+            distance: Distance in meters
+            turret_cache: Pre-computed turret data
+            tracking_base: Base tracking params dict, or None for perfect tracking
         """
         total_volley = 0
         
@@ -808,16 +946,29 @@ class YOptimalAmmoVolleyMixin:
                 charge_data = group_info['charge_data']
                 count = group_info['count']
                 
-                volley, _ = get_volley_at_distance_fast(transitions, charge_data, distance)
+                # Build full tracking params by adding turret-specific stats
+                tracking_params = None
+                if tracking_base is not None:
+                    tracking_params = tracking_base.copy()
+                    tracking_params['turretTracking'] = group_info.get('tracking', 0)
+                    tracking_params['turretOptimalSigRadius'] = group_info.get('optimalSigRadius', 0)
+                
+                volley, _ = get_volley_at_distance_fast(transitions, charge_data, distance, tracking_params)
                 total_volley += volley * count
             return total_volley
         
         return total_volley
 
-    def _getOptimalVolleyWithAmmoAtDistance(self, src, distance, turret_cache=None):
+    def _getOptimalVolleyWithAmmoAtDistance(self, src, distance, turret_cache=None, tracking_base=None):
         """
         Get total volley and optimal ammo name at a specific distance.
         Returns (total_volley, ammo_name) tuple.
+        
+        Args:
+            src: Source fit wrapper
+            distance: Distance in meters
+            turret_cache: Pre-computed turret data
+            tracking_base: Base tracking params dict, or None for perfect tracking
         """
         total_volley = 0
         ammo_name = None
@@ -829,7 +980,14 @@ class YOptimalAmmoVolleyMixin:
                 charge_data = group_info['charge_data']
                 count = group_info['count']
                 
-                volley, name = get_volley_at_distance_fast(transitions, charge_data, distance)
+                # Build full tracking params by adding turret-specific stats
+                tracking_params = None
+                if tracking_base is not None:
+                    tracking_params = tracking_base.copy()
+                    tracking_params['turretTracking'] = group_info.get('tracking', 0)
+                    tracking_params['turretOptimalSigRadius'] = group_info.get('optimalSigRadius', 0)
+                
+                volley, name = get_volley_at_distance_fast(transitions, charge_data, distance, tracking_params)
                 total_volley += volley * count
                 # Use the first turret group's ammo name (most common case is single turret type)
                 if ammo_name is None:
@@ -867,7 +1025,7 @@ class XDistanceMixin(SmoothPointGetter):
         
         # Return cached data if available
         if cache_key in self.graph._ammo_turret_cache:
-            return {'turret_cache': self.graph._ammo_turret_cache[cache_key]}
+            return {'turret_cache': self.graph._ammo_turret_cache[cache_key], 'src_radius': src.getRadius()}
         
         # Run analysis once per fit (for logging purposes only)
         analysis_key = id(src.item)
@@ -914,7 +1072,10 @@ class XDistanceMixin(SmoothPointGetter):
                 turret_cache[key] = {
                     'charge_data': charge_data,
                     'transitions': transitions,
-                    'count': 1
+                    'count': 1,
+                    # Store turret tracking stats for later use
+                    'tracking': turret_base['tracking'],
+                    'optimalSigRadius': turret_base['optimalSigRadius']
                 }
             else:
                 turret_cache[key]['count'] += 1
@@ -922,17 +1083,60 @@ class XDistanceMixin(SmoothPointGetter):
         # Cache on graph for future calls
         self.graph._ammo_turret_cache[cache_key] = turret_cache
         
-        return {'turret_cache': turret_cache}
+        # Store source ship radius in commonData for tracking calculations
+        return {'turret_cache': turret_cache, 'src_radius': src.getRadius()}
+
+    def _buildTrackingParams(self, distance, miscParams, tgt, commonData):
+        """
+        Build tracking parameters dict if velocity vectors are specified.
+        
+        Returns None if no tracking should be applied (both speeds are 0),
+        otherwise returns a dict with all tracking calculation parameters.
+        """
+        # Get speeds (default to 0 if not specified)
+        atkSpeed = miscParams.get('atkSpeed', 0) or 0
+        tgtSpeed = miscParams.get('tgtSpeed', 0) or 0
+        
+        # Optimization: if both speeds are 0, no angular velocity, perfect tracking
+        if atkSpeed == 0 and tgtSpeed == 0:
+            return None
+        
+        # Get angles (default to 0)
+        atkAngle = miscParams.get('atkAngle', 0) or 0
+        tgtAngle = miscParams.get('tgtAngle', 0) or 0
+        
+        # Get target signature radius and ship radius
+        tgtSigRadius = miscParams.get('tgtSigRad')
+        if tgtSigRadius is None and tgt is not None:
+            tgtSigRadius = tgt.getSigRadius()
+        if tgtSigRadius is None or tgtSigRadius == 0:
+            return None  # Can't calculate tracking without target sig
+        
+        tgtRadius = tgt.getRadius() if tgt else 0
+        srcRadius = commonData.get('src_radius', 0)
+        
+        return {
+            'atkSpeed': atkSpeed,
+            'atkAngle': atkAngle,
+            'atkRadius': srcRadius,
+            'tgtSpeed': tgtSpeed,
+            'tgtAngle': tgtAngle,
+            'tgtRadius': tgtRadius,
+            'tgtSigRadius': tgtSigRadius
+        }
 
     def _calculatePoint(self, x, miscParams, src, tgt, commonData):
         """Calculate DPS/volley at distance x."""
         distance = x
         turret_cache = commonData.get('turret_cache')
         
+        # Build tracking params (None if no velocity, meaning perfect tracking)
+        tracking_base = self._buildTrackingParams(distance, miscParams, tgt, commonData)
+        
         if hasattr(self, '_getOptimalDpsAtDistance'):
-            return self._getOptimalDpsAtDistance(src, distance, turret_cache)
+            return self._getOptimalDpsAtDistance(src, distance, turret_cache, tracking_base)
         elif hasattr(self, '_getOptimalVolleyAtDistance'):
-            return self._getOptimalVolleyAtDistance(src, distance, turret_cache)
+            return self._getOptimalVolleyAtDistance(src, distance, turret_cache, tracking_base)
         else:
             return 0
 
@@ -941,16 +1145,19 @@ class XDistanceMixin(SmoothPointGetter):
         distance = x
         turret_cache = commonData.get('turret_cache')
         
+        # Build tracking params (None if no velocity, meaning perfect tracking)
+        tracking_base = self._buildTrackingParams(distance, miscParams, tgt, commonData)
+        
         if hasattr(self, '_getOptimalDpsWithAmmoAtDistance'):
-            dps, ammo_name = self._getOptimalDpsWithAmmoAtDistance(src, distance, turret_cache)
+            dps, ammo_name = self._getOptimalDpsWithAmmoAtDistance(src, distance, turret_cache, tracking_base)
             return dps, {'ammo': ammo_name}
         elif hasattr(self, '_getOptimalVolleyWithAmmoAtDistance'):
-            volley, ammo_name = self._getOptimalVolleyWithAmmoAtDistance(src, distance, turret_cache)
+            volley, ammo_name = self._getOptimalVolleyWithAmmoAtDistance(src, distance, turret_cache, tracking_base)
             return volley, {'ammo': ammo_name}
         elif hasattr(self, '_getOptimalDpsAtDistance'):
-            return self._getOptimalDpsAtDistance(src, distance, turret_cache), {}
+            return self._getOptimalDpsAtDistance(src, distance, turret_cache, tracking_base), {}
         elif hasattr(self, '_getOptimalVolleyAtDistance'):
-            return self._getOptimalVolleyAtDistance(src, distance, turret_cache), {}
+            return self._getOptimalVolleyAtDistance(src, distance, turret_cache, tracking_base), {}
         else:
             return 0, {}
 
@@ -978,10 +1185,14 @@ class Distance2OptimalAmmoDpsGetter(XDistanceMixin, YOptimalAmmoDpsMixin):
             ...
         ]
         """
+        tgt_name = tgt.name if tgt else 'None'
+        pyfalog.debug(f'getSegments: src={src.name}, tgt={tgt_name}, xRange={xRange}')
+        
         commonData = self._getCommonData(miscParams=miscParams, src=src, tgt=tgt)
         turret_cache = commonData.get('turret_cache', {})
         
         if not turret_cache:
+            pyfalog.debug(f'getSegments: no turret_cache for tgt={tgt_name}')
             return []
         
         # Collect all unique transitions across all turret groups
@@ -1005,10 +1216,15 @@ class Distance2OptimalAmmoDpsGetter(XDistanceMixin, YOptimalAmmoDpsMixin):
                 total_count += count
         
         if not all_transitions or not primary_charge_data:
+            pyfalog.debug(f'getSegments: no transitions for tgt={tgt_name}')
             return []
         
         # Filter out transitions with no ammo name (zero DPS transitions)
         valid_transitions = [t for t in all_transitions if t[2] is not None]
+        
+        pyfalog.debug(f'getSegments: tgt={tgt_name}, all_transitions={len(all_transitions)}, valid_transitions={len(valid_transitions)}')
+        for i, t in enumerate(valid_transitions[:5]):  # Log first 5
+            pyfalog.debug(f'  Transition {i}: dist={t[0]}, ammo={t[2]}')
         
         if not valid_transitions:
             return []
@@ -1025,6 +1241,7 @@ class Distance2OptimalAmmoDpsGetter(XDistanceMixin, YOptimalAmmoDpsMixin):
         # Generate segments based on transitions
         segments = []
         min_x, max_x = xRange
+        tgt_name = tgt.name if tgt else 'None'
         
         for i, transition in enumerate(valid_transitions):
             trans_dist = transition[0]  # Distance where this ammo becomes optimal
@@ -1048,6 +1265,7 @@ class Distance2OptimalAmmoDpsGetter(XDistanceMixin, YOptimalAmmoDpsMixin):
             
             # Skip if segment is outside range or empty
             if seg_start >= max_x or seg_end <= min_x or seg_start >= seg_end:
+                pyfalog.debug(f'getSegments DPS: SKIPPING segment {i} for tgt={tgt_name}, ammo={ammo_name}, seg_start={seg_start}, seg_end={seg_end}, min_x={min_x}, max_x={max_x}')
                 continue
             
             # Generate points for this segment
@@ -1062,6 +1280,8 @@ class Distance2OptimalAmmoDpsGetter(XDistanceMixin, YOptimalAmmoDpsMixin):
                 xs.append(x)
                 ys.append(y)
             
+            pyfalog.debug(f'getSegments DPS: ADDED segment {i} for tgt={tgt_name}, ammo={ammo_name}, xs=[{xs[0]:.0f}..{xs[-1]:.0f}], ys=[{ys[0]:.1f}..{ys[-1]:.1f}]')
+            
             segments.append({
                 'xs': xs,
                 'ys': ys,
@@ -1069,6 +1289,7 @@ class Distance2OptimalAmmoDpsGetter(XDistanceMixin, YOptimalAmmoDpsMixin):
                 'ammoIndex': ammo_to_index[ammo_name]
             })
         
+        pyfalog.debug(f'getSegments DPS: returning {len(segments)} segments for tgt={tgt_name}')
         return segments
 
 

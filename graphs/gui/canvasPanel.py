@@ -166,6 +166,13 @@ class GraphCanvasPanel(wx.Panel):
                         ySpec=chosenY,
                         src=source,
                         tgt=target)
+                    # Debug: log segment info
+                    if segments:
+                        pyfalog.debug('Segments for {} vs {}: {} segments'.format(
+                            source.name, target.name if target else 'None', len(segments)))
+                        for i, seg in enumerate(segments):
+                            pyfalog.debug('  Segment {}: ammo={}, x_range=[{:.0f}, {:.0f}], y_range=[{:.0f}, {:.0f}]'.format(
+                                i, seg.get('ammo'), min(seg['xs']), max(seg['xs']), min(seg['ys']), max(seg['ys'])))
                     if segments:
                         segmentsPlotted = True
                         # Base color from source/target selection
@@ -291,8 +298,8 @@ class GraphCanvasPanel(wx.Panel):
         if mainInput and mainInput.value:
             allXs.add(min(mainInput.value))
             allXs.add(max(mainInput.value))
-        canvasMinY, canvasMaxY = self._getLimits(allYs, minExtra=0.05, maxExtra=0.1)
-        canvasMinX, canvasMaxX = self._getLimits(allXs, minExtra=0.02, maxExtra=0.02)
+        canvasMinY, canvasMaxY = self._getLimits(allYs, minExtra=0.05, maxExtra=0.1, roundNice=True)
+        canvasMinX, canvasMaxX = self._getLimits(allXs, minExtra=0.02, maxExtra=0.02, roundNice=False)
         self.subplot.set_ylim(bottom=canvasMinY, top=canvasMaxY)
         self.subplot.set_xlim(left=canvasMinX, right=canvasMaxX)
         # Process X marks line
@@ -487,7 +494,43 @@ class GraphCanvasPanel(wx.Panel):
         self.draw()
 
     @staticmethod
-    def _getLimits(vals, minExtra=0, maxExtra=0):
+    def _roundToNice(val, direction='up'):
+        """
+        Round a value to a 'nice' number (1, 2, 5, or 10 multiplied by power of 10).
+        This helps stabilize Y-axis limits and reduce flickering.
+        
+        Args:
+            val: Value to round
+            direction: 'up' to round up (for max), 'down' to round down (for min)
+        """
+        if val == 0:
+            return 0
+        
+        sign = 1 if val >= 0 else -1
+        val = abs(val)
+        
+        # Find the order of magnitude
+        magnitude = 10 ** math.floor(math.log10(val))
+        normalized = val / magnitude
+        
+        # Nice numbers: 1, 2, 5, 10
+        nice_numbers = [1, 2, 5, 10]
+        
+        if direction == 'up':
+            # Round up to next nice number
+            for nice in nice_numbers:
+                if normalized <= nice:
+                    return sign * nice * magnitude
+            return sign * 10 * magnitude
+        else:
+            # Round down to previous nice number
+            for nice in reversed(nice_numbers):
+                if normalized >= nice:
+                    return sign * nice * magnitude
+            return sign * magnitude
+    
+    @staticmethod
+    def _getLimits(vals, minExtra=0, maxExtra=0, roundNice=False):
         minVal = min(vals, default=0)
         maxVal = max(vals, default=0)
         # Extend range a little for some visual space
@@ -502,6 +545,9 @@ class GraphCanvasPanel(wx.Panel):
         if minVal == maxVal:
             minVal -= 5
             maxVal += 5
+        # Round to nice values to reduce Y-axis flickering (only for Y-axis)
+        if roundNice and maxVal > 0:
+            maxVal = GraphCanvasPanel._roundToNice(maxVal * 1.02, 'up')  # Add 2% buffer before rounding
         return minVal, maxVal
 
     @staticmethod

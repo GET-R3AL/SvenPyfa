@@ -23,7 +23,7 @@ from logbook import Logger
 
 from eos.const import FittingHardpoint
 from eos.saveddata.fit import Fit
-from graphs.data.base import FitGraph, XDef, YDef, Input
+from graphs.data.base import FitGraph, XDef, YDef, Input, VectorDef
 from graphs.data.fitAmmoOptimalDps.getter import (
     Distance2OptimalAmmoDpsGetter,
     Distance2OptimalAmmoVolleyGetter,
@@ -178,9 +178,15 @@ class FitAmmoOptimalDpsGraph(FitGraph):
         XDef(handle='distance', unit='km', label='Distance', mainInput=('distance', 'km'))]
     inputs = [
         Input(handle='distance', unit='km', label='Distance', iconID=None, defaultValue=None, defaultRange=(0, 100), mainTooltip='Distance to target')]
+    
+    # Vector controls for attacker and target velocity/angle (same as DPS graph)
+    srcVectorDef = VectorDef(lengthHandle='atkSpeed', lengthUnit='%', angleHandle='atkAngle', angleUnit='degrees', label='Attacker')
+    tgtVectorDef = VectorDef(lengthHandle='tgtSpeed', lengthUnit='%', angleHandle='tgtAngle', angleUnit='degrees', label='Target')
+    
     sources = {Fit}
     _limitToOutgoingProjected = True
     hasTargets = True
+    srcExtraCols = ('Speed', 'Radius')
 
     @property
     def yDefs(self):
@@ -189,13 +195,18 @@ class FitAmmoOptimalDpsGraph(FitGraph):
             YDef(handle='dps', unit=None, label='DPS' if ignoreResists else 'Effective DPS'),
             YDef(handle='volley', unit=None, label='Volley' if ignoreResists else 'Effective Volley')]
 
-    # Normalizers convert input values to internal units (km to meters)
+    # Normalizers convert input values to internal units
     _normalizers = {
-        ('distance', 'km'): lambda v, src, tgt: None if v is None else v * 1000}
+        ('distance', 'km'): lambda v, src, tgt: None if v is None else v * 1000,
+        ('atkSpeed', '%'): lambda v, src, tgt: v / 100 * src.getMaxVelocity(),
+        ('tgtSpeed', '%'): lambda v, src, tgt: v / 100 * tgt.getMaxVelocity(),
+        ('tgtSigRad', '%'): lambda v, src, tgt: v / 100 * tgt.getSigRadius()}
     
-    # Denormalizers convert internal units back to display units (meters to km)
+    # Denormalizers convert internal units back to display units
     _denormalizers = {
-        ('distance', 'km'): lambda v, src, tgt: None if v is None else v / 1000}
+        ('distance', 'km'): lambda v, src, tgt: None if v is None else v / 1000,
+        ('tgtSpeed', '%'): lambda v, src, tgt: v * 100 / tgt.getMaxVelocity(),
+        ('tgtSigRad', '%'): lambda v, src, tgt: v * 100 / tgt.getSigRadius()}
     
     # No limiters - allow user to specify any range they want
     _limiters = {}

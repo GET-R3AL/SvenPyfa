@@ -84,26 +84,7 @@ class GraphControlPanel(wx.Panel):
         self.ammoStyleSizer.Add(self.ammoStyleSelection, 1, wx.EXPAND, 0)
         commonOptsSizer.Add(self.ammoStyleSizer, 0, wx.EXPAND | wx.TOP, 5)
 
-        # Row 4: Show legend checkbox
-        self.showLegendCb = wx.CheckBox(self, wx.ID_ANY, _t('Show legend'), wx.DefaultPosition, wx.DefaultSize, 0)
-        self.showLegendCb.SetValue(True)
-        self.showLegendCb.Bind(wx.EVT_CHECKBOX, self.OnShowLegendChange)
-        commonOptsSizer.Add(self.showLegendCb, 0, wx.TOP, 5)
-
-        optsSizer.Add(commonOptsSizer, 0, wx.EXPAND | wx.RIGHT, 10)
-
-        # Right column: inputs and ammo quality
-        graphOptsSizer = wx.BoxSizer(wx.HORIZONTAL)
-        
-        # Container for inputs (normal graphs) and quality dropdown (segment graphs)
-        self.rightColumnSizer = wx.BoxSizer(wx.VERTICAL)
-        
-        # Input fields sizer (shown for normal graphs) - at the top
-        self.inputsSizer = wx.BoxSizer(wx.VERTICAL)
-        self.rightColumnSizer.Add(self.inputsSizer, 0, wx.EXPAND, 0)
-        
-        # Quality dropdown sizer (shown for segment graphs)
-        # This should align with Color dropdown row (row 2 when X axis is hidden)
+        # Row 4: Ammo Meta dropdown (moved from right column)
         self.ammoQualitySizer = wx.BoxSizer(wx.HORIZONTAL)
         self.ammoQualityText = wx.StaticText(self, wx.ID_ANY, _t('Ammo Meta:'))
         self.ammoQualitySizer.Add(self.ammoQualityText, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
@@ -113,8 +94,26 @@ class GraphControlPanel(wx.Panel):
         self.ammoQualitySelection.Append(_t('All'), 'all')
         self.ammoQualitySelection.SetSelection(1)  # Default to Navy
         self.ammoQualitySelection.Bind(wx.EVT_CHOICE, self.OnAmmoQualityChange)
-        self.ammoQualitySizer.Add(self.ammoQualitySelection, 0, wx.ALIGN_CENTER_VERTICAL, 0)
-        self.rightColumnSizer.Add(self.ammoQualitySizer, 0, 0, 0)
+        self.ammoQualitySizer.Add(self.ammoQualitySelection, 1, wx.EXPAND, 0)
+        commonOptsSizer.Add(self.ammoQualitySizer, 0, wx.EXPAND | wx.TOP, 5)
+
+        # Row 5: Show legend checkbox
+        self.showLegendCb = wx.CheckBox(self, wx.ID_ANY, _t('Show legend'), wx.DefaultPosition, wx.DefaultSize, 0)
+        self.showLegendCb.SetValue(True)
+        self.showLegendCb.Bind(wx.EVT_CHECKBOX, self.OnShowLegendChange)
+        commonOptsSizer.Add(self.showLegendCb, 0, wx.TOP, 5)
+
+        optsSizer.Add(commonOptsSizer, 0, wx.EXPAND | wx.RIGHT, 10)
+
+        # Right column: inputs
+        graphOptsSizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        # Container for inputs (normal graphs)
+        self.rightColumnSizer = wx.BoxSizer(wx.VERTICAL)
+        
+        # Input fields sizer (shown for normal graphs) - at the top
+        self.inputsSizer = wx.BoxSizer(wx.VERTICAL)
+        self.rightColumnSizer.Add(self.inputsSizer, 0, wx.EXPAND, 0)
         
         graphOptsSizer.Add(self.rightColumnSizer, 1, wx.EXPAND | wx.ALL, 0)
 
@@ -469,6 +468,16 @@ class GraphControlPanel(wx.Panel):
     def ammoStyle(self):
         """Returns ammo style: 'none', 'pattern', or 'color'"""
         return self.ammoStyleSelection.GetClientData(self.ammoStyleSelection.GetSelection())
+
+    def setAmmoStyle(self, style):
+        """Set ammo style programmatically: 'none', 'pattern', or 'color'"""
+        for i in range(self.ammoStyleSelection.GetCount()):
+            if self.ammoStyleSelection.GetClientData(i) == style:
+                self.ammoStyleSelection.SetSelection(i)
+                # Trigger the same updates as OnAmmoStyleChange
+                self.targetList.refreshDefaultColumns()
+                self.graphFrame.draw()
+                return
 
     @property
     def ammoQuality(self):

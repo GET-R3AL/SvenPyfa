@@ -23,6 +23,7 @@ import wx
 
 import gui.display
 import gui.globalEvents as GE
+from eos.const import FittingHardpoint
 from eos.saveddata.targetProfile import TargetProfile
 from graphs.style import BASE_COLORS, LIGHTNESSES, STYLES
 from graphs.wrapper import SourceWrapper, TargetWrapper
@@ -30,11 +31,56 @@ from gui.builtinViewColumns.graphColor import GraphColor
 from gui.builtinViewColumns.graphLightness import GraphLightness
 from gui.builtinViewColumns.graphLineStyle import GraphLineStyle
 from gui.contextMenu import ContextMenu
-from service.const import GraphCacheCleanupReason
+from service.const import GraphCacheCleanupReason, GraphLightness as GraphLightnessEnum, GraphLineStyle as GraphLineStyleEnum
 from service.fit import Fit
 from .stylePickers import ColorPickerPopup, LightnessPickerPopup, LineStylePickerPopup
 
 _t = wx.GetTranslation
+
+
+def getFitWeaponClass(fit):
+    """
+    Determine the weapon class of a fit based on its turret charges.
+    
+    Returns: 'energy', 'projectile', 'hybrid', 'exotic', 'vorton', or None if no turrets.
+    """
+    if fit is None:
+        return None
+    
+    for mod in fit.modules:
+        if mod.isEmpty or mod.item is None:
+            continue
+        if mod.hardpoint != FittingHardpoint.TURRET:
+            continue
+        # Skip mining turrets
+        if mod.getModifiedItemAttr('miningAmount'):
+            continue
+        
+        # Check valid charges to determine weapon type
+        charges = list(mod.getValidCharges())
+        if not charges:
+            continue
+        
+        # Check the first charge's group name
+        charge = charges[0]
+        if charge.group is None:
+            continue
+        
+        groupName = charge.group.name
+        
+        # Determine weapon class from charge group
+        if 'Frequency Crystal' in groupName:
+            return 'energy'
+        elif 'Projectile' in groupName:
+            return 'projectile'
+        elif 'Hybrid' in groupName:
+            return 'hybrid'
+        elif 'Exotic Plasma' in groupName:
+            return 'exotic'
+        elif 'Vorton' in groupName or 'Condenser' in groupName:
+            return 'vorton'
+    
+    return None
 
 class BaseWrapperList(gui.display.Display):
 
@@ -306,6 +352,101 @@ class SourceWrapperList(BaseWrapperList):
 
         colorID = getDefaultParams()
         self._wrappers.append(SourceWrapper(item=item, colorID=colorID))
+        
+        # Check if we should switch to Pattern mode (for Application Profile graph)
+        self._checkAutoSwitchAmmoStyle()
+
+    def _checkAutoSwitchAmmoStyle(self):
+        """
+        Auto-switch ammo style to Pattern when multiple fits with same weapon class are added.
+        
+        This helps differentiate between attackers when they use the same ammo types.
+        """
+        # Check if ctrlPanel is fully initialized (has ammoStyleSelection)
+        ctrlPanel = getattr(self.graphFrame, 'ctrlPanel', None)
+        if ctrlPanel is None:
+            return
+        if not hasattr(ctrlPanel, 'ammoStyleSelection'):
+            return
+        
+        # Check if this graph supports segments (Application Profile)
+        try:
+            view = self.graphFrame.getView()
+        except Exception:
+            return
+        
+        if not getattr(view, 'hasSegments', False):
+            return
+        
+        # Get current ammo style
+        currentStyle = ctrlPanel.ammoStyle
+        
+        # Only auto-switch if currently on 'color' mode
+        if currentStyle != 'color':
+            return
+        
+        # Check if we have 2+ fits with the same weapon class
+        weaponClasses = {}
+        for wrapper in self._wrappers:
+            if not wrapper.isFit:
+                continue
+            wc = getFitWeaponClass(wrapper.item)
+            if wc:
+                weaponClasses[wc] = weaponClasses.get(wc, 0) + 1
+        
+        # If any weapon class has 2+ fits, switch to pattern mode
+        for wc, count in weaponClasses.items():
+            if count >= 2:
+                ctrlPanel.setAmmoStyle('pattern')
+                return
+
+    def _checkAutoSwitchBackToColor(self):
+        """
+        Auto-switch ammo style back to Color when no more weapon class conflicts exist.
+        
+        Called after removing a fit to see if we can switch back to color mode.
+        """
+        # Check if ctrlPanel is fully initialized (has ammoStyleSelection)
+        ctrlPanel = getattr(self.graphFrame, 'ctrlPanel', None)
+        if ctrlPanel is None:
+            return
+        if not hasattr(ctrlPanel, 'ammoStyleSelection'):
+            return
+        
+        # Check if this graph supports segments (Application Profile)
+        try:
+            view = self.graphFrame.getView()
+        except Exception:
+            return
+        
+        if not getattr(view, 'hasSegments', False):
+            return
+        
+        # Get current ammo style
+        currentStyle = ctrlPanel.ammoStyle
+        
+        # Only auto-switch if currently on 'pattern' mode
+        if currentStyle != 'pattern':
+            return
+        
+        # Check if we still have 2+ fits with the same weapon class
+        weaponClasses = {}
+        for wrapper in self._wrappers:
+            if not wrapper.isFit:
+                continue
+            wc = getFitWeaponClass(wrapper.item)
+            if wc:
+                weaponClasses[wc] = weaponClasses.get(wc, 0) + 1
+        
+        # If no weapon class has 2+ fits anymore, switch back to color mode
+        hasConflict = any(count >= 2 for count in weaponClasses.values())
+        if not hasConflict:
+            ctrlPanel.setAmmoStyle('color')
+
+    def removeWrappers(self, wrappers):
+        """Override to check if we should switch back to color mode after removal."""
+        super().removeWrappers(wrappers)
+        self._checkAutoSwitchBackToColor()
 
     def spawnMenu(self, event):
         clickedPos = self.getRowByAbs(event.Position)
@@ -442,6 +583,29 @@ class TargetWrapperList(BaseWrapperList):
                 break
         
         self._wrappers.append(TargetWrapper(item=item, lightnessID=lightnessID, lineStyleID=lineStyleID))
+
+    def removeWrappers(self, wrappers):
+        """Override to reset remaining target to default style when only one remains."""
+        # Call parent implementation
+        wrappers = set(wrappers).intersection(self._wrappers)
+        if not wrappers:
+            return
+        for wrapper in wrappers:
+            self._wrappers.remove(wrapper)
+        
+        # If only one target remains, reset it to default styles
+        if len(self._wrappers) == 1:
+            remaining = self._wrappers[0]
+            remaining.lightnessID = GraphLightnessEnum.normal
+            remaining.lineStyleID = GraphLineStyleEnum.solid
+        
+        self.updateView()
+        for wrapper in wrappers:
+            if wrapper.isFit:
+                self.graphFrame.clearCache(reason=GraphCacheCleanupReason.fitRemoved, extraData=wrapper.item.ID)
+            elif wrapper.isProfile:
+                self.graphFrame.clearCache(reason=GraphCacheCleanupReason.profileRemoved, extraData=wrapper.item.ID)
+        self.graphFrame.draw()
 
     def spawnMenu(self, event):
         clickedPos = self.getRowByAbs(event.Position)
