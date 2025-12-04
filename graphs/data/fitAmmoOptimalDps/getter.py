@@ -748,10 +748,573 @@ def get_ammo_name_at_distance_fast(transitions, distance):
     return transitions[idx][2]
 
 
-class YOptimalAmmoDpsMixin:
-    """Calculate DPS using optimal ammo selection for turrets."""
+# =============================================================================
+# MISSILE FUNCTIONS
+# =============================================================================
 
-    def _getOptimalDpsAtDistance(self, src, distance, turret_cache=None, tracking_base=None):
+@lru_cache(maxsize=200)
+def calcMissileApplicationFactor(atkEr, atkEv, atkDrf, tgtSpeed, tgtSigRadius):
+    """
+    Calculate missile application factor.
+    
+    Formula: min(1, tgtSigRadius/eR, ((eV * tgtSigRadius) / (eR * tgtSpeed))^DRF)
+    
+    Args:
+        atkEr: Missile explosion radius (aoeCloudSize)
+        atkEv: Missile explosion velocity (aoeVelocity)
+        atkDrf: Missile damage reduction factor (aoeDamageReductionFactor)
+        tgtSpeed: Target speed
+        tgtSigRadius: Target signature radius
+    
+    Returns: Application factor (0-1)
+    """
+    factors = [1]
+    # "Slow" part - signature vs explosion radius
+    if atkEr > 0:
+        factors.append(tgtSigRadius / atkEr)
+    # "Fast" part - explosion velocity vs target speed
+    if tgtSpeed > 0 and atkEr > 0:
+        factors.append(((atkEv * tgtSigRadius) / (atkEr * tgtSpeed)) ** atkDrf)
+    return min(factors)
+
+
+# Damage type priority for tie-breaking (EM > Thermal > Kinetic > Explosive)
+# Lower value = higher priority
+DAMAGE_TYPE_PRIORITY = {
+    'em': 0,
+    'thermal': 1,
+    'kinetic': 2,
+    'explosive': 3
+}
+
+
+def get_missile_dominant_damage_type(charge_name):
+    """
+    Determine the dominant damage type of a missile based on its name.
+    
+    Mjolnir = EM, Inferno = Thermal, Scourge = Kinetic, Nova = Explosive
+    
+    Returns: 'em', 'thermal', 'kinetic', 'explosive', or 'unknown'
+    """
+    name_lower = charge_name.lower()
+    if 'mjolnir' in name_lower:
+        return 'em'
+    elif 'inferno' in name_lower:
+        return 'thermal'
+    elif 'scourge' in name_lower:
+        return 'kinetic'
+    elif 'nova' in name_lower:
+        return 'explosive'
+    return 'unknown'
+
+
+# Functions to extract skill/ship multipliers from the currently-loaded charge.
+# Since effects modify chargeModifiedAttributes during fit calculation,
+# we can't simply swap charges and get modified stats. Instead, we compute
+# the ratio of modified/base values from the current charge and apply to others.
+
+def get_missile_multipliers_with_temp_charge(module, charges, fit):
+    """
+    Get missile skill/ship multipliers by temporarily loading charges.
+    
+    Loads one charge of each damage type (Mjolnir=EM, Inferno=Thermal, 
+    Scourge=Kinetic, Nova=Explosive) to extract per-damage-type multipliers.
+    
+    Uses the same missile variant (preferring Rage/Fury > T1 standard) for all
+    damage types to ensure fair comparison.
+    
+    Args:
+        module: The launcher module
+        charges: List of valid charges (to pick ones to load temporarily)
+        fit: The fit object (needed for recalculation)
+    
+    Returns tuple: (damage_mults, flight_mults, app_mults)
+    """
+    original_charge = module.charge
+    
+    # Find one charge of each damage type, preferring same variant
+    # Mjolnir = EM, Inferno = Thermal, Scourge = Kinetic, Nova = Explosive
+    # Priority: Rage/Fury (highest damage) > T1 standard (baseline)
+    damage_type_charges = {
+        'em': None,       # Mjolnir
+        'thermal': None,  # Inferno
+        'kinetic': None,  # Scourge
+        'explosive': None # Nova
+    }
+    
+    # First pass: look for Rage/Fury variants (consistent high-damage variant)
+    for charge in charges:
+        name = charge.name
+        is_rage_fury = 'Rage' in name or 'Fury' in name
+        if not is_rage_fury:
+            continue
+        if 'Mjolnir' in name and damage_type_charges['em'] is None:
+            damage_type_charges['em'] = charge
+        elif 'Inferno' in name and damage_type_charges['thermal'] is None:
+            damage_type_charges['thermal'] = charge
+        elif 'Scourge' in name and damage_type_charges['kinetic'] is None:
+            damage_type_charges['kinetic'] = charge
+        elif 'Nova' in name and damage_type_charges['explosive'] is None:
+            damage_type_charges['explosive'] = charge
+    
+    # Second pass: fill gaps with T1 standard (no prefix, no Precision/Javelin)
+    for charge in charges:
+        name = charge.name
+        # Skip faction/advanced variants
+        if any(x in name for x in ['Rage', 'Fury', 'Precision', 'Javelin', 'Navy', 'Guristas', 'Sansha', 'Serpentis', 'Blood', 'Angel', 'Domination']):
+            continue
+        if 'Mjolnir' in name and damage_type_charges['em'] is None:
+            damage_type_charges['em'] = charge
+        elif 'Inferno' in name and damage_type_charges['thermal'] is None:
+            damage_type_charges['thermal'] = charge
+        elif 'Scourge' in name and damage_type_charges['kinetic'] is None:
+            damage_type_charges['kinetic'] = charge
+        elif 'Nova' in name and damage_type_charges['explosive'] is None:
+            damage_type_charges['explosive'] = charge
+    
+    # Third pass: fill any remaining gaps with whatever we can find
+    for charge in charges:
+        name = charge.name
+        if 'Mjolnir' in name and damage_type_charges['em'] is None:
+            damage_type_charges['em'] = charge
+        elif 'Inferno' in name and damage_type_charges['thermal'] is None:
+            damage_type_charges['thermal'] = charge
+        elif 'Scourge' in name and damage_type_charges['kinetic'] is None:
+            damage_type_charges['kinetic'] = charge
+        elif 'Nova' in name and damage_type_charges['explosive'] is None:
+            damage_type_charges['explosive'] = charge
+    
+    pyfalog.error(f"Selected charges for multiplier extraction: em={damage_type_charges['em'].name if damage_type_charges['em'] else None}, th={damage_type_charges['thermal'].name if damage_type_charges['thermal'] else None}, kin={damage_type_charges['kinetic'].name if damage_type_charges['kinetic'] else None}, exp={damage_type_charges['explosive'].name if damage_type_charges['explosive'] else None}")
+    
+    # Extract multipliers for each damage type
+    damage_mults = {
+        'emDamage': 1.0,
+        'thermalDamage': 1.0,
+        'kineticDamage': 1.0,
+        'explosiveDamage': 1.0
+    }
+    flight_mults = None
+    app_mults = None
+    
+    # Map damage types to their attribute names and charge
+    type_mapping = [
+        ('em', 'emDamage', damage_type_charges['em']),
+        ('thermal', 'thermalDamage', damage_type_charges['thermal']),
+        ('kinetic', 'kineticDamage', damage_type_charges['kinetic']),
+        ('explosive', 'explosiveDamage', damage_type_charges['explosive']),
+    ]
+    
+    for dmg_type, attr_name, charge in type_mapping:
+        if charge is None:
+            continue
+        
+        # Load this charge temporarily
+        module.charge = charge
+        fit.clear()
+        fit.calculateModifiedAttributes()
+        
+        # Extract the multiplier for this damage type
+        modified = module.getModifiedChargeAttr(attr_name) or 0
+        base = module.getChargeBaseAttrValue(attr_name) or 0
+        if base > 0 and modified > 0:
+            damage_mults[attr_name] = modified / base
+            pyfalog.error(f"  {dmg_type} multiplier from {charge.name}: {damage_mults[attr_name]:.3f}")
+        
+        # Also extract flight and application mults from first charge we test
+        if flight_mults is None:
+            flight_mults = get_missile_flight_multipliers_from_module(module)
+            app_mults = get_missile_application_multipliers_from_module(module)
+    
+    # Restore original state
+    module.charge = original_charge
+    fit.clear()
+    fit.calculateModifiedAttributes()
+    pyfalog.error(f"Restored original charge state")
+    
+    # Set defaults if we didn't extract them
+    if flight_mults is None:
+        flight_mults = {'maxVelocity': 1.0, 'explosionDelay': 1.0}
+    if app_mults is None:
+        app_mults = {'aoeCloudSize': 1.0, 'aoeVelocity': 1.0, 'aoeDamageReductionFactor': 1.0}
+    
+    pyfalog.error(f"Final damage multipliers: em={damage_mults['emDamage']:.3f}, th={damage_mults['thermalDamage']:.3f}, kin={damage_mults['kineticDamage']:.3f}, exp={damage_mults['explosiveDamage']:.3f}")
+    
+    return damage_mults, flight_mults, app_mults
+
+
+def get_missile_damage_multipliers_from_module(module):
+    """
+    Calculate per-damage-type multipliers by comparing modified to base damage values.
+    
+    This captures all skill bonuses (Warhead Upgrades, etc.) and ship bonuses
+    that affect missile damage. Different damage types may have different bonuses
+    (e.g., Gila has kinetic/thermal bonus plus additional kinetic-only bonus).
+    
+    Returns dict with multipliers for each damage type.
+    """
+    if module.charge is None:
+        return {
+            'emDamage': 1.0,
+            'thermalDamage': 1.0,
+            'kineticDamage': 1.0,
+            'explosiveDamage': 1.0
+        }
+    
+    multipliers = {}
+    for dmgType in ('emDamage', 'thermalDamage', 'kineticDamage', 'explosiveDamage'):
+        modified = module.getModifiedChargeAttr(dmgType) or 0
+        base = module.getChargeBaseAttrValue(dmgType) or 0
+        if base > 0 and modified > 0:
+            multipliers[dmgType] = modified / base
+        else:
+            # If this damage type isn't present on the charge, we need to estimate
+            # For Scourge (kinetic), we only get kinetic ratio directly
+            # Use 1.0 as fallback - will be refined below
+            multipliers[dmgType] = 1.0
+    
+    # Log what we got
+    pyfalog.error(f"  Per-type multipliers from {module.charge.name}: em={multipliers['emDamage']:.3f}, th={multipliers['thermalDamage']:.3f}, kin={multipliers['kineticDamage']:.3f}, exp={multipliers['explosiveDamage']:.3f}")
+    
+    return multipliers
+
+
+def get_missile_flight_multipliers_from_module(module):
+    """
+    Calculate flight attribute multipliers by comparing modified to base values.
+    
+    This captures skill bonuses from Missile Projection, Missile Bombardment,
+    and ship bonuses that affect flight time/velocity.
+    
+    Returns dict with multipliers for maxVelocity and explosionDelay.
+    """
+    if module.charge is None:
+        return {'maxVelocity': 1.0, 'explosionDelay': 1.0}
+    
+    multipliers = {}
+    
+    for attr in ('maxVelocity', 'explosionDelay'):
+        modified = module.getModifiedChargeAttr(attr) or 0
+        base = module.getChargeBaseAttrValue(attr) or 0
+        if base > 0 and modified > 0:
+            multipliers[attr] = modified / base
+        else:
+            multipliers[attr] = 1.0
+    
+    return multipliers
+
+
+def get_missile_application_multipliers_from_module(module):
+    """
+    Calculate application attribute multipliers by comparing modified to base values.
+    
+    This captures skills like Guided Missile Precision, Target Navigation Prediction,
+    and rigging/implant bonuses that affect explosion radius/velocity.
+    
+    Returns dict with multipliers for aoeCloudSize, aoeVelocity, aoeDamageReductionFactor.
+    """
+    if module.charge is None:
+        return {'aoeCloudSize': 1.0, 'aoeVelocity': 1.0, 'aoeDamageReductionFactor': 1.0}
+    
+    multipliers = {}
+    
+    for attr in ('aoeCloudSize', 'aoeVelocity', 'aoeDamageReductionFactor'):
+        modified = module.getModifiedChargeAttr(attr) or 0
+        base = module.getChargeBaseAttrValue(attr) or 0
+        if base > 0:
+            multipliers[attr] = modified / base if modified > 0 else 1.0
+        else:
+            multipliers[attr] = 1.0
+    
+    return multipliers
+
+
+def precompute_missile_charge_data(module, charges, cycle_time_ms, ship_radius, 
+                                    damage_mults=None, flight_mults=None, app_mults=None,
+                                    tgt_resists=None):
+    """
+    Pre-compute constant values for each missile charge.
+    
+    Takes pre-calculated multipliers from a reference charge (extracted earlier).
+    
+    Args:
+        module: The launcher module
+        charges: List of valid charges to test
+        cycle_time_ms: Launcher cycle time in milliseconds
+        ship_radius: Ship radius for flight calculations
+        damage_mults: Dict of per-damage-type multipliers (em, thermal, kinetic, explosive)
+        flight_mults: Dict with maxVelocity and explosionDelay multipliers
+        app_mults: Dict with aoeCloudSize, aoeVelocity, aoeDamageReductionFactor multipliers
+        tgt_resists: Optional target resist tuple (em, therm, kin, explo)
+    
+    Returns list of dicts sorted by raw_dps DESCENDING, with damage type priority as tie-breaker.
+    """
+    if damage_mults is None:
+        damage_mults = {'emDamage': 1.0, 'thermalDamage': 1.0, 'kineticDamage': 1.0, 'explosiveDamage': 1.0}
+    if flight_mults is None:
+        flight_mults = {'maxVelocity': 1.0, 'explosionDelay': 1.0}
+    if app_mults is None:
+        app_mults = {'aoeCloudSize': 1.0, 'aoeVelocity': 1.0, 'aoeDamageReductionFactor': 1.0}
+    
+    # Get launcher damage multiplier (from module itself, not charge)
+    launcher_damage_mult = module.getModifiedItemAttr('damageMultiplier') or 1
+    
+    charge_data = []
+    for charge in charges:
+        try:
+            # Get BASE charge attributes (without skill bonuses)
+            base_em = charge.getAttribute('emDamage') or 0
+            base_thermal = charge.getAttribute('thermalDamage') or 0
+            base_kinetic = charge.getAttribute('kineticDamage') or 0
+            base_explosive = charge.getAttribute('explosiveDamage') or 0
+            base_total = base_em + base_thermal + base_kinetic + base_explosive
+            
+            # Apply per-damage-type multipliers from skills/ship
+            em = base_em * damage_mults['emDamage']
+            thermal = base_thermal * damage_mults['thermalDamage']
+            kinetic = base_kinetic * damage_mults['kineticDamage']
+            explosive = base_explosive * damage_mults['explosiveDamage']
+            total_damage = em + thermal + kinetic + explosive
+            
+            # Get base flight attributes
+            base_velocity = charge.getAttribute('maxVelocity') or 0
+            base_explosion_delay = charge.getAttribute('explosionDelay') or 0
+            base_mass = charge.getAttribute('mass') or 1
+            base_agility = charge.getAttribute('agility') or 1
+            
+            if base_velocity <= 0 or base_explosion_delay <= 0:
+                continue
+            
+            # Apply flight multipliers
+            maxVelocity = base_velocity * flight_mults['maxVelocity']
+            explosionDelay = base_explosion_delay * flight_mults['explosionDelay']
+            
+            # Calculate range using same formula as module.missileMaxRangeData
+            flightTime = explosionDelay / 1000 + ship_radius / maxVelocity
+            
+            def calculateRange(vel, mass, agility, ft):
+                accelTime = min(ft, mass * agility / 1000000)
+                duringAcceleration = vel / 2 * accelTime
+                fullSpeed = vel * (ft - accelTime)
+                return duringAcceleration + fullSpeed
+            
+            lowerTime = math.floor(flightTime)
+            higherTime = math.ceil(flightTime)
+            lowerRange = calculateRange(maxVelocity, base_mass, base_agility, lowerTime)
+            higherRange = calculateRange(maxVelocity, base_mass, base_agility, higherTime)
+            lowerRange = max(0, lowerRange - ship_radius)
+            higherRange = max(0, higherRange - ship_radius)
+            higherChance = flightTime - lowerTime
+            
+            # Get base application attributes and apply multipliers
+            base_aoeCloudSize = charge.getAttribute('aoeCloudSize') or 0
+            base_aoeVelocity = charge.getAttribute('aoeVelocity') or 0
+            base_aoeDrf = charge.getAttribute('aoeDamageReductionFactor') or 1
+            
+            aoeCloudSize = base_aoeCloudSize * app_mults['aoeCloudSize']
+            aoeVelocity = base_aoeVelocity * app_mults['aoeVelocity']
+            aoeDrf = base_aoeDrf * app_mults['aoeDamageReductionFactor']
+            
+            pyfalog.error(f"Missile {charge.name}: base_dmg={base_total:.1f} -> {total_damage:.1f}, range={lowerRange:.0f}-{higherRange:.0f}m")
+            
+            # Apply target resists if provided
+            if tgt_resists:
+                em_res, therm_res, kin_res, explo_res = tgt_resists
+                em = em * (1 - em_res)
+                thermal = thermal * (1 - therm_res)
+                kinetic = kinetic * (1 - kin_res)
+                explosive = explosive * (1 - explo_res)
+                total_damage = em + thermal + kinetic + explosive
+            
+            raw_volley = total_damage * launcher_damage_mult
+            raw_dps = raw_volley / (cycle_time_ms / 1000)
+            
+            # Get damage type priority for tie-breaking
+            damage_type = get_missile_dominant_damage_type(charge.name)
+            damage_priority = DAMAGE_TYPE_PRIORITY.get(damage_type, 99)
+            
+            charge_data.append({
+                'name': charge.name,
+                'raw_dps': raw_dps,
+                'raw_volley': raw_volley,
+                'lowerRange': lowerRange,
+                'higherRange': higherRange,
+                'higherChance': higherChance,
+                'aoeCloudSize': aoeCloudSize,
+                'aoeVelocity': aoeVelocity,
+                'aoeDamageReductionFactor': aoeDrf,
+                'damage_priority': damage_priority
+            })
+        except Exception as e:
+            pyfalog.error(f"Error processing missile charge {charge.name}: {str(e)}")
+            continue
+    
+    # Sort by raw_dps descending, then by damage priority ascending (EM first) for tie-breaking
+    charge_data.sort(key=lambda x: (-x['raw_dps'], x['damage_priority']))
+    
+    if charge_data:
+        pyfalog.error(f"Precomputed {len(charge_data)} missile charges, top: {charge_data[0]['name']} @ {charge_data[0]['raw_dps']:.1f} DPS")
+    
+    return charge_data
+
+
+def calculate_missile_best_dps_at_distance(charge_data, distance, tgtSpeed, tgtSigRadius, start_index=0):
+    """
+    Find the best missile charge at a specific distance.
+    
+    Uses damage type priority (EM > Thermal > Kinetic > Explosive) as tie-breaker
+    when multiple missiles have the same effective DPS.
+    
+    Args:
+        charge_data: List of charge dicts, sorted by raw_dps descending then damage_priority ascending
+        distance: Distance in meters
+        tgtSpeed: Target speed (m/s)
+        tgtSigRadius: Target signature radius
+        start_index: Index to start searching from
+    
+    Returns: (best_dps, best_charge_name, new_start_index)
+    """
+    best_dps = 0
+    best_charge_name = None
+    best_index = start_index
+    best_priority = 99  # Lower is better
+    
+    for i in range(start_index, len(charge_data)):
+        cd = charge_data[i]
+        
+        # Calculate range factor
+        if distance <= cd['lowerRange']:
+            range_factor = 1.0
+        elif distance <= cd['higherRange']:
+            range_factor = cd['higherChance']
+        else:
+            range_factor = 0.0
+        
+        if range_factor == 0:
+            continue
+        
+        # Calculate application factor
+        app_factor = calcMissileApplicationFactor(
+            cd['aoeCloudSize'],
+            cd['aoeVelocity'],
+            cd['aoeDamageReductionFactor'],
+            tgtSpeed,
+            tgtSigRadius
+        )
+        
+        effective_dps = cd['raw_dps'] * range_factor * app_factor
+        
+        # Tie-break: higher DPS wins; if equal, lower damage_priority wins (EM > Thermal > Kinetic > Explosive)
+        if effective_dps > best_dps or (effective_dps == best_dps and cd['damage_priority'] < best_priority):
+            best_dps = effective_dps
+            best_charge_name = cd['name']
+            best_index = i
+            best_priority = cd['damage_priority']
+    
+    return best_dps, best_charge_name, best_index
+
+
+def calculate_missile_transition_points(charge_data, tgtSpeed, tgtSigRadius, max_distance=300000, resolution=100):
+    """
+    Calculate the distances where optimal missile ammo changes.
+    
+    Returns list of tuples: [(distance, charge_index, charge_name, dps), ...]
+    """
+    if not charge_data:
+        return []
+    
+    transitions = []
+    current_index = 0
+    current_charge = None
+    
+    # Start at distance 0
+    best_dps, best_name, best_idx = calculate_missile_best_dps_at_distance(
+        charge_data, 0, tgtSpeed, tgtSigRadius, 0)
+    if best_name:
+        transitions.append((0, best_idx, best_name, best_dps))
+        current_index = best_idx
+        current_charge = best_name
+    
+    # Scan through distances to find transitions
+    distance = resolution
+    while distance <= max_distance:
+        best_dps, best_name, best_idx = calculate_missile_best_dps_at_distance(
+            charge_data, distance, tgtSpeed, tgtSigRadius, 0)
+        
+        if best_name != current_charge and best_name is not None:
+            # Found a transition - binary search to find exact point
+            low = distance - resolution
+            high = distance
+            while high - low > 10:  # 10m precision
+                mid = (low + high) // 2
+                _, mid_name, _ = calculate_missile_best_dps_at_distance(
+                    charge_data, mid, tgtSpeed, tgtSigRadius, 0)
+                if mid_name == current_charge:
+                    low = mid
+                else:
+                    high = mid
+            
+            # Record the transition
+            transitions.append((high, best_idx, best_name, best_dps))
+            current_index = best_idx
+            current_charge = best_name
+        
+        # If DPS is effectively zero, stop
+        if best_dps < 0.01:
+            break
+            
+        distance += resolution
+    
+    return transitions
+
+
+def get_missile_dps_at_distance(charge_data, transitions, distance, tgtSpeed, tgtSigRadius):
+    """
+    Get missile DPS at a specific distance using pre-computed transitions.
+    
+    Returns: (dps, charge_name)
+    """
+    if not transitions:
+        return 0, None
+    
+    # Find the transition that applies at this distance
+    distances = [t[0] for t in transitions]
+    idx = bisect_right(distances, distance) - 1
+    if idx < 0:
+        idx = 0
+    
+    # Get the charge that's optimal at this distance
+    transition = transitions[idx]
+    charge_idx = transition[1]
+    
+    # Calculate exact DPS at this distance using that charge
+    cd = charge_data[charge_idx]
+    
+    # Calculate range factor
+    if distance <= cd['lowerRange']:
+        range_factor = 1.0
+    elif distance <= cd['higherRange']:
+        range_factor = cd['higherChance']
+    else:
+        range_factor = 0.0
+    
+    # Calculate application factor
+    app_factor = calcMissileApplicationFactor(
+        cd['aoeCloudSize'],
+        cd['aoeVelocity'],
+        cd['aoeDamageReductionFactor'],
+        tgtSpeed,
+        tgtSigRadius
+    )
+    
+    dps = cd['raw_dps'] * range_factor * app_factor
+    
+    return dps, cd['name']
+
+
+class YOptimalAmmoDpsMixin:
+    """Calculate DPS using optimal ammo selection for turrets and missiles."""
+
+    def _getOptimalDpsAtDistance(self, src, distance, turret_cache=None, missile_cache=None, tracking_base=None):
         """
         Get total DPS with optimal ammo selection at a specific distance.
         Uses pre-computed transition points for O(log n) lookup.
@@ -760,11 +1323,12 @@ class YOptimalAmmoDpsMixin:
             src: Source fit wrapper
             distance: Distance in meters
             turret_cache: Pre-computed turret data (charge_data, transitions, tracking stats)
+            missile_cache: Pre-computed missile data (charge_data, transitions, application stats)
             tracking_base: Base tracking params dict (without turret-specific stats), or None for perfect tracking
         """
         total_dps = 0
         
-        # Use cached data if available (from _getCommonData)
+        # Process turrets
         if turret_cache:
             for group_key, group_info in turret_cache.items():
                 transitions = group_info['transitions']
@@ -780,45 +1344,58 @@ class YOptimalAmmoDpsMixin:
                 
                 dps, _ = get_dps_at_distance_fast(transitions, charge_data, distance, tracking_params)
                 total_dps += dps * count
-            return total_dps
         
-        # Fallback: compute on the fly (shouldn't happen with proper caching)
-        turret_groups = {}
-        
-        for mod in src.item.activeModulesIter():
-            if mod.hardpoint != FittingHardpoint.TURRET:
-                continue
-            if mod.getModifiedItemAttr('miningAmount'):
-                continue
+        # Process missiles
+        if missile_cache:
+            tgtSpeed = tracking_base.get('tgtSpeed', 0) if tracking_base else 0
+            tgtSigRadius = tracking_base.get('tgtSigRadius', 0) if tracking_base else 0
+            
+            for group_key, group_info in missile_cache.items():
+                transitions = group_info['transitions']
+                charge_data = group_info['charge_data']
+                count = group_info['count']
                 
-            key = mod.item.ID
-            if key not in turret_groups:
-                turret_groups[key] = {'module': mod, 'count': 1}
-            else:
-                turret_groups[key]['count'] += 1
+                dps, ammo = get_missile_dps_at_distance(charge_data, transitions, distance, tgtSpeed, tgtSigRadius)
+                total_dps += dps * count
         
-        for group_data in turret_groups.values():
-            mod = group_data['module']
-            count = group_data['count']
+        # Fallback: compute on the fly if no cache (shouldn't happen)
+        if not turret_cache and not missile_cache:
+            turret_groups = {}
             
-            turret_base = get_turret_base_stats(mod)
-            cycle_params = mod.getCycleParameters()
-            if cycle_params is None:
-                continue
-            cycle_time_ms = cycle_params.averageTime
+            for mod in src.item.activeModulesIter():
+                if mod.hardpoint != FittingHardpoint.TURRET:
+                    continue
+                if mod.getModifiedItemAttr('miningAmount'):
+                    continue
+                    
+                key = mod.item.ID
+                if key not in turret_groups:
+                    turret_groups[key] = {'module': mod, 'count': 1}
+                else:
+                    turret_groups[key]['count'] += 1
             
-            charges = list(mod.getValidCharges())
-            if not charges:
-                continue
-            
-            skill_mult = get_charge_skill_multiplier(mod)
-            charge_data = precompute_charge_data(turret_base, charges, cycle_time_ms, skill_mult)
-            best_dps, _, _ = calculate_best_dps_at_distance(charge_data, distance)
-            total_dps += best_dps * count
+            for group_data in turret_groups.values():
+                mod = group_data['module']
+                count = group_data['count']
+                
+                turret_base = get_turret_base_stats(mod)
+                cycle_params = mod.getCycleParameters()
+                if cycle_params is None:
+                    continue
+                cycle_time_ms = cycle_params.averageTime
+                
+                charges = list(mod.getValidCharges())
+                if not charges:
+                    continue
+                
+                skill_mult = get_charge_skill_multiplier(mod)
+                charge_data = precompute_charge_data(turret_base, charges, cycle_time_ms, skill_mult)
+                best_dps, _, _ = calculate_best_dps_at_distance(charge_data, distance)
+                total_dps += best_dps * count
         
         return total_dps
 
-    def _getOptimalDpsWithAmmoAtDistance(self, src, distance, turret_cache=None, tracking_base=None):
+    def _getOptimalDpsWithAmmoAtDistance(self, src, distance, turret_cache=None, missile_cache=None, tracking_base=None):
         """
         Get total DPS and optimal ammo name at a specific distance.
         Returns (total_dps, ammo_name) tuple.
@@ -827,12 +1404,13 @@ class YOptimalAmmoDpsMixin:
             src: Source fit wrapper
             distance: Distance in meters
             turret_cache: Pre-computed turret data
+            missile_cache: Pre-computed missile data
             tracking_base: Base tracking params dict, or None for perfect tracking
         """
         total_dps = 0
         ammo_name = None
         
-        # Use cached data if available (from _getCommonData)
+        # Process turrets
         if turret_cache:
             for group_key, group_info in turret_cache.items():
                 transitions = group_info['transitions']
@@ -848,12 +1426,25 @@ class YOptimalAmmoDpsMixin:
                 
                 dps, name = get_dps_at_distance_fast(transitions, charge_data, distance, tracking_params)
                 total_dps += dps * count
-                # Use the first turret group's ammo name (most common case is single turret type)
                 if ammo_name is None:
                     ammo_name = name
-            return total_dps, ammo_name
         
-        return total_dps, None
+        # Process missiles
+        if missile_cache:
+            tgtSpeed = tracking_base.get('tgtSpeed', 0) if tracking_base else 0
+            tgtSigRadius = tracking_base.get('tgtSigRadius', 0) if tracking_base else 0
+            
+            for group_key, group_info in missile_cache.items():
+                transitions = group_info['transitions']
+                charge_data = group_info['charge_data']
+                count = group_info['count']
+                
+                dps, name = get_missile_dps_at_distance(charge_data, transitions, distance, tgtSpeed, tgtSigRadius)
+                total_dps += dps * count
+                if ammo_name is None:
+                    ammo_name = name
+        
+        return total_dps, ammo_name
     
     def _runFullAnalysis(self, src):
         """
@@ -927,7 +1518,7 @@ class YOptimalAmmoDpsMixin:
 class YOptimalAmmoVolleyMixin:
     """Calculate volley using optimal ammo selection."""
 
-    def _getOptimalVolleyAtDistance(self, src, distance, turret_cache=None, tracking_base=None):
+    def _getOptimalVolleyAtDistance(self, src, distance, turret_cache=None, missile_cache=None, tracking_base=None):
         """
         Get total volley with optimal ammo selection at a specific distance.
         Uses pre-computed transition points for O(log n) lookup.
@@ -936,11 +1527,12 @@ class YOptimalAmmoVolleyMixin:
             src: Source fit wrapper
             distance: Distance in meters
             turret_cache: Pre-computed turret data
+            missile_cache: Pre-computed missile data
             tracking_base: Base tracking params dict, or None for perfect tracking
         """
         total_volley = 0
         
-        # Use cached data if available (from _getCommonData)
+        # Process turrets
         if turret_cache:
             for group_key, group_info in turret_cache.items():
                 transitions = group_info['transitions']
@@ -956,11 +1548,31 @@ class YOptimalAmmoVolleyMixin:
                 
                 volley, _ = get_volley_at_distance_fast(transitions, charge_data, distance, tracking_params)
                 total_volley += volley * count
-            return total_volley
+        
+        # Process missiles (use raw_volley * application factor)
+        if missile_cache:
+            tgtSpeed = tracking_base.get('tgtSpeed', 0) if tracking_base else 0
+            tgtSigRadius = tracking_base.get('tgtSigRadius', 0) if tracking_base else 0
+            
+            for group_key, group_info in missile_cache.items():
+                transitions = group_info['transitions']
+                charge_data = group_info['charge_data']
+                count = group_info['count']
+                
+                # Get DPS then convert to volley using raw_volley/raw_dps ratio
+                dps, _ = get_missile_dps_at_distance(charge_data, transitions, distance, tgtSpeed, tgtSigRadius)
+                # For missiles, volley = dps * cycle_time, but we don't have cycle time in the transitions
+                # Use raw_volley/raw_dps ratio from charge_data
+                if charge_data and charge_data[0]['raw_dps'] > 0:
+                    ratio = charge_data[0]['raw_volley'] / charge_data[0]['raw_dps']
+                    volley = dps * ratio
+                else:
+                    volley = 0
+                total_volley += volley * count
         
         return total_volley
 
-    def _getOptimalVolleyWithAmmoAtDistance(self, src, distance, turret_cache=None, tracking_base=None):
+    def _getOptimalVolleyWithAmmoAtDistance(self, src, distance, turret_cache=None, missile_cache=None, tracking_base=None):
         """
         Get total volley and optimal ammo name at a specific distance.
         Returns (total_volley, ammo_name) tuple.
@@ -969,12 +1581,13 @@ class YOptimalAmmoVolleyMixin:
             src: Source fit wrapper
             distance: Distance in meters
             turret_cache: Pre-computed turret data
+            missile_cache: Pre-computed missile data
             tracking_base: Base tracking params dict, or None for perfect tracking
         """
         total_volley = 0
         ammo_name = None
         
-        # Use cached data if available (from _getCommonData)
+        # Process turrets
         if turret_cache:
             for group_key, group_info in turret_cache.items():
                 transitions = group_info['transitions']
@@ -990,12 +1603,30 @@ class YOptimalAmmoVolleyMixin:
                 
                 volley, name = get_volley_at_distance_fast(transitions, charge_data, distance, tracking_params)
                 total_volley += volley * count
-                # Use the first turret group's ammo name (most common case is single turret type)
                 if ammo_name is None:
                     ammo_name = name
-            return total_volley, ammo_name
         
-        return total_volley, None
+        # Process missiles
+        if missile_cache:
+            tgtSpeed = tracking_base.get('tgtSpeed', 0) if tracking_base else 0
+            tgtSigRadius = tracking_base.get('tgtSigRadius', 0) if tracking_base else 0
+            
+            for group_key, group_info in missile_cache.items():
+                transitions = group_info['transitions']
+                charge_data = group_info['charge_data']
+                count = group_info['count']
+                
+                dps, name = get_missile_dps_at_distance(charge_data, transitions, distance, tgtSpeed, tgtSigRadius)
+                if charge_data and charge_data[0]['raw_dps'] > 0:
+                    ratio = charge_data[0]['raw_volley'] / charge_data[0]['raw_dps']
+                    volley = dps * ratio
+                else:
+                    volley = 0
+                total_volley += volley * count
+                if ammo_name is None:
+                    ammo_name = name
+        
+        return total_volley, ammo_name
 
 
 class XDistanceMixin(SmoothPointGetter):
@@ -1018,13 +1649,19 @@ class XDistanceMixin(SmoothPointGetter):
         # Get projected effects setting
         applyProjected = GraphSettings.getInstance().get('ammoOptimalApplyProjected')
         
+        # Get target application parameters for missiles (speed and sig radius)
+        # These affect missile transitions, so they're part of the cache key
+        tgtSpeed = miscParams.get('tgtSpeed', 0) or 0
+        tgtSigRadius = tgt.getSigRadius() if tgt else 0
+        
         # Cache on the GRAPH object (persists across getter instances)
-        # Include quality tier, resists, and projected setting in cache key
-        cache_key = (id(src.item), quality_tier, tgt_resists, applyProjected)
+        # Include quality tier, resists, projected setting, and target params in cache key
+        cache_key = (id(src.item), quality_tier, tgt_resists, applyProjected, tgtSpeed, tgtSigRadius)
         
         # Initialize cache on graph if needed
         if not hasattr(self.graph, '_ammo_turret_cache'):
             self.graph._ammo_turret_cache = {}
+            self.graph._ammo_missile_cache = {}
             self.graph._ammo_analysis_done = set()
         
         # Build common data dict
@@ -1048,9 +1685,10 @@ class XDistanceMixin(SmoothPointGetter):
             commonData['webFighters'] = webFighters
             commonData['tpFighters'] = tpFighters
         
-        # Return cached turret data if available
+        # Return cached data if available
         if cache_key in self.graph._ammo_turret_cache:
             commonData['turret_cache'] = self.graph._ammo_turret_cache[cache_key]
+            commonData['missile_cache'] = self.graph._ammo_missile_cache.get(cache_key, {})
             return commonData
         
         # Run analysis once per fit (for logging purposes only)
@@ -1106,11 +1744,83 @@ class XDistanceMixin(SmoothPointGetter):
             else:
                 turret_cache[key]['count'] += 1
         
+        # Build missile cache with pre-computed transitions
+        missile_cache = {}
+        ship_radius = src.getRadius()
+        
+        # We'll extract multipliers once from the first missile launcher
+        # by temporarily loading a charge if needed
+        damage_mults = None
+        flight_mults = None
+        app_mults = None
+        
+        pyfalog.error(f"Building missile cache for fit, ship_radius={ship_radius}")
+        
+        for mod in src.item.activeModulesIter():
+            if mod.hardpoint != FittingHardpoint.MISSILE:
+                continue
+            
+            pyfalog.error(f"Found missile launcher: {mod.item.name} (ID={mod.item.ID})")
+            
+            key = mod.item.ID
+            if key not in missile_cache:
+                cycle_params = mod.getCycleParameters()
+                if cycle_params is None:
+                    pyfalog.error(f"Missile launcher {mod.item.name} has no cycle params")
+                    continue
+                cycle_time_ms = cycle_params.averageTime
+                
+                # Get all valid charges and filter by quality tier
+                all_charges = list(mod.getValidCharges())
+                pyfalog.error(f"  Found {len(all_charges)} valid charges, quality_tier={quality_tier}")
+                charges = filter_charges_by_quality(all_charges, quality_tier)
+                if not charges:
+                    pyfalog.error("  No charges after filtering for quality tier")
+                    continue
+                pyfalog.error(f"  After filtering: {len(charges)} charges")
+                
+                # On first launcher, extract multipliers by temporarily loading a charge
+                if damage_mults is None:
+                    damage_mults, flight_mults, app_mults = get_missile_multipliers_with_temp_charge(
+                        mod, charges, src.item)
+                    pyfalog.error(f"  Extracted damage multipliers: em={damage_mults['emDamage']:.3f}, th={damage_mults['thermalDamage']:.3f}, kin={damage_mults['kineticDamage']:.3f}, exp={damage_mults['explosiveDamage']:.3f}")
+                    pyfalog.error(f"  Flight multipliers: vel={flight_mults['maxVelocity']:.3f}, delay={flight_mults['explosionDelay']:.3f}")
+                    pyfalog.error(f"  Application multipliers: eR={app_mults['aoeCloudSize']:.3f}, eV={app_mults['aoeVelocity']:.3f}, DRF={app_mults['aoeDamageReductionFactor']:.3f}")
+                
+                # Pre-compute charge data with multipliers
+                charge_data = precompute_missile_charge_data(
+                    mod, charges, cycle_time_ms, ship_radius,
+                    damage_mults=damage_mults,
+                    flight_mults=flight_mults,
+                    app_mults=app_mults,
+                    tgt_resists=tgt_resists)
+                
+                if not charge_data:
+                    pyfalog.error("  No charge data generated")
+                    continue
+                
+                # Pre-compute transition points (requires target speed/sig for application)
+                transitions = calculate_missile_transition_points(
+                    charge_data, tgtSpeed, tgtSigRadius)
+                pyfalog.error(f"  Computed {len(transitions) if transitions else 0} transition points")
+                
+                missile_cache[key] = {
+                    'charge_data': charge_data,
+                    'transitions': transitions,
+                    'count': 1
+                }
+            else:
+                missile_cache[key]['count'] += 1
+        
+        pyfalog.error(f"Built missile cache with {len(missile_cache)} launcher types")
+        
         # Cache on graph for future calls
         self.graph._ammo_turret_cache[cache_key] = turret_cache
+        self.graph._ammo_missile_cache[cache_key] = missile_cache
         
-        # Add turret cache to commonData and return
+        # Add caches to commonData and return
         commonData['turret_cache'] = turret_cache
+        commonData['missile_cache'] = missile_cache
         return commonData
 
     def _buildTrackingParams(self, distance, miscParams, src, tgt, commonData):
@@ -1180,14 +1890,15 @@ class XDistanceMixin(SmoothPointGetter):
         """Calculate DPS/volley at distance x."""
         distance = x
         turret_cache = commonData.get('turret_cache')
+        missile_cache = commonData.get('missile_cache')
         
         # Build tracking params (None if no velocity, meaning perfect tracking)
         tracking_base = self._buildTrackingParams(distance, miscParams, src, tgt, commonData)
         
         if hasattr(self, '_getOptimalDpsAtDistance'):
-            return self._getOptimalDpsAtDistance(src, distance, turret_cache, tracking_base)
+            return self._getOptimalDpsAtDistance(src, distance, turret_cache, missile_cache, tracking_base)
         elif hasattr(self, '_getOptimalVolleyAtDistance'):
-            return self._getOptimalVolleyAtDistance(src, distance, turret_cache, tracking_base)
+            return self._getOptimalVolleyAtDistance(src, distance, turret_cache, missile_cache, tracking_base)
         else:
             return 0
 
@@ -1195,20 +1906,21 @@ class XDistanceMixin(SmoothPointGetter):
         """Calculate DPS/volley at distance x, returning (value, extra_info) tuple."""
         distance = x
         turret_cache = commonData.get('turret_cache')
+        missile_cache = commonData.get('missile_cache')
         
         # Build tracking params (None if no velocity, meaning perfect tracking)
         tracking_base = self._buildTrackingParams(distance, miscParams, src, tgt, commonData)
         
         if hasattr(self, '_getOptimalDpsWithAmmoAtDistance'):
-            dps, ammo_name = self._getOptimalDpsWithAmmoAtDistance(src, distance, turret_cache, tracking_base)
+            dps, ammo_name = self._getOptimalDpsWithAmmoAtDistance(src, distance, turret_cache, missile_cache, tracking_base)
             return dps, {'ammo': ammo_name}
         elif hasattr(self, '_getOptimalVolleyWithAmmoAtDistance'):
-            volley, ammo_name = self._getOptimalVolleyWithAmmoAtDistance(src, distance, turret_cache, tracking_base)
+            volley, ammo_name = self._getOptimalVolleyWithAmmoAtDistance(src, distance, turret_cache, missile_cache, tracking_base)
             return volley, {'ammo': ammo_name}
         elif hasattr(self, '_getOptimalDpsAtDistance'):
-            return self._getOptimalDpsAtDistance(src, distance, turret_cache, tracking_base), {}
+            return self._getOptimalDpsAtDistance(src, distance, turret_cache, missile_cache, tracking_base), {}
         elif hasattr(self, '_getOptimalVolleyAtDistance'):
-            return self._getOptimalVolleyAtDistance(src, distance, turret_cache, tracking_base), {}
+            return self._getOptimalVolleyAtDistance(src, distance, turret_cache, missile_cache, tracking_base), {}
         else:
             return 0, {}
 
@@ -1241,30 +1953,35 @@ class Distance2OptimalAmmoDpsGetter(XDistanceMixin, YOptimalAmmoDpsMixin):
         
         commonData = self._getCommonData(miscParams=miscParams, src=src, tgt=tgt)
         turret_cache = commonData.get('turret_cache', {})
+        missile_cache = commonData.get('missile_cache', {})
         
-        if not turret_cache:
-            pyfalog.debug(f'getSegments: no turret_cache for tgt={tgt_name}')
+        if not turret_cache and not missile_cache:
+            pyfalog.debug(f'getSegments: no turret_cache or missile_cache for tgt={tgt_name}')
             return []
         
-        # Collect all unique transitions across all turret groups
-        # For simplicity, use the first turret group's transitions
-        # (in most cases, all turrets are the same type)
+        # Collect transitions from turrets
         all_transitions = []
         primary_charge_data = None
-        total_count = 0
         
         for group_key, group_info in turret_cache.items():
             transitions = group_info['transitions']
             charge_data = group_info['charge_data']
-            count = group_info['count']
             
             if primary_charge_data is None:
                 primary_charge_data = charge_data
                 all_transitions = transitions
-                total_count = count
-            else:
-                # Multiple turret types - just add counts
-                total_count += count
+            break  # Use first turret group
+        
+        # If no turret transitions, try missiles
+        if not all_transitions and missile_cache:
+            for group_key, group_info in missile_cache.items():
+                transitions = group_info['transitions']
+                charge_data = group_info['charge_data']
+                
+                if primary_charge_data is None:
+                    primary_charge_data = charge_data
+                    all_transitions = transitions
+                break  # Use first missile group
         
         if not all_transitions or not primary_charge_data:
             pyfalog.debug(f'getSegments: no transitions for tgt={tgt_name}')
@@ -1369,29 +2086,34 @@ class Distance2OptimalAmmoVolleyGetter(XDistanceMixin, YOptimalAmmoVolleyMixin):
         """
         commonData = self._getCommonData(miscParams=miscParams, src=src, tgt=tgt)
         turret_cache = commonData.get('turret_cache', {})
+        missile_cache = commonData.get('missile_cache', {})
         
-        if not turret_cache:
+        if not turret_cache and not missile_cache:
             return []
         
-        # Collect all unique transitions across all turret groups
-        # For simplicity, use the first turret group's transitions
-        # (in most cases, all turrets are the same type)
+        # Collect transitions from turrets
         all_transitions = []
         primary_charge_data = None
-        total_count = 0
         
         for group_key, group_info in turret_cache.items():
             transitions = group_info['transitions']
             charge_data = group_info['charge_data']
-            count = group_info['count']
             
             if primary_charge_data is None:
                 primary_charge_data = charge_data
                 all_transitions = transitions
-                total_count = count
-            else:
-                # Multiple turret types - just add counts
-                total_count += count
+            break  # Use first turret group
+        
+        # If no turret transitions, try missiles
+        if not all_transitions and missile_cache:
+            for group_key, group_info in missile_cache.items():
+                transitions = group_info['transitions']
+                charge_data = group_info['charge_data']
+                
+                if primary_charge_data is None:
+                    primary_charge_data = charge_data
+                    all_transitions = transitions
+                break  # Use first missile group
         
         if not all_transitions or not primary_charge_data:
             return []

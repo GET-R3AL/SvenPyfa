@@ -40,9 +40,9 @@ _t = wx.GetTranslation
 
 def getFitWeaponClass(fit):
     """
-    Determine the weapon class of a fit based on its turret charges.
+    Determine the weapon class of a fit based on its turret or missile charges.
     
-    Returns: 'energy', 'projectile', 'hybrid', 'exotic', 'vorton', or None if no turrets.
+    Returns: 'energy', 'projectile', 'hybrid', 'exotic', 'vorton', 'missile', or None if no weapons.
     """
     if fit is None:
         return None
@@ -50,35 +50,54 @@ def getFitWeaponClass(fit):
     for mod in fit.modules:
         if mod.isEmpty or mod.item is None:
             continue
-        if mod.hardpoint != FittingHardpoint.TURRET:
-            continue
-        # Skip mining turrets
-        if mod.getModifiedItemAttr('miningAmount'):
-            continue
         
-        # Check valid charges to determine weapon type
-        charges = list(mod.getValidCharges())
-        if not charges:
-            continue
+        # Check turret hardpoints
+        if mod.hardpoint == FittingHardpoint.TURRET:
+            # Skip mining turrets
+            if mod.getModifiedItemAttr('miningAmount'):
+                continue
+            
+            # Check valid charges to determine weapon type
+            charges = list(mod.getValidCharges())
+            if not charges:
+                continue
+            
+            # Check the first charge's group name
+            charge = charges[0]
+            if charge.group is None:
+                continue
+            
+            groupName = charge.group.name
+            
+            # Determine weapon class from charge group
+            if 'Frequency Crystal' in groupName:
+                return 'energy'
+            elif 'Projectile' in groupName:
+                return 'projectile'
+            elif 'Hybrid' in groupName:
+                return 'hybrid'
+            elif 'Exotic Plasma' in groupName:
+                return 'exotic'
+            elif 'Vorton' in groupName or 'Condenser' in groupName:
+                return 'vorton'
         
-        # Check the first charge's group name
-        charge = charges[0]
-        if charge.group is None:
-            continue
-        
-        groupName = charge.group.name
-        
-        # Determine weapon class from charge group
-        if 'Frequency Crystal' in groupName:
-            return 'energy'
-        elif 'Projectile' in groupName:
-            return 'projectile'
-        elif 'Hybrid' in groupName:
-            return 'hybrid'
-        elif 'Exotic Plasma' in groupName:
-            return 'exotic'
-        elif 'Vorton' in groupName or 'Condenser' in groupName:
-            return 'vorton'
+        # Check missile hardpoints
+        elif mod.hardpoint == FittingHardpoint.MISSILE:
+            # Check valid charges to determine weapon type
+            charges = list(mod.getValidCharges())
+            if not charges:
+                continue
+            
+            # Check the first charge's group name
+            charge = charges[0]
+            if charge.group is None:
+                continue
+            
+            groupName = charge.group.name
+            
+            # Missile groups typically have "Missile" or "Torpedo" or "Rocket" in them
+            if any(term in groupName for term in ['Missile', 'Torpedo', 'Rocket', 'Bomb']):
+                return 'missile'
     
     return None
 

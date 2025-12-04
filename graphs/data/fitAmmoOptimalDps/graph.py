@@ -107,41 +107,130 @@ AMMO_COLORS = {
     "MesmerFlux Condenser Pack": (65,182,196),
     "SlamBolt Condenser Pack": (194,230,153),
 
+    # =========================================================================
+    # MISSILE AMMO COLORS
+    # Based on damage type with saturation/brightness variants:
+    # - Rage/Fury: Dark, highly saturated (highest damage)
+    # - Faction (Caldari Navy, Dread Guristas, etc.): Medium-dark, saturated
+    # - Precision/Javelin: Medium, less saturated (better application)
+    # - T1 Standard: Light, least saturated (baseline)
+    # =========================================================================
+    
+    # EM Damage (Mjolnir) - Blue tones
+    # Rage/Fury variants (dark, saturated)
+    "Mjolnir Rage": (20, 60, 200),
+    "Mjolnir Fury": (20, 60, 200),
+    # Faction variants (medium-dark, saturated) - covers Caldari Navy, Dread Guristas, etc.
+    "Faction Mjolnir": (50, 100, 220),
+    # Precision/Javelin variants (medium, less saturated)
+    "Mjolnir Precision": (90, 130, 210),
+    "Mjolnir Javelin": (90, 130, 210),
+    # T1 Standard (light, least saturated)
+    "Mjolnir": (140, 165, 220),
+    
+    # Thermal Damage (Inferno) - Red/Orange tones
+    # Rage/Fury variants (dark, saturated)
+    "Inferno Rage": (200, 30, 20),
+    "Inferno Fury": (200, 30, 20),
+    # Faction variants (medium-dark, saturated)
+    "Faction Inferno": (220, 70, 50),
+    # Precision/Javelin variants (medium, less saturated)
+    "Inferno Precision": (210, 110, 90),
+    "Inferno Javelin": (210, 110, 90),
+    # T1 Standard (light, least saturated)
+    "Inferno": (220, 150, 140),
+    
+    # Kinetic Damage (Scourge) - Gray/White with slight green tint
+    # Rage/Fury variants (dark, saturated)
+    "Scourge Rage": (50, 80, 60),
+    "Scourge Fury": (50, 80, 60),
+    # Faction variants (medium-dark, saturated)
+    "Faction Scourge": (90, 120, 100),
+    # Precision/Javelin variants (medium, less saturated)
+    "Scourge Precision": (130, 155, 140),
+    "Scourge Javelin": (130, 155, 140),
+    # T1 Standard (light, least saturated)
+    "Scourge": (175, 195, 185),
+    
+    # Explosive Damage (Nova) - Yellow/Orange tones
+    # Rage/Fury variants (dark, saturated)
+    "Nova Rage": (200, 140, 0),
+    "Nova Fury": (200, 140, 0),
+    # Faction variants (medium-dark, saturated)
+    "Faction Nova": (220, 170, 40),
+    # Precision/Javelin variants (medium, less saturated)
+    "Nova Precision": (220, 190, 90),
+    "Nova Javelin": (220, 190, 90),
+    # T1 Standard (light, least saturated)
+    "Nova": (230, 210, 150),
 
 }
 
 
 def get_ammo_base_name(ammo_name):
     """
-    Extract base ammo name by removing size suffix (S/M/L/XL) and other common suffixes.
+    Extract base ammo name by removing size suffix (S/M/L/XL), missile type suffixes, and other common suffixes.
     
     Examples:
         "Conflagration L" -> "Conflagration"
         "Void S" -> "Void"
         "Antimatter Charge XL" -> "Antimatter"
         "Republic Fleet EMP M" -> "EMP"
+        "Mjolnir Rage Light Missile" -> "Mjolnir Rage"
+        "Caldari Navy Scourge Heavy Missile" -> "Caldari Navy Scourge"
+        "Nova Fury Torpedo" -> "Nova Fury"
     """
     if not ammo_name:
         return None
     
-    # Remove common suffixes: size letters, "Charge", faction prefixes
-    # Pattern: remove trailing " S", " M", " L", " XL" and " Charge"
-    cleaned = re.sub(r'\s+(S|M|L|XL)$', '', ammo_name, flags=re.IGNORECASE)
-    cleaned = re.sub(r'\s+Charge$', '', cleaned, flags=re.IGNORECASE)
+    cleaned = ammo_name
     
-    # Remove faction prefixes (e.g., "Republic Fleet ", "Imperial Navy ", "Caldari Navy ")
-    faction_prefixes = [
-        'Republic Fleet ', 'Imperial Navy ', 'Caldari Navy ', 'Federation Navy ',
-        'Dread Guristas ', 'True Sansha ', 'Shadow Serpentis ', 'Domination ',
-        'Dark Blood ', "Arch Angel ", 'Guristas ', 'Sansha ', 'Serpentis ',
-        'Blood ', 'Angel '
+    # Remove missile type suffixes (e.g., "Light Missile", "Heavy Assault Missile", "Torpedo", "Cruise Missile")
+    missile_suffixes = [
+        ' XL Torpedo', ' XL Cruise Missile',  # XL variants first (longest match)
+        ' Light Missile', ' Heavy Missile', ' Heavy Assault Missile',
+        ' Cruise Missile', ' Torpedo', ' Auto-Targeting Missile',
+        ' Defender Missile',
     ]
-    for prefix in faction_prefixes:
-        if cleaned.startswith(prefix):
-            cleaned = cleaned[len(prefix):]
+    is_missile = False
+    for suffix in missile_suffixes:
+        if cleaned.endswith(suffix):
+            cleaned = cleaned[:-len(suffix)]
+            is_missile = True
             break
     
+    # For turret ammo, remove faction prefixes (e.g., "Republic Fleet ", "Imperial Navy ", "Caldari Navy ")
+    # For missiles, keep faction prefix as it indicates ammo quality
+    if not is_missile:
+        faction_prefixes = [
+            'Republic Fleet ', 'Imperial Navy ', 'Caldari Navy ', 'Federation Navy ',
+            'Dread Guristas ', 'True Sansha ', 'Shadow Serpentis ', 'Domination ',
+            'Dark Blood ', "Arch Angel ", 'Guristas ', 'Sansha ', 'Serpentis ',
+            'Blood ', 'Angel '
+        ]
+        for prefix in faction_prefixes:
+            if cleaned.startswith(prefix):
+                cleaned = cleaned[len(prefix):]
+                break
+    
+    # Remove common turret ammo suffixes: size letters, "Charge"
+    # Pattern: remove trailing " S", " M", " L", " XL" and " Charge"
+    cleaned = re.sub(r'\s+(S|M|L|XL)$', '', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'\s+Charge$', '', cleaned, flags=re.IGNORECASE)
+    
     return cleaned
+
+
+# Missile damage type base names for faction lookup
+MISSILE_DAMAGE_TYPES = {'Mjolnir', 'Inferno', 'Scourge', 'Nova'}
+
+# Faction prefixes to normalize for missile color lookup
+FACTION_PREFIXES = [
+    'Caldari Navy ', 'Dread Guristas ', 'True Sansha ', 'Shadow Serpentis ', 
+    'Domination ', 'Dark Blood ', "Arch Angel ", 'Guristas ', 'Sansha ', 
+    'Serpentis ', 'Blood ', 'Angel ', 'Republic Fleet ', 'Imperial Navy ', 
+    'Federation Navy '
+]
 
 
 def get_ammo_color(ammo_name):
@@ -154,14 +243,26 @@ def get_ammo_color(ammo_name):
         return None
     
     color = None
+    
+    # Direct lookup first
     if base_name in AMMO_COLORS:
         color = AMMO_COLORS[base_name]
     else:
-        # Try partial match for ammo names that might have extra words
-        for key in AMMO_COLORS:
-            if key in base_name or base_name in key:
-                color = AMMO_COLORS[key]
-                break
+        # For faction missiles, normalize to "Faction <DamageType>" lookup
+        # e.g., "Caldari Navy Mjolnir" -> try "Faction Mjolnir"
+        for prefix in FACTION_PREFIXES:
+            if base_name.startswith(prefix):
+                faction_normalized = 'Faction ' + base_name[len(prefix):]
+                if faction_normalized in AMMO_COLORS:
+                    color = AMMO_COLORS[faction_normalized]
+                    break
+        
+        # If still not found, try partial match for turret ammo names
+        if color is None:
+            for key in AMMO_COLORS:
+                if key in base_name or base_name in key:
+                    color = AMMO_COLORS[key]
+                    break
     
     # Convert from 0-255 to 0-1 range for matplotlib
     if color:
@@ -199,14 +300,12 @@ class FitAmmoOptimalDpsGraph(FitGraph):
     _normalizers = {
         ('distance', 'km'): lambda v, src, tgt: None if v is None else v * 1000,
         ('atkSpeed', '%'): lambda v, src, tgt: v / 100 * src.getMaxVelocity(),
-        ('tgtSpeed', '%'): lambda v, src, tgt: v / 100 * tgt.getMaxVelocity(),
-        ('tgtSigRad', '%'): lambda v, src, tgt: v / 100 * tgt.getSigRadius()}
+        ('tgtSpeed', '%'): lambda v, src, tgt: v / 100 * tgt.getMaxVelocity()}
     
     # Denormalizers convert internal units back to display units
     _denormalizers = {
         ('distance', 'km'): lambda v, src, tgt: None if v is None else v / 1000,
-        ('tgtSpeed', '%'): lambda v, src, tgt: v * 100 / tgt.getMaxVelocity(),
-        ('tgtSigRad', '%'): lambda v, src, tgt: v * 100 / tgt.getSigRadius()}
+        ('tgtSpeed', '%'): lambda v, src, tgt: v * 100 / tgt.getMaxVelocity()}
     
     # No limiters - allow user to specify any range they want
     _limiters = {}
@@ -294,16 +393,20 @@ class FitAmmoOptimalDpsGraph(FitGraph):
     def _clearInternalCache(self, reason, extraData):
         if reason in (GraphCacheCleanupReason.fitChanged, GraphCacheCleanupReason.fitRemoved):
             self._projectedCache.clearForFit(extraData)
-            # Clear ammo cache
+            # Clear ammo caches
             if hasattr(self, '_ammo_turret_cache'):
                 self._ammo_turret_cache = {}
+            if hasattr(self, '_ammo_missile_cache'):
+                self._ammo_missile_cache = {}
             if hasattr(self, '_ammo_analysis_done'):
                 self._ammo_analysis_done = set()
         elif reason == GraphCacheCleanupReason.graphSwitched:
             self._projectedCache.clearAll()
-            # Clear ammo cache
+            # Clear ammo caches
             if hasattr(self, '_ammo_turret_cache'):
                 self._ammo_turret_cache = {}
+            if hasattr(self, '_ammo_missile_cache'):
+                self._ammo_missile_cache = {}
             if hasattr(self, '_ammo_analysis_done'):
                 self._ammo_analysis_done = set()
 
