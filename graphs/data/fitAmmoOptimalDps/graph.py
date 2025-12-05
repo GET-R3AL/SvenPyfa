@@ -1,22 +1,3 @@
-# =============================================================================
-# Copyright (C) 2010 Diego Duclos
-#
-# This file is part of pyfa.
-#
-# pyfa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# pyfa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with pyfa.  If not, see <http://www.gnu.org/licenses/>.
-# =============================================================================
-
 import re
 import math
 from logbook import Logger
@@ -39,7 +20,6 @@ pyfalog = Logger(__name__)
 
 
 # Ammo color definitions (RGB tuples, 0-255 range)
-# Colors are assigned based on ammo base name (without size suffix)
 AMMO_COLORS = {
     # Hybrid - Short Range
     "Null": (179, 179, 166),
@@ -57,13 +37,13 @@ AMMO_COLORS = {
     "Tungsten": (77, 77, 153),
     "Iron": (153, 77, 77),
     
-    # Laser - Short Range
+    # Energy - Short Range
     "Scorch": (235, 79, 255),
     "Conflagration": (0, 184, 64),
-    # Laser - Long Range
+    # Energy - Long Range
     "Gleam": (181, 145, 94),
     "Aurora": (166, 18, 55),
-    # Laser - Standard
+    # Energy - Standard
     "Multifrequency": (204, 204, 204),
     "Gamma": (5, 102, 242),
     "Xray": (0, 189, 134),
@@ -92,7 +72,6 @@ AMMO_COLORS = {
     # Exotic Plasma - Advanced
     "Occult": (189,0,38),
     "Mystic": (252,174,145),
-
     # Exotic Plasma - Standard
     "Tetryon": (240,59,32),
     "Baryon": (253,141,60),
@@ -101,23 +80,14 @@ AMMO_COLORS = {
     # Vorton Charges - Advanced
     "ElectroPunch Ultra": (37,52,148),
     "StrikeSnipe Ultra": (103,169,207),
-
     # Vorton Charges - Standard
     "BlastShot Condenser Pack": (49,163,84),
     "GalvaSurge Condenser Pack": (44,127,184),
     "MesmerFlux Condenser Pack": (65,182,196),
     "SlamBolt Condenser Pack": (194,230,153),
-
-    # =========================================================================
-    # MISSILE AMMO COLORS
-    # Based on damage type (hue) with saturation/brightness variants for charge types
-    # Generated programmatically below using MISSILE_DAMAGE_HUES and MISSILE_CHARGE_SV
-    # =========================================================================
-
 }
 
 # Missile damage type hues (0-360 degrees)
-# EM (Mjolnir) = Blue, Thermal (Inferno) = Red, Kinetic (Scourge) = Cyan/Teal, Explosive (Nova) = Orange
 MISSILE_DAMAGE_HUES = {
     'Mjolnir': 210,   # Blue (EM)
     'Inferno': 0,     # Red (Thermal)
@@ -126,11 +96,6 @@ MISSILE_DAMAGE_HUES = {
 }
 
 # Charge type saturation and value/brightness (0-100 scale)
-# Format: (saturation, value/brightness)
-# Rage/Fury: High sat, medium-dark brightness (highest damage)
-# Faction: High sat, medium brightness
-# Precision/Javelin: Medium sat, high brightness (better application)
-# T1 Standard: Low sat, high brightness (baseline)
 MISSILE_CHARGE_SV = {
     'Rage': (90, 55),
     'Fury': (90, 55),
@@ -186,15 +151,6 @@ AMMO_COLORS.update(_generate_missile_colors())
 def get_ammo_base_name(ammo_name):
     """
     Extract base ammo name by removing size suffix (S/M/L/XL), missile type suffixes, and other common suffixes.
-    
-    Examples:
-        "Conflagration L" -> "Conflagration"
-        "Void S" -> "Void"
-        "Antimatter Charge XL" -> "Antimatter"
-        "Republic Fleet EMP M" -> "EMP"
-        "Mjolnir Rage Light Missile" -> "Mjolnir Rage"
-        "Caldari Navy Scourge Heavy Missile" -> "Caldari Navy Scourge"
-        "Nova Fury Torpedo" -> "Nova Fury"
     """
     if not ammo_name:
         return None
@@ -229,8 +185,6 @@ def get_ammo_base_name(ammo_name):
                 cleaned = cleaned[len(prefix):]
                 break
     
-    # Remove common turret ammo suffixes: size letters, "Charge"
-    # Pattern: remove trailing " S", " M", " L", " XL" and " Charge"
     cleaned = re.sub(r'\s+(S|M|L|XL)$', '', cleaned, flags=re.IGNORECASE)
     cleaned = re.sub(r'\s+Charge$', '', cleaned, flags=re.IGNORECASE)
     
@@ -516,11 +470,6 @@ class FitAmmoOptimalDpsGraph(FitGraph):
 
     def getAmmoNameFast(self, x, xSpec, src, tgt=None):
         """
-        Ultra-fast ammo name lookup using cached transition data.
-        
-        Used during drag operations for real-time ammo display without
-        recalculating DPS. O(log n) using binary search on transitions.
-        
         Returns ammo name (str) or None if no cache available.
         """
         # Normalize distance (km to meters)
