@@ -153,6 +153,18 @@ class GraphCanvasPanel(wx.Panel):
         self.xMark = None
         self.mplOnDragHandler = None
         self.mplOnReleaseHandler = None
+        
+        # Blitting state for fast X marker updates during drag
+        self._blitBackground = None  # Saved background (without X marker)
+        self._xMarkerArtists = []    # Artists for X marker (line + labels) 
+        self._blitPlotData = {}      # Cached plot data for interpolation during drag
+        self._blitView = None        # Cached view for getAmmoNameFast during drag
+        self._blitIterList = None    # Cached source/target pairs
+        self._blitCanvasLimits = None  # Cached (canvasMinX, canvasMaxX, canvasMinY, canvasMaxY)
+        self._blitChosenX = None     # Cached X axis spec
+        self._blitChosenY = None     # Cached Y axis spec
+        self._blitYDiff = None       # Cached Y range for rounding
+        self._blitHasSegments = False  # Cached segment flag
 
     def draw(self, accurateMarks=True):
         pyfalog.debug('[GRAPH] Canvas draw started')
@@ -396,7 +408,7 @@ class GraphCanvasPanel(wx.Panel):
                 # Use effective max X * 1.1 for bounds (where data actually ends)
                 effectiveMaxXWithMargin = effectiveMaxX * 1
                 allXs.add(effectiveMaxXWithMargin)
-        canvasMinY, canvasMaxY = self._getLimits(allYs, minExtra=0.05, maxExtra=0.1, roundNice=True)
+        canvasMinY, canvasMaxY = self._getLimits(allYs, minExtra=0.05, maxExtra=0.03, roundNice=True)
         canvasMinX, canvasMaxX = self._getLimits(allXs, minExtra=0.02, maxExtra=0.02, roundNice=False)
         # Clamp Y minimum to 0 - damage values can't be negative
         canvasMinY = max(0, canvasMinY)
@@ -584,18 +596,203 @@ class GraphCanvasPanel(wx.Panel):
         self.canvas.draw()
         self.Refresh()
         pyfalog.debug('[GRAPH] Canvas refresh complete - {} data series plotted'.format(len(plotData)))
+        
+        # Cache data for blitting (fast X marker updates during drag)
+        # Save background BEFORE drawing X marker for clean restore
+        # We need to redraw without X marker to get clean background
+        if self.xMark is not None:
+            # X marker was drawn, we need background without it for blitting
+            # Store data for blit path, background will be saved after unmarkX or on first drag
+            pass
+        else:
+            # No X marker - this is a clean background, save it
+            self._blitBackground = self.canvas.copy_from_bbox(self.subplot.bbox)
+        
+        # Cache data needed for fast X marker interpolation during drag
+        self._blitPlotData = plotData
+        self._blitView = view
+        self._blitIterList = iterList
+        self._blitCanvasLimits = (canvasMinX, canvasMaxX, canvasMinY, canvasMaxY)
+        self._blitChosenX = chosenX
+        self._blitChosenY = chosenY
+        minY = min(allYs, default=0)
+        maxY = max(allYs, default=0)
+        self._blitYDiff = maxY - minY
+        self._blitHasSegments = hasSegments
+
+    def _drawXMarkerBlit(self, xMark):
+        """Fast X marker update using matplotlib blitting.
+        
+        Only redraws the X marker line and labels, not the entire plot.
+        Returns True if blit was successful, False if full redraw needed.
+        """
+        # Check if we have cached data for blitting
+        if (self._blitBackground is None or 
+            self._blitPlotData is None or
+            self._blitCanvasLimits is None):
+            return False
+        
+        canvasMinX, canvasMaxX, canvasMinY, canvasMaxY = self._blitCanvasLimits
+        
+        # Clamp xMark to canvas bounds
+        if xMark is None or xMark < canvasMinX or xMark > canvasMaxX:
+            return False
+        
+        # Restore the clean background (without X marker)
+        self.canvas.restore_region(self._blitBackground)
+        
+        # Remove old X marker artists
+        for artist in self._xMarkerArtists:
+            try:
+                artist.remove()
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                pass
+        self._xMarkerArtists = []
+        
+        # Draw new X marker line
+        line = self.subplot.axvline(x=xMark, linestyle='dotted', linewidth=1, color=(0, 0, 0), animated=True)
+        self._xMarkerArtists.append(line)
+        
+        # Prepare X label
+        chosenX = self._blitChosenX
+        if chosenX.unit is None:
+            xLabelCore = '{}'.format(roundToPrec(xMark, 4))
+        else:
+            xLabelCore = '{} {}'.format(roundToPrec(xMark, 4), chosenX.unit)
+        
+        # Calculate Y marks via interpolation
+        yMarks = {}
+        yDiff = self._blitYDiff
+        minY = canvasMinY
+        maxY = canvasMaxY
+        
+        def addYMark(val, extraInfo=None):
+            if val is None:
+                return
+            if yDiff != 0:
+                rounded = roundToPrec(val, 4, nsValue=yDiff)
+            else:
+                rounded = val
+            if minY <= val <= maxY or minY <= rounded <= maxY:
+                yMarks[rounded] = extraInfo
+        
+        view = self._blitView
+        plotData = self._blitPlotData
+        iterList = self._blitIterList
+        
+        for source, target in iterList:
+            if (source, target) not in plotData:
+                continue
+            xs, ys = plotData[(source, target)]
+            if not xs or xMark < min(xs) or xMark > max(xs):
+                continue
+            
+            # Fast ammo name lookup
+            extraStr = None
+            if hasattr(view, 'getAmmoNameFast'):
+                try:
+                    extraStr = view.getAmmoNameFast(x=xMark, xSpec=chosenX, src=source, tgt=target)
+                except (KeyboardInterrupt, SystemExit):
+                    raise
+                except:
+                    pass
+            
+            # Interpolate Y value
+            if xMark in xs:
+                idx = len(xs) - xs[::-1].index(xMark) - 1
+                addYMark(ys[idx], extraStr)
+            else:
+                idx = bisect(xs, xMark)
+                if idx > 0 and idx < len(xs):
+                    yMark = self._interpolateX(x=xMark, x1=xs[idx - 1], y1=ys[idx - 1], x2=xs[idx], y2=ys[idx])
+                    addYMark(yMark, extraStr)
+        
+        # Build label data
+        labelData = []
+        isDpsGraph = view.internalName in ('dmgStatsGraph', 'ammoOptimalDpsGraph')
+        
+        for yMark, extraInfo in yMarks.items():
+            if isDpsGraph:
+                yMarkStr = '{:.0f}'.format(yMark)
+            else:
+                yMarkStr = '{}'.format(yMark)
+            
+            if extraInfo:
+                labelText = '{} ({})'.format(yMarkStr, extraInfo)
+            else:
+                labelText = yMarkStr
+            labelData.append((yMark, labelText))
+        
+        # Determine alignment
+        xRange = canvasMaxX - canvasMinX
+        xPosRatio = (xMark - canvasMinX) / xRange if xRange > 0 else 0
+        
+        maxLabelLen = len(xLabelCore)
+        for yMark, labelText in labelData:
+            maxLabelLen = max(maxLabelLen, len(labelText))
+        
+        if maxLabelLen < 15:
+            flipThreshold = 0.80
+        elif maxLabelLen < 30:
+            flipThreshold = 0.65
+        else:
+            flipThreshold = 0.50
+        
+        if xPosRatio > flipThreshold:
+            labelAlignment = 'right'
+            labelPrefix = ''
+            labelSuffix = ' '
+        else:
+            labelAlignment = 'left'
+            labelPrefix = ' '
+            labelSuffix = ''
+        
+        textOutline = [PathEffects.withStroke(linewidth=3, foreground='white')]
+        
+        # Draw X label
+        xLabel = '{}{}{}'.format(labelPrefix, xLabelCore, labelSuffix)
+        ann = self.subplot.annotate(
+            xLabel, xy=(xMark, canvasMaxY - 0.01 * (canvasMaxY - canvasMinY)), xytext=(0, 0),
+            annotation_clip=False, textcoords='offset pixels', ha=labelAlignment, va='top',
+            fontsize='small', path_effects=textOutline, animated=True)
+        self._xMarkerArtists.append(ann)
+        
+        # Draw Y labels
+        for yMark, labelText in labelData:
+            label = '{}{}{}'.format(labelPrefix, labelText, labelSuffix)
+            ann = self.subplot.annotate(
+                label, xy=(xMark, yMark), xytext=(0, 0),
+                textcoords='offset pixels', ha=labelAlignment, va='center',
+                fontsize='small', path_effects=textOutline, animated=True)
+            self._xMarkerArtists.append(ann)
+        
+        # Draw the animated artists
+        for artist in self._xMarkerArtists:
+            self.subplot.draw_artist(artist)
+        
+        # Blit the updated region
+        self.canvas.blit(self.subplot.bbox)
+        
+        return True
 
     def markXApproximate(self, x):
         if x is not None:
             self.xMark = x
-            self.draw(accurateMarks=False)
+            # Try fast blit path first, fall back to full redraw
+            if not self._drawXMarkerBlit(x):
+                self.draw(accurateMarks=False)
 
     def unmarkX(self):
         self.xMark = None
+        # Clear blit state so next draw() saves fresh background
+        self._blitBackground = None
+        self._xMarkerArtists = []
         self.draw()
 
     @staticmethod
-    def _roundToNice(val, direction='up'):
+    def _roundToNice(val, direction='up', maxIncrease=0.15):
         """
         Round a value to a 'nice' number (1, 2, 5, or 10 multiplied by power of 10).
         This helps stabilize Y-axis limits and reduce flickering.
@@ -603,26 +800,30 @@ class GraphCanvasPanel(wx.Panel):
         Args:
             val: Value to round
             direction: 'up' to round up (for max), 'down' to round down (for min)
+            maxIncrease: Maximum allowed increase as a fraction (default 15%)
         """
         if val == 0:
             return 0
         
         sign = 1 if val >= 0 else -1
-        val = abs(val)
+        absVal = abs(val)
         
         # Find the order of magnitude
-        magnitude = 10 ** math.floor(math.log10(val))
-        normalized = val / magnitude
+        magnitude = 10 ** math.floor(math.log10(absVal))
+        normalized = absVal / magnitude
         
         # Nice numbers: 1, 2, 5, 10
         nice_numbers = [1, 2, 5, 10]
         
         if direction == 'up':
-            # Round up to next nice number
+            # Round up to next nice number, but cap the increase
+            maxAllowed = absVal * (1 + maxIncrease)
             for nice in nice_numbers:
-                if normalized <= nice:
-                    return sign * nice * magnitude
-            return sign * 10 * magnitude
+                candidate = nice * magnitude
+                if normalized <= nice and candidate <= maxAllowed:
+                    return sign * candidate
+            # If all nice numbers exceed maxIncrease, just return with small buffer
+            return sign * absVal * 1.05
         else:
             # Round down to previous nice number
             for nice in reversed(nice_numbers):
@@ -648,7 +849,7 @@ class GraphCanvasPanel(wx.Panel):
             maxVal += 5
         # Round to nice values to reduce Y-axis flickering (only for Y-axis)
         if roundNice and maxVal > 0:
-            maxVal = GraphCanvasPanel._roundToNice(maxVal * 1.02, 'up')  # Add 2% buffer before rounding
+            maxVal = GraphCanvasPanel._roundToNice(maxVal, 'up')
         return minVal, maxVal
 
     @staticmethod
@@ -671,6 +872,10 @@ class GraphCanvasPanel(wx.Panel):
                 self.mplOnDragHandler = self.canvas.mpl_connect('motion_notify_event', self.OnMplCanvasDrag)
             if not self.mplOnReleaseHandler:
                 self.mplOnReleaseHandler = self.canvas.mpl_connect('button_release_event', self.OnMplCanvasRelease)
+            # Save background for blitting if not already saved
+            # This captures the plot without X marker for fast subsequent updates
+            if self._blitBackground is None and self.xMark is None:
+                self._blitBackground = self.canvas.copy_from_bbox(self.subplot.bbox)
             self.markXApproximate(event.xdata)
         elif event.button == 3:
             self.unmarkX()

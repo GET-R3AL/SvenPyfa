@@ -1,18 +1,19 @@
-import re
+import colorsys
 import math
+import re
 from logbook import Logger
 
 from eos.const import FittingHardpoint
 from eos.saveddata.fit import Fit
 from graphs.data.base import FitGraph, XDef, YDef, Input, VectorDef
 from graphs.data.fitAmmoOptimalDps.getter import (
-    get_turret_base_stats,
-    get_charge_stats,
     Distance2OptimalAmmoDpsGetter,
     Distance2OptimalAmmoVolleyGetter,
-    get_ammo_name_at_distance_fast,
-    get_missile_flight_multipliers_from_module,
 )
+from graphs.data.fitAmmoOptimalDps.calc.turret import getTurretBaseStats
+from graphs.data.fitAmmoOptimalDps.calc.charges import getChargeStats
+from graphs.data.fitAmmoOptimalDps.calc.optimize_ammo import getAmmoNameAtDistance
+from graphs.data.fitAmmoOptimalDps.calc.launcher import getFlightMultipliers
 from graphs.data.fitDamageStats.cache import ProjectedDataCache
 from service.const import GraphCacheCleanupReason
 from service.settings import GraphSettings
@@ -109,7 +110,6 @@ MISSILE_CHARGE_SV = {
 
 def _hsv_to_rgb_255(h, s, v):
     """Convert HSV (h: 0-360, s: 0-100, v: 0-100) to RGB (0-255)."""
-    import colorsys
     r, g, b = colorsys.hsv_to_rgb(h / 360, s / 100, v / 100)
     return (int(r * 255), int(g * 255), int(b * 255))
 
@@ -333,11 +333,11 @@ class FitAmmoOptimalDpsGraph(FitGraph):
                         continue
                     
                     # Get turret base stats
-                    turret_base = get_turret_base_stats(mod)
+                    turret_base = getTurretBaseStats(mod)
                     
                     # Check all compatible charges for this turret
                     for charge in mod.getValidCharges():
-                        charge_stats = get_charge_stats(charge)
+                        charge_stats = getChargeStats(charge)
                         
                         # Calculate effective optimal + 2*falloff (where DPS drops to ~6%)
                         effective_optimal = turret_base['optimal'] * charge_stats['rangeMultiplier']
@@ -351,7 +351,7 @@ class FitAmmoOptimalDpsGraph(FitGraph):
                     # For missiles, check ALL compatible charges to find longest range
                     # We need the max range across all ammo types, not just the loaded one
                     # Get flight multipliers from skills/ship (if charge is loaded)
-                    flight_mults = get_missile_flight_multipliers_from_module(mod)
+                    flight_mults = getFlightMultipliers(mod)
                     
                     for charge in mod.getValidCharges():
                         base_velocity = charge.getAttribute('maxVelocity') or 0
@@ -383,22 +383,30 @@ class FitAmmoOptimalDpsGraph(FitGraph):
     def _clearInternalCache(self, reason, extraData):
         if reason in (GraphCacheCleanupReason.fitChanged, GraphCacheCleanupReason.fitRemoved):
             self._projectedCache.clearForFit(extraData)
-            # Clear ammo caches
+            # Clear ammo caches - both turret and projected since projected depends on source fit
             if hasattr(self, '_ammo_turret_cache'):
                 self._ammo_turret_cache = {}
+            if hasattr(self, '_ammo_projected_cache'):
+                self._ammo_projected_cache = {}
             if hasattr(self, '_ammo_missile_cache'):
                 self._ammo_missile_cache = {}
             if hasattr(self, '_ammo_analysis_done'):
                 self._ammo_analysis_done = set()
+            if hasattr(self, '_ammo_charge_cache'):
+                self._ammo_charge_cache = {}
         elif reason == GraphCacheCleanupReason.graphSwitched:
             self._projectedCache.clearAll()
-            # Clear ammo caches
+            # Clear all ammo caches
             if hasattr(self, '_ammo_turret_cache'):
                 self._ammo_turret_cache = {}
+            if hasattr(self, '_ammo_projected_cache'):
+                self._ammo_projected_cache = {}
             if hasattr(self, '_ammo_missile_cache'):
                 self._ammo_missile_cache = {}
             if hasattr(self, '_ammo_analysis_done'):
                 self._ammo_analysis_done = set()
+            if hasattr(self, '_ammo_charge_cache'):
+                self._ammo_charge_cache = {}
 
     def getPlotSegments(self, mainInput, miscInputs, xSpec, ySpec, src, tgt=None):
         """
@@ -472,6 +480,10 @@ class FitAmmoOptimalDpsGraph(FitGraph):
     def getAmmoNameFast(self, x, xSpec, src, tgt=None):
         """
         Returns ammo name (str) or None if no cache available.
+        
+        This uses the currently plotted transitions cache, which was built
+        using the current graph settings. We use the most recent cache entry
+        for this fit, which should match what's currently displayed.
         """
         # Normalize distance (km to meters)
         distance = self._normalizeValue(value=x, axisSpec=xSpec, src=src, tgt=None)
@@ -480,23 +492,44 @@ class FitAmmoOptimalDpsGraph(FitGraph):
         
         fit_id = id(src.item)
         
-        # Check turret cache - find any cache entry for this fit
-        if hasattr(self, '_ammo_turret_cache'):
+        # Check turret cache - find the most recent cache entry for this fit
+        # Since we cache per (fit_id, quality, resists, projected, speed, sig),
+        # we need to find the entry that matches current settings
+        if hasattr(self, '_ammo_turret_cache') and self._ammo_turret_cache:
+            # Build current cache key parameters
+            qualityTier = getattr(self, '_ammoQuality', 'all')
+            applyProjected = GraphSettings.getInstance().get('ammoOptimalApplyProjected')
+            ignoreResists = GraphSettings.getInstance().get('ammoOptimalIgnoreResists')
+            tgtResists = None if (ignoreResists or tgt is None) else tgt.getResists()
+            tgtSpeed = tgt.getMaxVelocity() if tgt else 0
+            tgtSigRadius = tgt.getSigRadius() if tgt else 0
+            
+            # Try exact cache key match first
+            cache_key = (fit_id, qualityTier, tgtResists, applyProjected, tgtSpeed, tgtSigRadius)
+            if cache_key in self._ammo_turret_cache:
+                turret_cache = self._ammo_turret_cache[cache_key]
+                if turret_cache:
+                    for group_info in turret_cache.values():
+                        transitions = group_info.get('transitions')
+                        if transitions:
+                            return getAmmoNameAtDistance(transitions, distance)
+            
+            # Fallback: find any cache entry for this fit (less accurate but better than nothing)
             for cache_key, turret_cache in self._ammo_turret_cache.items():
                 if cache_key[0] == fit_id and turret_cache:
                     for group_info in turret_cache.values():
                         transitions = group_info.get('transitions')
                         if transitions:
-                            return get_ammo_name_at_distance_fast(transitions, distance)
+                            return getAmmoNameAtDistance(transitions, distance)
         
-        # Check missile cache - find any cache entry for this fit
-        if hasattr(self, '_ammo_missile_cache'):
+        # Check missile cache with same logic
+        if hasattr(self, '_ammo_missile_cache') and self._ammo_missile_cache:
             for cache_key, missile_cache in self._ammo_missile_cache.items():
                 if cache_key[0] == fit_id and missile_cache:
                     for group_info in missile_cache.values():
                         transitions = group_info.get('transitions')
                         if transitions:
-                            return get_ammo_name_at_distance_fast(transitions, distance)
+                            return getAmmoNameAtDistance(transitions, distance)
         
         return None
 

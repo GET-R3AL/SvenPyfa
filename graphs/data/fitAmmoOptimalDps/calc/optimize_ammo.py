@@ -1,0 +1,357 @@
+# =============================================================================
+# Copyright (C) 2010 Diego Duclos
+#
+# This file is part of pyfa.
+#
+# pyfa is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# pyfa is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with pyfa.  If not, see <http://www.gnu.org/licenses/>.
+# =============================================================================
+
+"""
+Ammo optimization logic for optimal ammo selection graph.
+
+This module contains:
+- Pareto filtering (dominance pruning)
+- Best charge finding at a distance
+- Transition point calculation
+- Query functions for volley/DPS at distance
+"""
+
+from bisect import bisect_right
+
+from logbook import Logger
+
+from .turret import calculateAppliedVolley
+from .projected import getProjectedParamsAtDistance
+
+
+pyfalog = Logger(__name__)
+
+
+# =============================================================================
+# Utility Functions
+# =============================================================================
+
+def volleyToDps(volley, cycleTimeMs):
+    """
+    Convert volley to DPS.
+    
+    Args:
+        volley: Damage per shot
+        cycleTimeMs: Cycle time in milliseconds
+    
+    Returns:
+        DPS (damage per second)
+    """
+    if cycleTimeMs <= 0:
+        return 0
+    return volley / (cycleTimeMs / 1000)
+
+
+# =============================================================================
+# Pareto Filtering (Dominance Pruning)
+# =============================================================================
+
+def isDominated(a, b):
+    """
+    Check if charge A is dominated by charge B.
+    
+    A is dominated if B is >= in ALL dimensions and > in at least one.
+    
+    Args:
+        a: Charge data dict
+        b: Charge data dict
+    
+    Returns:
+        True if A is dominated by B
+    """
+    atLeastAsGood = (
+        b['raw_volley'] >= a['raw_volley'] and
+        b['effective_optimal'] >= a['effective_optimal'] and
+        b['effective_falloff'] >= a['effective_falloff'] and
+        b['effective_tracking'] >= a['effective_tracking']
+    )
+    
+    if not atLeastAsGood:
+        return False
+    
+    strictlyBetter = (
+        b['raw_volley'] > a['raw_volley'] or
+        b['effective_optimal'] > a['effective_optimal'] or
+        b['effective_falloff'] > a['effective_falloff'] or
+        b['effective_tracking'] > a['effective_tracking']
+    )
+    
+    return strictlyBetter
+
+
+def paretoFilter(chargeData):
+    """
+    Filter to only non-dominated charges (Pareto frontier).
+    
+    These are the only charges that could be optimal for some scenario.
+    A charge is dominated if another charge is at least as good in all
+    dimensions and strictly better in at least one.
+    
+    Args:
+        chargeData: List of charge data dicts
+    
+    Returns:
+        List of non-dominated charge data dicts
+    """
+    if len(chargeData) <= 1:
+        return chargeData
+    
+    nonDominated = []
+    for i, a in enumerate(chargeData):
+        dominated = False
+        for j, b in enumerate(chargeData):
+            if i != j and isDominated(a, b):
+                dominated = True
+                break
+        if not dominated:
+            nonDominated.append(a)
+    
+    return nonDominated
+
+
+# =============================================================================
+# Best Charge Finding
+# =============================================================================
+
+def findBestCharge(chargeData, distance, turretBase, trackingParams):
+    """
+    Find the best charge at a distance based on applied volley.
+    
+    Args:
+        chargeData: List of charge data dicts
+        distance: Surface-to-surface distance (m)
+        turretBase: Base turret stats dict
+        trackingParams: Tracking params dict or None for perfect tracking
+    
+    Returns:
+        Tuple of (best_volley, best_name, best_index)
+    """
+    bestVolley = 0
+    bestName = None
+    bestIndex = 0
+    
+    for i, cd in enumerate(chargeData):
+        volley = calculateAppliedVolley(cd, distance, turretBase, trackingParams)
+        if volley > bestVolley:
+            bestVolley = volley
+            bestName = cd['name']
+            bestIndex = i
+    
+    return bestVolley, bestName, bestIndex
+
+
+# =============================================================================
+# Transition Point Calculation
+# =============================================================================
+
+def _updateTrackingWithCache(baseTrackingParams, projectedCache, distance):
+    """
+    Fast update of tracking params using pre-built projected cache.
+    
+    This is the performance-critical inner loop optimization - instead of
+    calling getTackledSpeed/getSigRadiusMult 300+ times, we do a single
+    cache lookup.
+    
+    Args:
+        baseTrackingParams: Base tracking params dict (or None for perfect tracking)
+        projectedCache: Cache from buildProjectedCache()
+        distance: Distance (m)
+    
+    Returns:
+        Updated tracking params dict with cached tgtSpeed/tgtSigRadius
+    """
+    if baseTrackingParams is None:
+        return None
+    
+    params = baseTrackingParams.copy()
+    projected = getProjectedParamsAtDistance(projectedCache, distance)
+    params['tgtSpeed'] = projected['tgtSpeed']
+    params['tgtSigRadius'] = projected['tgtSigRadius']
+    return params
+
+
+def calculateTransitions(chargeData, turretBase, baseTrackingParams,
+                         projectedCache,
+                         maxDistance=300000, resolution=1000):
+    """
+    Calculate distances where optimal ammo changes.
+    
+    Uses coarse resolution for scanning, then binary search for exact 
+    transition points. This is much faster than fine-grained scanning.
+    
+    PERFORMANCE: Uses projectedCache for O(1) lookup of target speed/sig
+    at each distance, avoiding expensive getTackledSpeed/getSigRadiusMult calls.
+    
+    Args:
+        chargeData: List of charge data dicts
+        turretBase: Base turret stats dict
+        baseTrackingParams: Base tracking params dict (with base tgtSpeed/tgtSigRadius)
+        projectedCache: Pre-built cache from buildProjectedCache()
+        maxDistance: Maximum distance to scan (m)
+        resolution: Scan resolution (m)
+    
+    Returns:
+        List of tuples: [(distance, charge_index, charge_name, volley), ...]
+    """
+    if not chargeData:
+        pyfalog.debug("[AMMO] calculateTransitions: no chargeData")
+        return []
+    
+    pyfalog.debug(f"[AMMO] Starting transition calculation with {len(chargeData)} charges, "
+                  f"resolution={resolution}m, max={maxDistance/1000:.0f}km")
+    if baseTrackingParams:
+        pyfalog.debug(f"[AMMO] Base params: tgtSpeed={baseTrackingParams.get('tgtSpeed', 0):.0f}, "
+                      f"tgtSig={baseTrackingParams.get('tgtSigRadius', 0):.0f}")
+        pyfalog.debug(f"[AMMO] Using projected cache: {projectedCache.get('hasProjected', False)}")
+    
+    transitions = []
+    currentCharge = None
+    
+    # Start at distance 0
+    params0 = _updateTrackingWithCache(baseTrackingParams, projectedCache, 0)
+    bestVolley, bestName, bestIdx = findBestCharge(chargeData, 0, turretBase, params0)
+    transitions.append((0, bestIdx, bestName, bestVolley))
+    currentCharge = bestName
+    
+    # Scan for transitions
+    distance = resolution
+    while distance <= maxDistance:
+        params = _updateTrackingWithCache(baseTrackingParams, projectedCache, distance)
+        bestVolley, bestName, bestIdx = findBestCharge(chargeData, distance, turretBase, params)
+        
+        if bestName != currentCharge:
+            # Binary search for exact transition point
+            low, high = distance - resolution, distance
+            while high - low > 10:
+                mid = (low + high) // 2
+                paramsMid = _updateTrackingWithCache(baseTrackingParams, projectedCache, mid)
+                _, midName, _ = findBestCharge(chargeData, mid, turretBase, paramsMid)
+                if midName == currentCharge:
+                    low = mid
+                else:
+                    high = mid
+            
+            # Get volley at transition
+            paramsHigh = _updateTrackingWithCache(baseTrackingParams, projectedCache, high)
+            bestVolley, _, _ = findBestCharge(chargeData, high, turretBase, paramsHigh)
+            
+            transitions.append((high, bestIdx, bestName, bestVolley))
+            pyfalog.debug(f"[AMMO] Transition @ {high/1000:.1f}km: {currentCharge} -> {bestName}")
+            currentCharge = bestName
+        
+        distance += resolution
+    
+    pyfalog.debug(f"[AMMO] Completed: {len(transitions)} transition points found")
+    for t in transitions:
+        pyfalog.debug(f"[AMMO]   {t[0]/1000:.1f}km: {t[2]}")
+    
+    return transitions
+
+
+# =============================================================================
+# Query Functions
+# =============================================================================
+
+def getVolleyAtDistance(transitions, chargeData, turretBase, distance,
+                        baseTrackingParams, projectedCache):
+    """
+    Get applied volley at a specific distance.
+    
+    Uses transitions for O(log n) charge lookup, then calculates exact volley
+    using the pre-built projected cache for target speed/sig.
+    
+    Args:
+        transitions: List of transition tuples from calculateTransitions
+        chargeData: List of charge data dicts
+        turretBase: Base turret stats dict
+        distance: Distance to query (m)
+        baseTrackingParams: Base tracking params dict
+        projectedCache: Pre-built cache from buildProjectedCache()
+    
+    Returns:
+        Tuple of (volley, charge_name)
+    """
+    if not transitions:
+        return 0, None
+    
+    # Find which charge is optimal at this distance
+    distances = [t[0] for t in transitions]
+    idx = bisect_right(distances, distance) - 1
+    if idx < 0:
+        idx = 0
+    
+    chargeIdx = transitions[idx][1]
+    cd = chargeData[chargeIdx]
+    
+    # Calculate exact volley with projected effects from cache
+    params = _updateTrackingWithCache(baseTrackingParams, projectedCache, distance)
+    volley = calculateAppliedVolley(cd, distance, turretBase, params)
+    
+    return volley, cd['name']
+
+
+def getDpsAtDistance(transitions, chargeData, turretBase, distance,
+                     baseTrackingParams, projectedCache, cycleTimeMs):
+    """
+    Get applied DPS at a specific distance.
+    
+    This is simply volley / cycle_time.
+    
+    Args:
+        transitions: List of transition tuples
+        chargeData: List of charge data dicts
+        turretBase: Base turret stats dict
+        distance: Distance to query (m)
+        baseTrackingParams: Base tracking params dict
+        projectedCache: Pre-built cache from buildProjectedCache()
+        cycleTimeMs: Turret cycle time in milliseconds
+    
+    Returns:
+        Tuple of (dps, charge_name)
+    """
+    volley, name = getVolleyAtDistance(
+        transitions, chargeData, turretBase, distance,
+        baseTrackingParams, projectedCache
+    )
+    dps = volleyToDps(volley, cycleTimeMs)
+    return dps, name
+
+
+def getAmmoNameAtDistance(transitions, distance):
+    """
+    Fast lookup of ammo name at a distance using pre-computed transitions.
+    
+    Uses bisect for O(log n) lookup.
+    
+    Args:
+        transitions: List of transition tuples
+        distance: Distance to query (m)
+    
+    Returns:
+        Ammo name (str) or None if no transitions
+    """
+    if not transitions:
+        return None
+    
+    distances = [t[0] for t in transitions]
+    idx = bisect_right(distances, distance) - 1
+    if idx < 0:
+        idx = 0
+    
+    return transitions[idx][2]

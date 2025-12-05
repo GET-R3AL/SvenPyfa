@@ -208,6 +208,13 @@ class GraphControlPanel(wx.Panel):
         self.ammoQualityText.Show(hasSegments)
         self.ammoQualitySelection.Show(hasSegments)
         self.ammoQualitySizer.ShowItems(hasSegments)
+        
+        # Check if we need to auto-switch ammo style when switching to/from segmented graphs
+        if hasSegments:
+            # First check if we should switch back to color (no conflicts)
+            self.sourceList._checkAutoSwitchBackToColor()
+            # Then check if we need to switch to pattern (conflicts exist)
+            self.sourceList._checkAutoSwitchAmmoStyle()
 
         # Inputs
         self._updateInputs(storeInputs=False)

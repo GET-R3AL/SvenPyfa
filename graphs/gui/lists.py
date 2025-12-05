@@ -40,64 +40,49 @@ _t = wx.GetTranslation
 
 def getFitWeaponClass(fit):
     """
-    Determine the weapon class of a fit based on its turret or missile charges.
+    Determine the weapon class of a fit based on its turret or missile type.
     
     Returns: 'energy', 'projectile', 'hybrid', 'exotic', 'vorton', 'missile', or None if no weapons.
+    
+    Uses module group names instead of loading charges for performance.
     """
     if fit is None:
         return None
     
-    for mod in fit.modules:
+    # Try activeModulesIter first (more reliable), fall back to modules
+    modules = list(fit.activeModulesIter()) if hasattr(fit, 'activeModulesIter') else fit.modules
+    
+    for mod in modules:
         if mod.isEmpty or mod.item is None:
             continue
         
-        # Check turret hardpoints
+        # Check turret hardpoints - use module group name to determine type
         if mod.hardpoint == FittingHardpoint.TURRET:
             # Skip mining turrets
             if mod.getModifiedItemAttr('miningAmount'):
                 continue
             
-            # Check valid charges to determine weapon type
-            charges = list(mod.getValidCharges())
-            if not charges:
+            # Get module group name to determine weapon class
+            if mod.item.group is None:
                 continue
             
-            # Check the first charge's group name
-            charge = charges[0]
-            if charge.group is None:
-                continue
+            groupName = mod.item.group.name
             
-            groupName = charge.group.name
-            
-            # Determine weapon class from charge group
-            if 'Frequency Crystal' in groupName:
+            # Determine weapon class from module group
+            if 'Energy' in groupName or 'Laser' in groupName or 'Beam' in groupName or 'Pulse' in groupName:
                 return 'energy'
-            elif 'Projectile' in groupName:
+            elif 'Projectile' in groupName or 'Autocannon' in groupName or 'Artillery' in groupName:
                 return 'projectile'
-            elif 'Hybrid' in groupName:
+            elif 'Hybrid' in groupName or 'Blaster' in groupName or 'Railgun' in groupName:
                 return 'hybrid'
-            elif 'Exotic Plasma' in groupName:
+            elif 'Entropic' in groupName or 'Disintegrator' in groupName:
                 return 'exotic'
-            elif 'Vorton' in groupName or 'Condenser' in groupName:
+            elif 'Vorton' in groupName or 'Arcing' in groupName:
                 return 'vorton'
         
         # Check missile hardpoints
         elif mod.hardpoint == FittingHardpoint.MISSILE:
-            # Check valid charges to determine weapon type
-            charges = list(mod.getValidCharges())
-            if not charges:
-                continue
-            
-            # Check the first charge's group name
-            charge = charges[0]
-            if charge.group is None:
-                continue
-            
-            groupName = charge.group.name
-            
-            # Missile groups typically have "Missile" or "Torpedo" or "Rocket" in them
-            if any(term in groupName for term in ['Missile', 'Torpedo', 'Rocket', 'Bomb']):
-                return 'missile'
+            return 'missile'
     
     return None
 
@@ -381,27 +366,36 @@ class SourceWrapperList(BaseWrapperList):
         
         This helps differentiate between attackers when they use the same ammo types.
         """
+        from logbook import Logger
+        pyfalog = Logger(__name__)
+        
         # Check if ctrlPanel is fully initialized (has ammoStyleSelection)
         ctrlPanel = getattr(self.graphFrame, 'ctrlPanel', None)
         if ctrlPanel is None:
+            pyfalog.debug("[AMMO STYLE] ctrlPanel is None")
             return
         if not hasattr(ctrlPanel, 'ammoStyleSelection'):
+            pyfalog.debug("[AMMO STYLE] ctrlPanel has no ammoStyleSelection")
             return
         
         # Check if this graph supports segments (Application Profile)
         try:
             view = self.graphFrame.getView()
         except Exception:
+            pyfalog.debug("[AMMO STYLE] Failed to get view")
             return
         
         if not getattr(view, 'hasSegments', False):
+            pyfalog.debug("[AMMO STYLE] View doesn't have segments")
             return
         
         # Get current ammo style
         currentStyle = ctrlPanel.ammoStyle
+        pyfalog.debug(f"[AMMO STYLE] Current style: {currentStyle}")
         
         # Only auto-switch if currently on 'color' mode
         if currentStyle != 'color':
+            pyfalog.debug(f"[AMMO STYLE] Not switching - style is {currentStyle}, not 'color'")
             return
         
         # Check if we have 2+ fits with the same weapon class
@@ -410,14 +404,20 @@ class SourceWrapperList(BaseWrapperList):
             if not wrapper.isFit:
                 continue
             wc = getFitWeaponClass(wrapper.item)
+            pyfalog.debug(f"[AMMO STYLE] Fit {wrapper.item.name}: weapon class = {wc}")
             if wc:
                 weaponClasses[wc] = weaponClasses.get(wc, 0) + 1
+        
+        pyfalog.debug(f"[AMMO STYLE] Weapon classes: {weaponClasses}")
         
         # If any weapon class has 2+ fits, switch to pattern mode
         for wc, count in weaponClasses.items():
             if count >= 2:
+                pyfalog.debug(f"[AMMO STYLE] Switching to pattern - {wc} has {count} fits")
                 ctrlPanel.setAmmoStyle('pattern')
                 return
+        
+        pyfalog.debug("[AMMO STYLE] No conflicts found")
 
     def _checkAutoSwitchBackToColor(self):
         """
