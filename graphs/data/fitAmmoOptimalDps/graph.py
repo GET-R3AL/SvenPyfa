@@ -6,12 +6,13 @@ from eos.const import FittingHardpoint
 from eos.saveddata.fit import Fit
 from graphs.data.base import FitGraph, XDef, YDef, Input, VectorDef
 from graphs.data.fitAmmoOptimalDps.getter import (
+    get_turret_base_stats,
+    get_charge_stats,
     Distance2OptimalAmmoDpsGetter,
     Distance2OptimalAmmoVolleyGetter,
     get_ammo_name_at_distance_fast,
-    get_turret_base_stats,
-    get_charge_stats,
-    get_missile_flight_multipliers_from_module)
+    get_missile_flight_multipliers_from_module,
+)
 from graphs.data.fitDamageStats.cache import ProjectedDataCache
 from service.const import GraphCacheCleanupReason
 from service.settings import GraphSettings

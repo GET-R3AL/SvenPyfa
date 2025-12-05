@@ -155,6 +155,7 @@ class GraphCanvasPanel(wx.Panel):
         self.mplOnReleaseHandler = None
 
     def draw(self, accurateMarks=True):
+        pyfalog.debug('[GRAPH] Canvas draw started')
         self.subplot.clear()
         self.subplot.grid(True)
         allXs = set()
@@ -582,6 +583,7 @@ class GraphCanvasPanel(wx.Panel):
 
         self.canvas.draw()
         self.Refresh()
+        pyfalog.debug('[GRAPH] Canvas refresh complete - {} data series plotted'.format(len(plotData)))
 
     def markXApproximate(self, x):
         if x is not None:
