@@ -25,7 +25,7 @@ import wx
 
 from gui.bitmap_loader import BitmapLoader
 from gui.contextMenu import ContextMenu
-from gui.utils.inputs import FloatBox, FloatRangeBox
+from gui.utils.inputs import FloatBox, FloatRangeBox, valToStr
 from service.const import GraphCacheCleanupReason
 from service.fit import Fit
 from .lists import SourceWrapperList, TargetWrapperList
@@ -426,6 +426,41 @@ class GraphControlPanel(wx.Panel):
         self.graphFrame.clearCache(reason=GraphCacheCleanupReason.inputChanged)
         self.graphFrame.draw()
 
+    def _refreshMainInputRange(self):
+        """
+        Refresh the main input field's range based on current fit data.
+        
+        Called when fits change to update the distance range dynamically
+        for graphs that support getDefaultInputRange (like Application Profile).
+        """
+        if self._mainInputBox is None:
+            return
+        
+        view = self.graphFrame.getView()
+        if not hasattr(view, 'getDefaultInputRange'):
+            return
+        
+        # Get the input definition for the main input
+        mainInputKey = self.xType.mainInput
+        if mainInputKey not in view.inputMap:
+            return
+        
+        inputDef = view.inputMap[mainInputKey]
+        
+        # Calculate the new dynamic range
+        dynamicRange = view.getDefaultInputRange(inputDef, self.sources)
+        if dynamicRange is None:
+            dynamicRange = inputDef.defaultRange
+        
+        # Clear the stored range so the new default is used
+        storedKey = (inputDef.handle, inputDef.unit)
+        if storedKey in self._storedRanges:
+            del self._storedRanges[storedKey]
+        
+        # Update the text box with the new range
+        self._mainInputBox.textBox.ChangeValue('{}-{}'.format(
+            valToStr(dynamicRange[0]), valToStr(dynamicRange[1])))
+
     def getValues(self):
         view = self.graphFrame.getView()
         misc = []
@@ -508,6 +543,8 @@ class GraphControlPanel(wx.Panel):
     def OnFitChanged(self, event):
         self.sourceList.OnFitChanged(event)
         self.targetList.OnFitChanged(event)
+        # Refresh the main input's default range when fit changes
+        self._refreshMainInputRange()
 
     def OnFitRemoved(self, event):
         self.sourceList.OnFitRemoved(event)

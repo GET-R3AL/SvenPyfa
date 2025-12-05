@@ -300,7 +300,7 @@ def get_turret_base_stats(module):
     """
     Get turret stats with ship/skill bonuses but WITHOUT charge modifiers.
     
-    If a charge is loaded, it affects maxRange and falloff via multipliers.
+    If a charge is loaded, it affects maxRange, falloff, and trackingSpeed via multipliers.
     We need to undo those effects to get the true base turret stats.
     
     Returns dict with: optimal, falloff, tracking, optimalSigRadius, damageMultiplier
@@ -312,16 +312,19 @@ def get_turret_base_stats(module):
     optimal_sig_radius = module.getModifiedItemAttr('optimalSigRadius') or 0
     damage_mult = module.getModifiedItemAttr('damageMultiplier') or 1
     
-    # If a charge is loaded, undo its range/falloff multiplier effects
+    # If a charge is loaded, undo its range/falloff/tracking multiplier effects
     # Charges multiply these stats, so we divide them out
     if module.charge:
         charge_range_mult = module.charge.getAttribute('weaponRangeMultiplier') or 1
         charge_falloff_mult = module.charge.getAttribute('fallofMultiplier') or 1  # EVE typo
+        charge_tracking_mult = module.charge.getAttribute('trackingSpeedMultiplier') or 1
         
         if charge_range_mult != 0:
             optimal = optimal / charge_range_mult
         if charge_falloff_mult != 0:
             falloff = falloff / charge_falloff_mult
+        if charge_tracking_mult != 0:
+            tracking = tracking / charge_tracking_mult
     
     return {
         'optimal': optimal,

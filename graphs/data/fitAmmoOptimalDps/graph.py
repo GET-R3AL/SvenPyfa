@@ -29,7 +29,8 @@ from graphs.data.fitAmmoOptimalDps.getter import (
     Distance2OptimalAmmoVolleyGetter,
     get_ammo_name_at_distance_fast,
     get_turret_base_stats,
-    get_charge_stats)
+    get_charge_stats,
+    get_missile_flight_multipliers_from_module)
 from graphs.data.fitDamageStats.cache import ProjectedDataCache
 from service.const import GraphCacheCleanupReason
 from service.settings import GraphSettings
@@ -109,62 +110,77 @@ AMMO_COLORS = {
 
     # =========================================================================
     # MISSILE AMMO COLORS
-    # Based on damage type with saturation/brightness variants:
-    # - Rage/Fury: Dark, highly saturated (highest damage)
-    # - Faction (Caldari Navy, Dread Guristas, etc.): Medium-dark, saturated
-    # - Precision/Javelin: Medium, less saturated (better application)
-    # - T1 Standard: Light, least saturated (baseline)
+    # Based on damage type (hue) with saturation/brightness variants for charge types
+    # Generated programmatically below using MISSILE_DAMAGE_HUES and MISSILE_CHARGE_SV
     # =========================================================================
-    
-    # EM Damage (Mjolnir) - Blue tones
-    # Rage/Fury variants (dark, saturated)
-    "Mjolnir Rage": (20, 60, 200),
-    "Mjolnir Fury": (20, 60, 200),
-    # Faction variants (medium-dark, saturated) - covers Caldari Navy, Dread Guristas, etc.
-    "Faction Mjolnir": (50, 100, 220),
-    # Precision/Javelin variants (medium, less saturated)
-    "Mjolnir Precision": (90, 130, 210),
-    "Mjolnir Javelin": (90, 130, 210),
-    # T1 Standard (light, least saturated)
-    "Mjolnir": (140, 165, 220),
-    
-    # Thermal Damage (Inferno) - Red/Orange tones
-    # Rage/Fury variants (dark, saturated)
-    "Inferno Rage": (200, 30, 20),
-    "Inferno Fury": (200, 30, 20),
-    # Faction variants (medium-dark, saturated)
-    "Faction Inferno": (220, 70, 50),
-    # Precision/Javelin variants (medium, less saturated)
-    "Inferno Precision": (210, 110, 90),
-    "Inferno Javelin": (210, 110, 90),
-    # T1 Standard (light, least saturated)
-    "Inferno": (220, 150, 140),
-    
-    # Kinetic Damage (Scourge) - Gray/White with slight green tint
-    # Rage/Fury variants (dark, saturated)
-    "Scourge Rage": (50, 80, 60),
-    "Scourge Fury": (50, 80, 60),
-    # Faction variants (medium-dark, saturated)
-    "Faction Scourge": (90, 120, 100),
-    # Precision/Javelin variants (medium, less saturated)
-    "Scourge Precision": (130, 155, 140),
-    "Scourge Javelin": (130, 155, 140),
-    # T1 Standard (light, least saturated)
-    "Scourge": (175, 195, 185),
-    
-    # Explosive Damage (Nova) - Yellow/Orange tones
-    # Rage/Fury variants (dark, saturated)
-    "Nova Rage": (200, 140, 0),
-    "Nova Fury": (200, 140, 0),
-    # Faction variants (medium-dark, saturated)
-    "Faction Nova": (220, 170, 40),
-    # Precision/Javelin variants (medium, less saturated)
-    "Nova Precision": (220, 190, 90),
-    "Nova Javelin": (220, 190, 90),
-    # T1 Standard (light, least saturated)
-    "Nova": (230, 210, 150),
 
 }
+
+# Missile damage type hues (0-360 degrees)
+# EM (Mjolnir) = Blue, Thermal (Inferno) = Red, Kinetic (Scourge) = Cyan/Teal, Explosive (Nova) = Orange
+MISSILE_DAMAGE_HUES = {
+    'Mjolnir': 210,   # Blue (EM)
+    'Inferno': 0,     # Red (Thermal)
+    'Scourge': 180,   # Cyan/Teal (Kinetic)
+    'Nova': 30,       # Orange (Explosive)
+}
+
+# Charge type saturation and value/brightness (0-100 scale)
+# Format: (saturation, value/brightness)
+# Rage/Fury: High sat, medium-dark brightness (highest damage)
+# Faction: High sat, medium brightness
+# Precision/Javelin: Medium sat, high brightness (better application)
+# T1 Standard: Low sat, high brightness (baseline)
+MISSILE_CHARGE_SV = {
+    'Rage': (90, 55),
+    'Fury': (90, 55),
+    'Faction': (55, 90),
+    'Precision': (50, 85),
+    'Javelin': (50, 45),
+    'T1': (25, 90),
+}
+
+
+def _hsv_to_rgb_255(h, s, v):
+    """Convert HSV (h: 0-360, s: 0-100, v: 0-100) to RGB (0-255)."""
+    import colorsys
+    r, g, b = colorsys.hsv_to_rgb(h / 360, s / 100, v / 100)
+    return (int(r * 255), int(g * 255), int(b * 255))
+
+
+def _generate_missile_colors():
+    """Generate missile ammo colors based on damage type hue and charge type sat/brightness."""
+    colors = {}
+    
+    for damage_type, hue in MISSILE_DAMAGE_HUES.items():
+        # Rage variant
+        s, v = MISSILE_CHARGE_SV['Rage']
+        colors[f"{damage_type} Rage"] = _hsv_to_rgb_255(hue, s, v)
+        
+        # Fury variant
+        s, v = MISSILE_CHARGE_SV['Fury']
+        colors[f"{damage_type} Fury"] = _hsv_to_rgb_255(hue, s, v)
+        
+        # Faction variant
+        s, v = MISSILE_CHARGE_SV['Faction']
+        colors[f"Faction {damage_type}"] = _hsv_to_rgb_255(hue, s, v)
+        
+        # Precision variant
+        s, v = MISSILE_CHARGE_SV['Precision']
+        colors[f"{damage_type} Precision"] = _hsv_to_rgb_255(hue, s, v)
+        
+        # Javelin variant
+        s, v = MISSILE_CHARGE_SV['Javelin']
+        colors[f"{damage_type} Javelin"] = _hsv_to_rgb_255(hue, s, v)
+        
+        # T1 Standard (just damage type name)
+        s, v = MISSILE_CHARGE_SV['T1']
+        colors[damage_type] = _hsv_to_rgb_255(hue, s, v)
+    
+    return colors
+
+# Add generated missile colors to AMMO_COLORS
+AMMO_COLORS.update(_generate_missile_colors())
 
 
 def get_ammo_base_name(ammo_name):
@@ -371,36 +387,35 @@ class FitAmmoOptimalDpsGraph(FitGraph):
                         # Calculate effective optimal + 2*falloff (where DPS drops to ~6%)
                         effective_optimal = turret_base['optimal'] * charge_stats['rangeMultiplier']
                         effective_falloff = turret_base['falloff'] * charge_stats['falloffMultiplier']
-                        effective_max = effective_optimal + effective_falloff * 2
+                        effective_max = effective_optimal + effective_falloff * 2.5
                         
                         if effective_max > max_range_m:
                             max_range_m = effective_max
                 
                 elif mod.hardpoint == FittingHardpoint.MISSILE:
-                    # For missiles, use missileMaxRangeData if charge loaded
-                    if mod.charge is not None:
-                        missileRangeData = mod.missileMaxRangeData
-                        if missileRangeData:
-                            _, higherRange, _ = missileRangeData
-                            if higherRange > max_range_m:
-                                max_range_m = higherRange
-                    else:
-                        # Estimate from compatible charges using base attributes
-                        for charge in mod.getValidCharges():
-                            maxVelocity = charge.getAttribute('maxVelocity') or 0
-                            explosionDelay = charge.getAttribute('explosionDelay') or 0
-                            if maxVelocity > 0 and explosionDelay > 0:
-                                # Simple estimate: velocity * flight_time
-                                flightTime = explosionDelay / 1000
-                                estimated_range = maxVelocity * flightTime
-                                if estimated_range > max_range_m:
-                                    max_range_m = estimated_range
+                    # For missiles, check ALL compatible charges to find longest range
+                    # We need the max range across all ammo types, not just the loaded one
+                    # Get flight multipliers from skills/ship (if charge is loaded)
+                    flight_mults = get_missile_flight_multipliers_from_module(mod)
+                    
+                    for charge in mod.getValidCharges():
+                        base_velocity = charge.getAttribute('maxVelocity') or 0
+                        base_explosion_delay = charge.getAttribute('explosionDelay') or 0
+                        if base_velocity > 0 and base_explosion_delay > 0:
+                            # Apply skill/ship bonuses to flight attributes
+                            maxVelocity = base_velocity * flight_mults['maxVelocity']
+                            explosionDelay = base_explosion_delay * flight_mults['explosionDelay']
+                            # Estimate range: velocity * flight_time
+                            flightTime = explosionDelay / 1000
+                            estimated_range = maxVelocity * flightTime
+                            if estimated_range > max_range_m:
+                                max_range_m = estimated_range
         
         if max_range_m <= 0:
             return inputDef.defaultRange
         
         # Add 10% buffer and convert to km
-        max_range_km = (max_range_m * 1.10) / 1000
+        max_range_km = (max_range_m * 1.05) / 1000
         
         # Cap at 300km (EVE's max lock range)
         max_range_km = min(max_range_km, 300)

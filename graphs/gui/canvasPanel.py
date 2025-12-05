@@ -46,7 +46,9 @@ def _filterLowYValues(xs, ys, minY=1, addZeroPoint=False):
     valid Y>=minY points at further ranges.
     
     Returns filtered (xs, ys) lists.
-    If addZeroPoint=True, adds a final point at Y=0 to connect to the axis.
+    If addZeroPoint=True AND filtering actually removed trailing low-Y points,
+    adds a final point at Y=0 to connect to the axis.
+    Note: Does NOT add Y=0 if data ends at user-specified bounds (no trailing low-Y values).
     """
     if not xs or not ys:
         return xs, ys
@@ -66,7 +68,9 @@ def _filterLowYValues(xs, ys, minY=1, addZeroPoint=False):
     filteredXs = list(xs[:lastValidIdx + 1])
     filteredYs = list(ys[:lastValidIdx + 1])
     
-    # If there's a point after the last valid one, interpolate to find crossover
+    # Only add Y=0 point if filtering actually removed trailing low-Y points
+    # (i.e., there's a point after lastValidIdx that was below minY)
+    # This ensures we don't add Y=0 when data just ends at user bounds
     if addZeroPoint and lastValidIdx + 1 < len(xs):
         nextX = xs[lastValidIdx + 1]
         nextY = ys[lastValidIdx + 1]
@@ -78,10 +82,9 @@ def _filterLowYValues(xs, ys, minY=1, addZeroPoint=False):
             crossX = prevX + (minY - prevY) * (nextX - prevX) / (nextY - prevY)
             filteredXs.append(crossX)
             filteredYs.append(0)
-    elif addZeroPoint and filteredXs:
-        # No point after, just add Y=0 at the last X
-        filteredXs.append(filteredXs[-1])
-        filteredYs.append(0)
+    # Note: Removed the 'elif addZeroPoint and filteredXs' branch
+    # We should NOT add Y=0 if the data simply ends at the last point
+    # (no trailing low-Y values were filtered out)
     
     return filteredXs, filteredYs
 
@@ -390,7 +393,7 @@ class GraphCanvasPanel(wx.Panel):
                 allXs.add(max(mainInput.value))
             else:
                 # Use effective max X * 1.1 for bounds (where data actually ends)
-                effectiveMaxXWithMargin = effectiveMaxX * 1.1
+                effectiveMaxXWithMargin = effectiveMaxX * 1
                 allXs.add(effectiveMaxXWithMargin)
         canvasMinY, canvasMaxY = self._getLimits(allYs, minExtra=0.05, maxExtra=0.1, roundNice=True)
         canvasMinX, canvasMaxX = self._getLimits(allXs, minExtra=0.02, maxExtra=0.02, roundNice=False)
