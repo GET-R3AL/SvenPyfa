@@ -1258,8 +1258,10 @@ def calculate_missile_transition_points(charge_data, tgtSpeed, tgtSigRadius, max
             current_index = best_idx
             current_charge = best_name
         
-        # If DPS is effectively zero, stop
+        # If DPS is effectively zero, add a None transition and stop
         if best_dps < 0.01:
+            # Add None transition to mark where DPS drops to zero
+            transitions.append((distance, -1, None, 0))
             break
             
         distance += resolution

@@ -37,6 +37,55 @@ from gui.utils.numberFormatter import roundToPrec
 pyfalog = Logger(__name__)
 
 
+def _filterLowYValues(xs, ys, minY=1, addZeroPoint=False):
+    """
+    Filter out trailing points where Y < minY (default 1).
+    
+    For damage graphs, values less than 1 are effectively zero.
+    Only filters trailing low-Y values - keeps low-Y values in the middle if there are
+    valid Y>=minY points at further ranges.
+    
+    Returns filtered (xs, ys) lists.
+    If addZeroPoint=True, adds a final point at Y=0 to connect to the axis.
+    """
+    if not xs or not ys:
+        return xs, ys
+    
+    # Find the last index where Y >= minY
+    lastValidIdx = -1
+    for i in range(len(ys) - 1, -1, -1):
+        if ys[i] >= minY:
+            lastValidIdx = i
+            break
+    
+    # If no valid points, return empty
+    if lastValidIdx < 0:
+        return [], []
+    
+    # Keep all points up to and including the last valid point
+    filteredXs = list(xs[:lastValidIdx + 1])
+    filteredYs = list(ys[:lastValidIdx + 1])
+    
+    # If there's a point after the last valid one, interpolate to find crossover
+    if addZeroPoint and lastValidIdx + 1 < len(xs):
+        nextX = xs[lastValidIdx + 1]
+        nextY = ys[lastValidIdx + 1]
+        prevX = filteredXs[-1]
+        prevY = filteredYs[-1]
+        
+        # Linear interpolation: find X where Y = minY (or close to 0)
+        if prevY != nextY:
+            crossX = prevX + (minY - prevY) * (nextX - prevX) / (nextY - prevY)
+            filteredXs.append(crossX)
+            filteredYs.append(0)
+    elif addZeroPoint and filteredXs:
+        # No point after, just add Y=0 at the last X
+        filteredXs.append(filteredXs[-1])
+        filteredYs.append(0)
+    
+    return filteredXs, filteredYs
+
+
 try:
     import matplotlib as mpl
 
@@ -118,6 +167,10 @@ class GraphCanvasPanel(wx.Panel):
         mainInput, miscInputs = self.graphFrame.ctrlPanel.getValues()
         view = self.graphFrame.getView()
         
+        # Track the effective max X where data ends (where Y drops to minY threshold)
+        # This is used to limit X bounds for missile-like data that doesn't span full range
+        effectiveMaxX = None
+        
         # Set ammo quality on view for segmented graphs
         if hasattr(view, 'hasSegments') and view.hasSegments:
             view._ammoQuality = self.graphFrame.ctrlPanel.ammoQuality
@@ -186,8 +239,11 @@ class GraphCanvasPanel(wx.Panel):
                         segmentXs = []
                         segmentYs = []
                         legendSegments = []  # Track segments for legend
+                        lastSegmentColor = None
+                        lastSegmentStyle = None
+                        lastSegmentMaxX = None
                         
-                        for segment in segments:
+                        for segIdx, segment in enumerate(segments):
                             xs = segment['xs']
                             ys = segment['ys']
                             ammoName = segment.get('ammo', 'Unknown')
@@ -195,6 +251,21 @@ class GraphCanvasPanel(wx.Panel):
                             
                             if not self.__checkNumbers(xs, ys):
                                 continue
+                            
+                            # Check if this is the last segment
+                            isLastSegment = (segIdx == len(segments) - 1)
+                            
+                            # Filter out points where Y < 1 (effectively zero damage)
+                            # Add Y=0 point only for the last segment to connect to axis
+                            xs, ys = _filterLowYValues(xs, ys, minY=1, addZeroPoint=isLastSegment)
+                            if not xs or not ys:
+                                continue
+                            
+                            # Track effective max X (where data actually ends)
+                            if xs:
+                                segMaxX = max(xs)
+                                if effectiveMaxX is None or segMaxX > effectiveMaxX:
+                                    effectiveMaxX = segMaxX
                             
                             # Determine color and line style based on ammo style mode
                             if ammoStyle == 'color' and getAmmoColorFunc:
@@ -217,6 +288,11 @@ class GraphCanvasPanel(wx.Panel):
                                 # None mode: solid single color line
                                 segColor = baseRgbColor
                                 segLineStyle = 'solid'
+                            
+                            # Track last segment info for potential Y=0 connection
+                            lastSegmentColor = segColor
+                            lastSegmentStyle = segLineStyle
+                            lastSegmentMaxX = max(xs) if xs else None
                             
                             # Plot this segment
                             if len(xs) == 1 and len(ys) == 1:
@@ -271,6 +347,18 @@ class GraphCanvasPanel(wx.Panel):
                     if not self.__checkNumbers(xs, ys):
                         pyfalog.warning('Failed to plot "{}" vs "{}" due to inf or NaN in values'.format(source.name, '' if target is None else target.name))
                         continue
+                    # Filter out Y values below 1 (damage can't be less than 1)
+                    # Add Y=0 point to connect line to axis
+                    xs, ys = _filterLowYValues(xs, ys, addZeroPoint=True)
+                    if not xs or not ys:
+                        continue
+                    
+                    # Track effective max X (where data actually ends)
+                    if xs:
+                        dataMaxX = max(xs)
+                        if effectiveMaxX is None or dataMaxX > effectiveMaxX:
+                            effectiveMaxX = dataMaxX
+                    
                     plotData[(source, target)] = (xs, ys)
                     allXs.update(xs)
                     allYs.update(ys)
@@ -297,9 +385,17 @@ class GraphCanvasPanel(wx.Panel):
         # Include the user's input range in X limits so axis extends to full range
         if mainInput and mainInput.value:
             allXs.add(min(mainInput.value))
-            allXs.add(max(mainInput.value))
+            # Only add max if we don't have an effective max from filtered data
+            if effectiveMaxX is None:
+                allXs.add(max(mainInput.value))
+            else:
+                # Use effective max X * 1.1 for bounds (where data actually ends)
+                effectiveMaxXWithMargin = effectiveMaxX * 1.1
+                allXs.add(effectiveMaxXWithMargin)
         canvasMinY, canvasMaxY = self._getLimits(allYs, minExtra=0.05, maxExtra=0.1, roundNice=True)
         canvasMinX, canvasMaxX = self._getLimits(allXs, minExtra=0.02, maxExtra=0.02, roundNice=False)
+        # Clamp Y minimum to 0 - damage values can't be negative
+        canvasMinY = max(0, canvasMinY)
         self.subplot.set_ylim(bottom=canvasMinY, top=canvasMaxY)
         self.subplot.set_xlim(left=canvasMinX, right=canvasMaxX)
         # Process X marks line

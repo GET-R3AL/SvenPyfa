@@ -339,10 +339,11 @@ class FitAmmoOptimalDpsGraph(FitGraph):
 
     def getDefaultInputRange(self, inputDef, sources):
         """
-        Calculate dynamic default range based on the turrets' max effective range.
+        Calculate dynamic default range based on the turrets/missiles max effective range.
         
         Returns (min, max) tuple in the input's units (km for distance).
-        The max is the longest range ammo's optimal+falloff*2 + 5%, capped at 300km.
+        For turrets: the longest range ammo's optimal+falloff*2 + 10%, capped at 300km.
+        For missiles: the longest range missile's max range + 10%, capped at 300km.
         """
         if inputDef.handle != 'distance' or not sources:
             return inputDef.defaultRange
@@ -354,32 +355,51 @@ class FitAmmoOptimalDpsGraph(FitGraph):
             if fit is None:
                 continue
             
-            # Check all turrets and their compatible charges
+            # Check all turrets and missiles
             for mod in fit.activeModulesIter():
-                if mod.hardpoint != FittingHardpoint.TURRET:
-                    continue
-                if mod.getModifiedItemAttr('miningAmount'):
-                    continue
-                
-                # Get turret base stats
-                turret_base = get_turret_base_stats(mod)
-                
-                # Check all compatible charges for this turret
-                for charge in mod.getValidCharges():
-                    charge_stats = get_charge_stats(charge)
+                if mod.hardpoint == FittingHardpoint.TURRET:
+                    if mod.getModifiedItemAttr('miningAmount'):
+                        continue
                     
-                    # Calculate effective optimal + 2*falloff (where DPS drops to ~6%)
-                    effective_optimal = turret_base['optimal'] * charge_stats['rangeMultiplier']
-                    effective_falloff = turret_base['falloff'] * charge_stats['falloffMultiplier']
-                    effective_max = effective_optimal + effective_falloff * 2
+                    # Get turret base stats
+                    turret_base = get_turret_base_stats(mod)
                     
-                    if effective_max > max_range_m:
-                        max_range_m = effective_max
+                    # Check all compatible charges for this turret
+                    for charge in mod.getValidCharges():
+                        charge_stats = get_charge_stats(charge)
+                        
+                        # Calculate effective optimal + 2*falloff (where DPS drops to ~6%)
+                        effective_optimal = turret_base['optimal'] * charge_stats['rangeMultiplier']
+                        effective_falloff = turret_base['falloff'] * charge_stats['falloffMultiplier']
+                        effective_max = effective_optimal + effective_falloff * 2
+                        
+                        if effective_max > max_range_m:
+                            max_range_m = effective_max
+                
+                elif mod.hardpoint == FittingHardpoint.MISSILE:
+                    # For missiles, use missileMaxRangeData if charge loaded
+                    if mod.charge is not None:
+                        missileRangeData = mod.missileMaxRangeData
+                        if missileRangeData:
+                            _, higherRange, _ = missileRangeData
+                            if higherRange > max_range_m:
+                                max_range_m = higherRange
+                    else:
+                        # Estimate from compatible charges using base attributes
+                        for charge in mod.getValidCharges():
+                            maxVelocity = charge.getAttribute('maxVelocity') or 0
+                            explosionDelay = charge.getAttribute('explosionDelay') or 0
+                            if maxVelocity > 0 and explosionDelay > 0:
+                                # Simple estimate: velocity * flight_time
+                                flightTime = explosionDelay / 1000
+                                estimated_range = maxVelocity * flightTime
+                                if estimated_range > max_range_m:
+                                    max_range_m = estimated_range
         
         if max_range_m <= 0:
             return inputDef.defaultRange
         
-        # Add 5% buffer and convert to km
+        # Add 10% buffer and convert to km
         max_range_km = (max_range_m * 1.10) / 1000
         
         # Cap at 300km (EVE's max lock range)
@@ -493,35 +513,25 @@ class FitAmmoOptimalDpsGraph(FitGraph):
         if distance is None:
             return None
         
-        # Look up in cache - cache key is (fit_id, quality_tier, tgt_resists)
-        if not hasattr(self, '_ammo_turret_cache'):
-            return None
-        
-        # Build the same cache key used in the getter
         fit_id = id(src.item)
-        quality_tier = getattr(self, '_ammoQuality', 'all')
         
-        # Get target resists if not ignoring them
-        ignore_resists = GraphSettings.getInstance().get('ammoOptimalIgnoreResists')
-        if ignore_resists or tgt is None:
-            tgt_resists = None
-        else:
-            tgt_resists = tgt.getResists()
+        # Check turret cache - find any cache entry for this fit
+        if hasattr(self, '_ammo_turret_cache'):
+            for cache_key, turret_cache in self._ammo_turret_cache.items():
+                if cache_key[0] == fit_id and turret_cache:
+                    for group_info in turret_cache.values():
+                        transitions = group_info.get('transitions')
+                        if transitions:
+                            return get_ammo_name_at_distance_fast(transitions, distance)
         
-        cache_key = (fit_id, quality_tier, tgt_resists)
-        
-        if cache_key not in self._ammo_turret_cache:
-            return None
-        
-        turret_cache = self._ammo_turret_cache[cache_key]
-        if not turret_cache:
-            return None
-        
-        # Get ammo name from first turret group (they should all use same ammo)
-        for group_info in turret_cache.values():
-            transitions = group_info.get('transitions')
-            if transitions:
-                return get_ammo_name_at_distance_fast(transitions, distance)
+        # Check missile cache - find any cache entry for this fit
+        if hasattr(self, '_ammo_missile_cache'):
+            for cache_key, missile_cache in self._ammo_missile_cache.items():
+                if cache_key[0] == fit_id and missile_cache:
+                    for group_info in missile_cache.values():
+                        transitions = group_info.get('transitions')
+                        if transitions:
+                            return get_ammo_name_at_distance_fast(transitions, distance)
         
         return None
 

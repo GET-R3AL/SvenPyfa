@@ -20,6 +20,7 @@
 
 import wx
 
+from eos.const import FittingHardpoint
 from graphs.data.base import FitGraph, Input, VectorDef, XDef, YDef
 from service.const import GraphCacheCleanupReason
 from service.settings import GraphSettings
@@ -116,3 +117,78 @@ class FitDamageStatsGraph(FitGraph):
         ('distance', 'km'): lambda v, src, tgt: None if v is None else v / 1000,
         ('tgtSpeed', '%'): lambda v, src, tgt: v * 100 / tgt.getMaxVelocity(),
         ('tgtSigRad', '%'): lambda v, src, tgt: v * 100 / tgt.getSigRadius()}
+
+    def getDefaultInputRange(self, inputDef, sources):
+        """
+        Calculate dynamic default range based on the turrets/missiles max effective range.
+        
+        Returns (min, max) tuple in the input's units (km for distance).
+        For turrets: the longest range weapon's optimal+falloff*2 + 10%, capped at 300km.
+        For missiles: the longest range missile's max range + 10%, capped at 300km.
+        """
+        if inputDef.handle != 'distance' or not sources:
+            return inputDef.defaultRange
+        
+        max_range_m = 0
+        
+        for src in sources:
+            fit = src.item
+            if fit is None:
+                continue
+            
+            # Check all turrets and missiles
+            for mod in fit.activeModulesIter():
+                if mod.hardpoint == FittingHardpoint.TURRET:
+                    if mod.getModifiedItemAttr('miningAmount'):
+                        continue
+                    
+                    # Get turret optimal and falloff
+                    optimal = mod.getModifiedItemAttr('maxRange') or 0
+                    falloff = mod.getModifiedItemAttr('falloff') or 0
+                    
+                    # Check all compatible charges for range modifiers
+                    for charge in mod.getValidCharges():
+                        rangeMultiplier = charge.getAttribute('weaponRangeMultiplier') or 1
+                        falloffMultiplier = charge.getAttribute('fallofMultiplier') or 1
+                        
+                        # Calculate effective optimal + 2*falloff (where DPS drops to ~6%)
+                        effective_optimal = optimal * rangeMultiplier
+                        effective_falloff = falloff * falloffMultiplier
+                        effective_max = effective_optimal + effective_falloff * 2
+                        
+                        if effective_max > max_range_m:
+                            max_range_m = effective_max
+                
+                elif mod.hardpoint == FittingHardpoint.MISSILE:
+                    # For missiles, use missileMaxRangeData if charge loaded
+                    if mod.charge is not None:
+                        missileRangeData = mod.missileMaxRangeData
+                        if missileRangeData:
+                            _, higherRange, _ = missileRangeData
+                            if higherRange > max_range_m:
+                                max_range_m = higherRange
+                    else:
+                        # Estimate from compatible charges using base attributes
+                        for charge in mod.getValidCharges():
+                            maxVelocity = charge.getAttribute('maxVelocity') or 0
+                            explosionDelay = charge.getAttribute('explosionDelay') or 0
+                            if maxVelocity > 0 and explosionDelay > 0:
+                                # Simple estimate: velocity * flight_time
+                                flightTime = explosionDelay / 1000
+                                estimated_range = maxVelocity * flightTime
+                                if estimated_range > max_range_m:
+                                    max_range_m = estimated_range
+        
+        if max_range_m <= 0:
+            return inputDef.defaultRange
+        
+        # Add 10% buffer and convert to km
+        max_range_km = (max_range_m * 1.10) / 1000
+        
+        # Cap at 300km (EVE's max lock range)
+        max_range_km = min(max_range_km, 300)
+        
+        # Round to nice number
+        max_range_km = int(max_range_km + 0.5)
+        
+        return (0, max_range_km)
