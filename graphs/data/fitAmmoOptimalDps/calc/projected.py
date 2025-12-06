@@ -101,6 +101,9 @@ def buildProjectedCache(src, tgt, commonData, baseTgtSpeed, baseTgtSigRadius,
         }
     
     # Check if we can extend an existing cache
+    # NOTE: Vector angles are now included in the projectedCacheKey (in getter.py)
+    # so this cache is already isolated per vector configuration. We only need to
+    # check if the base target parameters match.
     canExtend = (
         existingCache is not None and
         existingCache.get('hasProjected', False) and
@@ -117,18 +120,20 @@ def buildProjectedCache(src, tgt, commonData, baseTgtSpeed, baseTgtSigRadius,
             return existingCache
         
         # Otherwise, extend the existing cache
-        pyfalog.debug(f"[PROJECTED] Extending cache: {existingMax/1000:.0f}km -> {maxDistance/1000:.0f}km")
+        sigStr = 'inf' if baseTgtSigRadius == float('inf') else f"{baseTgtSigRadius:.1f}m"
+        pyfalog.debug(f"[PROJECTED] Extending cache: {existingMax/1000:.0f}km -> {maxDistance/1000:.0f}km (baseSig={sigStr})")
         distances = existingCache['distances'].copy()
         cache = existingCache['cache'].copy()
         startDistance = existingMax + resolution
     else:
-        pyfalog.debug(f"[PROJECTED] Building new cache: 0-{maxDistance/1000:.0f}km @ {resolution/1000:.1f}km intervals")
+        sigStr = 'inf' if baseTgtSigRadius == float('inf') else f"{baseTgtSigRadius:.1f}m"
+        pyfalog.debug(f"[PROJECTED] Building new cache: 0-{maxDistance/1000:.0f}km @ {resolution/1000:.1f}km intervals (baseSig={sigStr})")
         distances = []
         cache = {}
         startDistance = 0
     
     # Extract projected data from commonData
-    srcScramRange = commonData.get('srcScramRange')
+    srcScramRange = commonData.get('srcScramRange', 0)
     tgtScrammables = commonData.get('tgtScrammables', ())
     webMods = commonData.get('webMods', ())
     webDrones = commonData.get('webDrones', ())
@@ -189,8 +194,6 @@ def buildProjectedCache(src, tgt, commonData, baseTgtSpeed, baseTgtSigRadius,
     
     # Ensure distances list is sorted (should already be, but safe to ensure)
     distances.sort()
-    
-    pyfalog.debug(f"[PROJECTED] Cache complete: {len(distances)} entries ({entriesAdded} new)")
     
     return {
         'distances': distances,
@@ -260,36 +263,14 @@ def getProjectedParamsAtDistance(projectedCache, distance, interpolate=True):
     t = (distance - distLow) / (distHigh - distLow) if distHigh > distLow else 0
     
     # Interpolate both speed and sig radius
+    # Handle infinity properly - if either value is inf, result should be inf
     tgtSpeed = cacheLow['tgtSpeed'] + t * (cacheHigh['tgtSpeed'] - cacheLow['tgtSpeed'])
-    tgtSigRadius = cacheLow['tgtSigRadius'] + t * (cacheHigh['tgtSigRadius'] - cacheLow['tgtSigRadius'])
+    if cacheLow['tgtSigRadius'] == float('inf') or cacheHigh['tgtSigRadius'] == float('inf'):
+        tgtSigRadius = float('inf')
+    else:
+        tgtSigRadius = cacheLow['tgtSigRadius'] + t * (cacheHigh['tgtSigRadius'] - cacheLow['tgtSigRadius'])
     
     return {
         'tgtSpeed': tgtSpeed,
         'tgtSigRadius': tgtSigRadius
     }
-
-
-def updateTrackingParamsFromCache(baseParams, projectedCache, distance):
-    """
-    Update tracking params dict with cached projected values.
-    
-    This is a fast replacement for getTrackingParamsAtDistance() that
-    uses the pre-built cache instead of recalculating.
-    
-    Args:
-        baseParams: Base tracking params dict (will be copied)
-        projectedCache: Cache dict from buildProjectedCache()
-        distance: Distance to query (m)
-    
-    Returns:
-        Updated tracking params dict with tgtSpeed and tgtSigRadius from cache
-    """
-    if baseParams is None:
-        return None
-    
-    params = baseParams.copy()
-    projected = getProjectedParamsAtDistance(projectedCache, distance)
-    params['tgtSpeed'] = projected['tgtSpeed']
-    params['tgtSigRadius'] = projected['tgtSigRadius']
-    
-    return params

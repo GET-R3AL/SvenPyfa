@@ -687,32 +687,3 @@ def getVolleyAtDistance(transitions, chargeData, distance,
     
     return volley, cd['name']
 
-
-def getAmmoNameAtDistance(transitions, distance):
-    """
-    Fast lookup of ammo name at a distance using pre-computed transitions.
-    
-    Args:
-        transitions: List of transition tuples
-        distance: Distance to query (m)
-    
-    Returns:
-        Ammo name (str) or None
-    """
-    if not transitions:
-        return None
-    
-    distances = [t[0] for t in transitions]
-    idx = bisect_right(distances, distance) - 1
-    if idx < 0:
-        idx = 0
-    
-    return transitions[idx][2]
-
-
-# =============================================================================
-# Aliases for backward compatibility
-# =============================================================================
-
-# Alias for graph.py which uses this name
-getMissileFlightMultipliers = getFlightMultipliers

@@ -47,6 +47,8 @@ class GraphControlPanel(wx.Panel):
         self._inputCheckboxes = []
         self._storedRanges = {}
         self._storedConsts = {}
+        self._lastDynamicRange = None  # Track last applied dynamic range
+        self._userModifiedMainInput = False  # Flag: has user manually changed main input?
 
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         optsSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -440,6 +442,10 @@ class GraphControlPanel(wx.Panel):
         Called when fits change to update the distance range dynamically
         for graphs that support getDefaultInputRange (like Application Profile).
         """
+        # If user has manually modified the main input, never override it
+        if self._userModifiedMainInput:
+            return
+        
         if self._mainInputBox is None:
             return
         
@@ -454,10 +460,29 @@ class GraphControlPanel(wx.Panel):
         
         inputDef = view.inputMap[mainInputKey]
         
+        # Check if user has manually modified the input field since last dynamic update
+        currentRange = self._mainInputBox.textBox.GetValueRange()
+        if currentRange:
+            currentMin, currentMax = currentRange
+            # Get the baseline to compare against
+            if self._lastDynamicRange is not None:
+                baselineMin, baselineMax = self._lastDynamicRange
+            else:
+                baselineMin, baselineMax = inputDef.defaultRange
+            
+            # If current range differs from the baseline, user has manually changed it
+            # Set the flag permanently to prevent future overrides
+            if currentMin != baselineMin or currentMax != baselineMax:
+                self._userModifiedMainInput = True
+                return
+        
         # Calculate the new dynamic range
         dynamicRange = view.getDefaultInputRange(inputDef, self.sources)
         if dynamicRange is None:
             dynamicRange = inputDef.defaultRange
+        
+        # Store this as the last dynamic range we applied
+        self._lastDynamicRange = dynamicRange
         
         # Clear the stored range so the new default is used
         storedKey = (inputDef.handle, inputDef.unit)

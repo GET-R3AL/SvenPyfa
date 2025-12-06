@@ -158,16 +158,21 @@ class GraphCanvasPanel(wx.Panel):
         self._blitBackground = None  # Saved background (without X marker)
         self._xMarkerArtists = []    # Artists for X marker (line + labels) 
         self._blitPlotData = {}      # Cached plot data for interpolation during drag
-        self._blitView = None        # Cached view for getAmmoNameFast during drag
+        self._blitView = None        # Cached view
         self._blitIterList = None    # Cached source/target pairs
         self._blitCanvasLimits = None  # Cached (canvasMinX, canvasMaxX, canvasMinY, canvasMaxY)
         self._blitChosenX = None     # Cached X axis spec
         self._blitChosenY = None     # Cached Y axis spec
         self._blitYDiff = None       # Cached Y range for rounding
         self._blitHasSegments = False  # Cached segment flag
+        
+        # Track if user has manually overridden the input range (to prevent dynamic bounds from re-triggering)
+        self._defaultInputRange = None  # Stores the default (minX, maxX) from graph definition
+        self._userModifiedInput = False  # Flag: has user manually changed input field?
 
     def draw(self, accurateMarks=True):
-        pyfalog.debug('[GRAPH] Canvas draw started')
+        # Invalidate blit cache at the start of every draw
+        self._blitBackground = None
         self.subplot.clear()
         self.subplot.grid(True)
         allXs = set()
@@ -325,7 +330,12 @@ class GraphCanvasPanel(wx.Panel):
                         
                         # Store combined data for X mark lookup
                         if segmentXs and segmentYs:
-                            plotData[(source, target)] = (segmentXs, segmentYs)
+                            # Store segment boundaries for fast ammo name lookup during drag
+                            segmentData = []
+                            for seg in segments:
+                                if seg['xs']:
+                                    segmentData.append((min(seg['xs']), max(seg['xs']), seg.get('ammo', 'Unknown')))
+                            plotData[(source, target)] = (segmentXs, segmentYs, segmentData)
                             allXs.update(segmentXs)
                             allYs.update(segmentYs)
                         
@@ -375,7 +385,7 @@ class GraphCanvasPanel(wx.Panel):
                         if effectiveMaxX is None or dataMaxX > effectiveMaxX:
                             effectiveMaxX = dataMaxX
                     
-                    plotData[(source, target)] = (xs, ys)
+                    plotData[(source, target)] = (xs, ys, None)
                     allXs.update(xs)
                     allYs.update(ys)
                     # If we have single data point, show marker - otherwise line won't be shown
@@ -400,14 +410,50 @@ class GraphCanvasPanel(wx.Panel):
         allYs.add(0)
         # Include the user's input range in X limits so axis extends to full range
         if mainInput and mainInput.value:
-            allXs.add(min(mainInput.value))
-            # Only add max if we don't have an effective max from filtered data
-            if effectiveMaxX is None:
-                allXs.add(max(mainInput.value))
-            else:
-                # Use effective max X * 1.1 for bounds (where data actually ends)
+            inputMin = min(mainInput.value)
+            inputMax = max(mainInput.value)
+            allXs.add(inputMin)
+            
+            # Initialize default input range on first draw (before any dynamic bounds are applied)
+            if self._defaultInputRange is None:
+                # Get the default range directly from the graph's Input definition
+                # This is the "true" default before any dynamic adjustments
+                try:
+                    graphView = self.graphFrame.getView()
+                    for inputDef in graphView.inputs:
+                        if inputDef == mainInput:
+                            self._defaultInputRange = (min(inputDef.defaultValue), max(inputDef.defaultValue))
+                            break
+                except (KeyboardInterrupt, SystemExit):
+                    raise
+                except:
+                    # Fallback: use current input as default
+                    self._defaultInputRange = (inputMin, inputMax)
+            
+            # Check if user has manually modified the input field
+            # Compare current input to the original default range from graph definition
+            if not self._userModifiedInput and self._defaultInputRange is not None:
+                defaultMin, defaultMax = self._defaultInputRange
+                # If input range differs from the graph's default, user has manually modified it
+                if inputMin != defaultMin or inputMax != defaultMax:
+                    self._userModifiedInput = True
+            
+            # Application Profile graph: use dynamic bounds ONLY on initial load
+            # Once user modifies input OR once dynamic bounds have been applied once, lock it
+            # Damage Stats graph: always uses static bounds (full input range)
+            useDynamicBounds = (
+                effectiveMaxX is not None and 
+                view.internalName == 'ammoOptimalDpsGraph' and
+                not self._userModifiedInput and
+                self._defaultInputRange is not None and
+                inputMax == self._defaultInputRange[1]  # Only if input is still at default
+            )
+            
+            if useDynamicBounds:
                 effectiveMaxXWithMargin = effectiveMaxX * 1
                 allXs.add(effectiveMaxXWithMargin)
+            else:
+                allXs.add(inputMax)
         canvasMinY, canvasMaxY = self._getLimits(allYs, minExtra=0.05, maxExtra=0.03, roundNice=True)
         canvasMinX, canvasMaxX = self._getLimits(allXs, minExtra=0.02, maxExtra=0.02, roundNice=False)
         # Clamp Y minimum to 0 - damage values can't be negative
@@ -456,7 +502,9 @@ class GraphCanvasPanel(wx.Panel):
                 for source, target in iterList:
                     if (source, target) not in plotData:
                         continue
-                    xs, ys = plotData[(source, target)]
+                    plotEntry = plotData[(source, target)]
+                    xs, ys = plotEntry[0], plotEntry[1]
+                    segmentData = plotEntry[2] if len(plotEntry) > 2 else None
                     if not xs or xMark < min(xs) or xMark > max(xs):
                         continue
                     # Fetch values from graphs when we're asked to provide accurate data
@@ -493,15 +541,16 @@ class GraphCanvasPanel(wx.Panel):
                             continue
                     # Otherwise just do linear interpolation between two points
                     else:
-                        # Try fast ammo name lookup (O(log n) using cached transitions)
+                        # Get ammo name from segment data (fast and accurate)
                         extraStr = None
-                        if hasattr(view, 'getAmmoNameFast'):
-                            try:
-                                extraStr = view.getAmmoNameFast(x=xMark, xSpec=chosenX, src=source, tgt=target)
-                            except (KeyboardInterrupt, SystemExit):
-                                raise
-                            except Exception:
-                                pass  # Silently ignore - just won't show ammo name
+                        if segmentData:
+                            for min_x, max_x, ammo_name in segmentData:
+                                if min_x <= xMark <= max_x:
+                                    extraStr = ammo_name
+                                    break
+                            # If xMark is beyond all segments, use last segment's ammo
+                            if extraStr is None and segmentData:
+                                extraStr = segmentData[-1][2]
                         
                         if xMark in xs:
                             # We might have multiples of the same value in our sequence, pick value for the last one
@@ -563,18 +612,40 @@ class GraphCanvasPanel(wx.Panel):
                     labelPrefix = ' '
                     labelSuffix = ''
                 
-                # Now draw all labels with the chosen alignment
+                # Unify Y label offsetting logic with blit path
                 textOutline = [PathEffects.withStroke(linewidth=3, foreground='white')]
-                
+
                 # Draw X label
                 xLabel = '{}{}{}'.format(labelPrefix, xLabelCore, labelSuffix)
                 self.subplot.annotate(
                     xLabel, xy=(xMark, canvasMaxY - 0.01 * (canvasMaxY - canvasMinY)), xytext=(0, 0), annotation_clip=False,
                     textcoords='offset pixels', ha=labelAlignment, va='top', fontsize='small',
                     path_effects=textOutline)
-                
-                # Draw Y labels
-                for yMark, labelText in labelData:
+
+                # Draw Y labels with fixed pixel offset for anti-overlap
+                labelData.sort(key=lambda x: x[0])
+                pixel_pad = 8  # 8 pixels padding top/bottom
+                pixel_spacing = 16  # 16 pixels minimum spacing between labels
+                adjusted_y = []
+                # Convert pixel spacing to data units using the axis transform
+                trans = self.subplot.transData.inverted()
+                # Get the pixel height of the graph area
+                bbox = self.subplot.get_window_extent()
+                y0_pix = bbox.y0
+                y1_pix = bbox.y1
+                # Calculate data units per pixel
+                data_per_pix = (canvasMaxY - canvasMinY) / (y1_pix - y0_pix)
+                min_pad = pixel_pad * data_per_pix
+                min_spacing = pixel_spacing * data_per_pix
+                for i, (yMark, labelText) in enumerate(labelData):
+                    # Clamp to graph area with padding
+                    yMark = max(min(yMark, canvasMaxY - min_pad), canvasMinY + min_pad)
+                    if i > 0:
+                        prev_y = adjusted_y[-1]
+                        if yMark - prev_y < min_spacing:
+                            yMark = prev_y + min_spacing
+                            yMark = min(yMark, canvasMaxY - min_pad)
+                    adjusted_y.append(yMark)
                     label = '{}{}{}'.format(labelPrefix, labelText, labelSuffix)
                     self.subplot.annotate(
                         label, xy=(xMark, yMark), xytext=(0, 0),
@@ -595,19 +666,8 @@ class GraphCanvasPanel(wx.Panel):
 
         self.canvas.draw()
         self.Refresh()
-        pyfalog.debug('[GRAPH] Canvas refresh complete - {} data series plotted'.format(len(plotData)))
-        
-        # Cache data for blitting (fast X marker updates during drag)
-        # Save background BEFORE drawing X marker for clean restore
-        # We need to redraw without X marker to get clean background
-        if self.xMark is not None:
-            # X marker was drawn, we need background without it for blitting
-            # Store data for blit path, background will be saved after unmarkX or on first drag
-            pass
-        else:
-            # No X marker - this is a clean background, save it
-            self._blitBackground = self.canvas.copy_from_bbox(self.subplot.bbox)
-        
+        # Always save the background for blitting after drawing the graph, before drawing the X marker
+        self._blitBackground = self.canvas.copy_from_bbox(self.subplot.bbox)
         # Cache data needed for fast X marker interpolation during drag
         self._blitPlotData = plotData
         self._blitView = view
@@ -685,19 +745,22 @@ class GraphCanvasPanel(wx.Panel):
         for source, target in iterList:
             if (source, target) not in plotData:
                 continue
-            xs, ys = plotData[(source, target)]
+            plotEntry = plotData[(source, target)]
+            xs, ys = plotEntry[0], plotEntry[1]
+            segmentData = plotEntry[2] if len(plotEntry) > 2 else None
             if not xs or xMark < min(xs) or xMark > max(xs):
                 continue
             
-            # Fast ammo name lookup
+            # Get ammo name from segment data (fast and accurate)
             extraStr = None
-            if hasattr(view, 'getAmmoNameFast'):
-                try:
-                    extraStr = view.getAmmoNameFast(x=xMark, xSpec=chosenX, src=source, tgt=target)
-                except (KeyboardInterrupt, SystemExit):
-                    raise
-                except:
-                    pass
+            if segmentData:
+                for min_x, max_x, ammo_name in segmentData:
+                    if min_x <= xMark <= max_x:
+                        extraStr = ammo_name
+                        break
+                # If xMark is beyond all segments, use last segment's ammo
+                if extraStr is None and segmentData:
+                    extraStr = segmentData[-1][2]
             
             # Interpolate Y value
             if xMark in xs:
@@ -759,8 +822,27 @@ class GraphCanvasPanel(wx.Panel):
             fontsize='small', path_effects=textOutline, animated=True)
         self._xMarkerArtists.append(ann)
         
-        # Draw Y labels
-        for yMark, labelText in labelData:
+        # Draw Y labels with fixed pixel offset for anti-overlap (same as non-drag)
+        labelData.sort(key=lambda x: x[0])
+        pixel_pad = 8  # 8 pixels padding top/bottom
+        pixel_spacing = 16  # 16 pixels minimum spacing between labels
+        adjusted_y = []
+        trans = self.subplot.transData.inverted()
+        bbox = self.subplot.get_window_extent()
+        y0_pix = bbox.y0
+        y1_pix = bbox.y1
+        data_per_pix = (canvasMaxY - canvasMinY) / (y1_pix - y0_pix)
+        min_pad = pixel_pad * data_per_pix
+        min_spacing = pixel_spacing * data_per_pix
+        for i, (yMark, labelText) in enumerate(labelData):
+            # Clamp to graph area with padding
+            yMark = max(min(yMark, canvasMaxY - min_pad), canvasMinY + min_pad)
+            if i > 0:
+                prev_y = adjusted_y[-1]
+                if yMark - prev_y < min_spacing:
+                    yMark = prev_y + min_spacing
+                    yMark = min(yMark, canvasMaxY - min_pad)
+            adjusted_y.append(yMark)
             label = '{}{}{}'.format(labelPrefix, labelText, labelSuffix)
             ann = self.subplot.annotate(
                 label, xy=(xMark, yMark), xytext=(0, 0),
@@ -872,10 +954,13 @@ class GraphCanvasPanel(wx.Panel):
                 self.mplOnDragHandler = self.canvas.mpl_connect('motion_notify_event', self.OnMplCanvasDrag)
             if not self.mplOnReleaseHandler:
                 self.mplOnReleaseHandler = self.canvas.mpl_connect('button_release_event', self.OnMplCanvasRelease)
-            # Save background for blitting if not already saved
-            # This captures the plot without X marker for fast subsequent updates
-            if self._blitBackground is None and self.xMark is None:
-                self._blitBackground = self.canvas.copy_from_bbox(self.subplot.bbox)
+            # On drag start, always cache background with no X marker
+            prevXMark = self.xMark
+            self.xMark = None
+            self.draw(accurateMarks=False)
+            self._blitBackground = self.canvas.copy_from_bbox(self.subplot.bbox)
+            # Set X marker to drag position and start moving
+            self.xMark = event.xdata
             self.markXApproximate(event.xdata)
         elif event.button == 3:
             self.unmarkX()

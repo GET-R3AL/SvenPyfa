@@ -19,6 +19,7 @@
 
 
 # noinspection PyPackageRequirements
+import logging
 import wx
 
 import gui.display
@@ -36,6 +37,7 @@ from service.fit import Fit
 from .stylePickers import ColorPickerPopup, LightnessPickerPopup, LineStylePickerPopup
 
 _t = wx.GetTranslation
+pyfalog = logging.getLogger(__name__)
 
 
 def getFitWeaponClass(fit):

@@ -12,7 +12,7 @@ from graphs.data.fitAmmoOptimalDps.getter import (
 )
 from graphs.data.fitAmmoOptimalDps.calc.turret import getTurretBaseStats
 from graphs.data.fitAmmoOptimalDps.calc.charges import getChargeStats
-from graphs.data.fitAmmoOptimalDps.calc.optimize_ammo import getAmmoNameAtDistance
+from graphs.data.fitAmmoOptimalDps.calc.valid_charges import getValidChargesForModule
 from graphs.data.fitAmmoOptimalDps.calc.launcher import getFlightMultipliers
 from graphs.data.fitDamageStats.cache import ProjectedDataCache
 from service.const import GraphCacheCleanupReason
@@ -258,7 +258,13 @@ class FitAmmoOptimalDpsGraph(FitGraph):
     sources = {Fit}
     _limitToOutgoingProjected = True
     hasTargets = True
-    srcExtraCols = ('Speed', 'Radius')
+    srcExtraCols = ('Dps', 'Volley', 'Speed', 'SigRadius', 'Radius')
+    
+    @property
+    def tgtExtraCols(self):
+        """Define target extra columns similar to Damage Stats graph"""
+        cols = ['Target Resists', 'Speed', 'SigRadius', 'Radius']
+        return cols
 
     @property
     def yDefs(self):
@@ -292,17 +298,10 @@ class FitAmmoOptimalDpsGraph(FitGraph):
     # Ammo color mode: True = use ammo-specific colors, False = use line patterns
     useAmmoColors = True
 
-    @property
-    def tgtExtraCols(self):
-        """Show target resists in the target list when not ignoring them."""
-        cols = []
-        if not GraphSettings.getInstance().get('ammoOptimalIgnoreResists'):
-            cols.append('Target Resists')
-        return cols
-
     def __init__(self):
         super().__init__()
         self._projectedCache = ProjectedDataCache()
+        self._rangeCache = {}  # Cache for getDefaultInputRange: {frozenset(fitIDs): (min, max)}
     
     def getAmmoColor(self, ammoName):
         """Get RGB color tuple for an ammo type."""
@@ -318,6 +317,15 @@ class FitAmmoOptimalDpsGraph(FitGraph):
         """
         if inputDef.handle != 'distance' or not sources:
             return inputDef.defaultRange
+        
+        # Build cache key from fit IDs
+        fitIDs = frozenset(src.item.ID for src in sources if src.item is not None)
+        if not fitIDs:
+            return inputDef.defaultRange
+        
+        # Check cache
+        if fitIDs in self._rangeCache:
+            return self._rangeCache[fitIDs]
         
         max_range_m = 0
         
@@ -336,7 +344,7 @@ class FitAmmoOptimalDpsGraph(FitGraph):
                     turret_base = getTurretBaseStats(mod)
                     
                     # Check all compatible charges for this turret
-                    for charge in mod.getValidCharges():
+                    for charge in getValidChargesForModule(mod):
                         charge_stats = getChargeStats(charge)
                         
                         # Calculate effective optimal + 2*falloff (where DPS drops to ~6%)
@@ -353,7 +361,7 @@ class FitAmmoOptimalDpsGraph(FitGraph):
                     # Get flight multipliers from skills/ship (if charge is loaded)
                     flight_mults = getFlightMultipliers(mod)
                     
-                    for charge in mod.getValidCharges():
+                    for charge in getValidChargesForModule(mod):
                         base_velocity = charge.getAttribute('maxVelocity') or 0
                         base_explosion_delay = charge.getAttribute('explosionDelay') or 0
                         if base_velocity > 0 and base_explosion_delay > 0:
@@ -378,35 +386,117 @@ class FitAmmoOptimalDpsGraph(FitGraph):
         # Round to nice number
         max_range_km = int(max_range_km + 0.5)
         
-        return (0, max_range_km)
+        result = (0, max_range_km)
+        self._rangeCache[fitIDs] = result
+        return result
 
     def _clearInternalCache(self, reason, extraData):
+        pyfalog.debug(f"[CLEAR-CACHE] _clearInternalCache called: reason={reason}, extraData={extraData}")
+
         if reason in (GraphCacheCleanupReason.fitChanged, GraphCacheCleanupReason.fitRemoved):
-            self._projectedCache.clearForFit(extraData)
-            # Clear ammo caches - both turret and projected since projected depends on source fit
-            if hasattr(self, '_ammo_turret_cache'):
-                self._ammo_turret_cache = {}
+            # extraData is the fit ID (integer), not the fit object
+            fit_id = extraData
+            pyfalog.debug(f"[CLEAR-CACHE] Clearing caches for fit ID {fit_id}")
+
+            # Clear base projected cache for this fit
+            self._projectedCache.clearForFit(fit_id)
+
+            # Clear weapon cache entries for this specific fit only
+            # Cache key format: (fitID, weaponType, qualityTier, tgtResists, applyProjected, tgtSpeed, tgtSigRadius)
+            if hasattr(self, '_ammo_weapon_cache'):
+                keys_to_remove = [k for k in self._ammo_weapon_cache.keys() if k[0] == fit_id]
+                for key in keys_to_remove:
+                    del self._ammo_weapon_cache[key]
+                pyfalog.debug(f"[CLEAR-CACHE] Removed {len(keys_to_remove)} weapon cache entries for fit {fit_id}")
+
+            # Clear projected cache entries for this specific fit (all target combinations)
+            # Projected cache key format: (fitID, tgtSpeed, tgtSigRadius)
             if hasattr(self, '_ammo_projected_cache'):
-                self._ammo_projected_cache = {}
-            if hasattr(self, '_ammo_missile_cache'):
-                self._ammo_missile_cache = {}
-            if hasattr(self, '_ammo_analysis_done'):
-                self._ammo_analysis_done = set()
+                keys_to_remove = [k for k in self._ammo_projected_cache.keys() if k[0] == fit_id]
+                for key in keys_to_remove:
+                    del self._ammo_projected_cache[key]
+                pyfalog.debug(f"[CLEAR-CACHE] Removed {len(keys_to_remove)} projected cache entries for fit {fit_id}")
+
+            # Clear range cache entries that include this fit ID
+            if hasattr(self, '_rangeCache'):
+                keys_to_remove = [k for k in self._rangeCache.keys() if fit_id in k]
+                for key in keys_to_remove:
+                    del self._rangeCache[key]
+                pyfalog.debug(f"[CLEAR-CACHE] Removed {len(keys_to_remove)} range cache entries for fit {fit_id}")
+            
+            # Clear charge cache - when fits change, weapon types might change
+            # This ensures we refetch charges if switching between turret/missile fits
             if hasattr(self, '_ammo_charge_cache'):
+                count = len(self._ammo_charge_cache)
                 self._ammo_charge_cache = {}
+                pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} charge cache entries for fit change")
+
+        elif reason in (GraphCacheCleanupReason.profileChanged, GraphCacheCleanupReason.profileRemoved):
+            # extraData is the profile ID (integer)
+            profile_id = extraData
+            pyfalog.debug(f"[CLEAR-CACHE] Clearing caches for profile ID {profile_id}")
+
+            # Target profile changed - weapon caches depend on target params (tgtSpeed, tgtSigRadius)
+            # Since we don't track which caches used which profile, clear ALL weapon caches
+            if hasattr(self, '_ammo_weapon_cache'):
+                count = len(self._ammo_weapon_cache)
+                self._ammo_weapon_cache = {}
+                pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} weapon cache entries due to profile change")
+
+            # Projected cache is ALSO target-based (tgtSpeed, tgtSigRadius in key)
+            # Clear ALL projected caches since target params changed
+            if hasattr(self, '_ammo_projected_cache'):
+                count = len(self._ammo_projected_cache)
+                self._ammo_projected_cache = {}
+                pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} projected cache entries due to profile change")
+            
+            # Clear range cache since skill changes might affect range calculations
+            if hasattr(self, '_rangeCache'):
+                count = len(self._rangeCache)
+                self._rangeCache = {}
+                pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} range cache entries due to profile change")
+
         elif reason == GraphCacheCleanupReason.graphSwitched:
             self._projectedCache.clearAll()
-            # Clear all ammo caches
-            if hasattr(self, '_ammo_turret_cache'):
-                self._ammo_turret_cache = {}
+            pyfalog.debug(f"[CLEAR-CACHE] Clearing ALL caches for graph switch")
+
+            # Clear all ammo caches globally
+            if hasattr(self, '_ammo_weapon_cache'):
+                count = len(self._ammo_weapon_cache)
+                self._ammo_weapon_cache = {}
+                pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} weapon cache entries")
+
             if hasattr(self, '_ammo_projected_cache'):
+                count = len(self._ammo_projected_cache)
                 self._ammo_projected_cache = {}
-            if hasattr(self, '_ammo_missile_cache'):
-                self._ammo_missile_cache = {}
-            if hasattr(self, '_ammo_analysis_done'):
-                self._ammo_analysis_done = set()
+                pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} projected cache entries")
+            
+            if hasattr(self, '_rangeCache'):
+                count = len(self._rangeCache)
+                self._rangeCache = {}
+                pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} range cache entries")
+
             if hasattr(self, '_ammo_charge_cache'):
+                count = len(self._ammo_charge_cache)
                 self._ammo_charge_cache = {}
+                pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} charge cache entries")
+
+        elif reason in (GraphCacheCleanupReason.inputChanged, GraphCacheCleanupReason.optionChanged):
+            # Input changes (including vectors) and option changes require clearing all caches
+            # since vector angles affect angular speed and tracking calculations
+            pyfalog.debug(f"[CLEAR-CACHE] Clearing ALL caches for {reason.name}")
+            
+            if hasattr(self, '_ammo_weapon_cache'):
+                count = len(self._ammo_weapon_cache)
+                self._ammo_weapon_cache = {}
+                pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} weapon cache entries due to {reason.name}")
+
+            if hasattr(self, '_ammo_projected_cache'):
+                count = len(self._ammo_projected_cache)
+                self._ammo_projected_cache = {}
+                pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} projected cache entries due to {reason.name}")
+
+            # Don't clear charge cache on input changes - it doesn't depend on vectors
 
     def getPlotSegments(self, mainInput, miscInputs, xSpec, ySpec, src, tgt=None):
         """
@@ -415,9 +505,11 @@ class FitAmmoOptimalDpsGraph(FitGraph):
         Returns list of segments, each with xs, ys, ammo name, and ammo index.
         Returns None if this graph doesn't support segments or getter doesn't have getSegments.
         """
+        pyfalog.debug(f"[GRAPH] getPlotSegments called for src={src.item.name}, mainInput.value={mainInput.value}")
         try:
             getterClass = self._getters[(xSpec.handle, ySpec.handle)]
         except KeyError:
+            pyfalog.debug(f"[GRAPH] No getter for ({xSpec.handle}, {ySpec.handle})")
             return None
         
         # Normalize the input range
@@ -425,11 +517,13 @@ class FitAmmoOptimalDpsGraph(FitGraph):
         miscParams = self._normalizeMisc(miscInputs=miscInputs, src=src, tgt=tgt)
         mainParamRange = self._limitMain(mainParamRange=mainParamRange, src=src, tgt=tgt)
         miscParams = self._limitMisc(miscParams=miscParams, src=src, tgt=tgt)
+        pyfalog.debug(f"[GRAPH] Normalized mainParamRange={mainParamRange}")
         
         getter = getterClass(graph=self)
         
         # Check if getter has getSegments method
         if not hasattr(getter, 'getSegments'):
+            pyfalog.debug(f"[GRAPH] Getter has no getSegments method")
             return None
         
         segments = getter.getSegments(
@@ -438,7 +532,10 @@ class FitAmmoOptimalDpsGraph(FitGraph):
             src=src, 
             tgt=tgt)
         
+        pyfalog.debug(f"[GRAPH] getter.getSegments returned {len(segments) if segments else segments} segments")
+        
         if not segments:
+            pyfalog.debug(f"[GRAPH] No segments, returning None")
             return None
         
         # Denormalize the values back to display units
@@ -446,6 +543,7 @@ class FitAmmoOptimalDpsGraph(FitGraph):
             segment['xs'] = self._denormalizeValues(values=segment['xs'], axisSpec=xSpec, src=src, tgt=tgt)
             segment['ys'] = self._denormalizeValues(values=segment['ys'], axisSpec=ySpec, src=src, tgt=tgt)
         
+        pyfalog.debug(f"[GRAPH] Returning {len(segments)} denormalized segments for {src.item.name}")
         return segments
 
     def getPointExtended(self, x, miscInputs, xSpec, ySpec, src, tgt=None):
@@ -476,62 +574,6 @@ class FitAmmoOptimalDpsGraph(FitGraph):
             y = self._getPoint(x=x, miscParams=miscParams, xSpec=xSpec, ySpec=ySpec, src=src, tgt=tgt)
             y = self._denormalizeValue(value=y, axisSpec=ySpec, src=src, tgt=tgt)
             return y, {}
-
-    def getAmmoNameFast(self, x, xSpec, src, tgt=None):
-        """
-        Returns ammo name (str) or None if no cache available.
-        
-        This uses the currently plotted transitions cache, which was built
-        using the current graph settings. We use the most recent cache entry
-        for this fit, which should match what's currently displayed.
-        """
-        # Normalize distance (km to meters)
-        distance = self._normalizeValue(value=x, axisSpec=xSpec, src=src, tgt=None)
-        if distance is None:
-            return None
-        
-        fit_id = id(src.item)
-        
-        # Check turret cache - find the most recent cache entry for this fit
-        # Since we cache per (fit_id, quality, resists, projected, speed, sig),
-        # we need to find the entry that matches current settings
-        if hasattr(self, '_ammo_turret_cache') and self._ammo_turret_cache:
-            # Build current cache key parameters
-            qualityTier = getattr(self, '_ammoQuality', 'all')
-            applyProjected = GraphSettings.getInstance().get('ammoOptimalApplyProjected')
-            ignoreResists = GraphSettings.getInstance().get('ammoOptimalIgnoreResists')
-            tgtResists = None if (ignoreResists or tgt is None) else tgt.getResists()
-            tgtSpeed = tgt.getMaxVelocity() if tgt else 0
-            tgtSigRadius = tgt.getSigRadius() if tgt else 0
-            
-            # Try exact cache key match first
-            cache_key = (fit_id, qualityTier, tgtResists, applyProjected, tgtSpeed, tgtSigRadius)
-            if cache_key in self._ammo_turret_cache:
-                turret_cache = self._ammo_turret_cache[cache_key]
-                if turret_cache:
-                    for group_info in turret_cache.values():
-                        transitions = group_info.get('transitions')
-                        if transitions:
-                            return getAmmoNameAtDistance(transitions, distance)
-            
-            # Fallback: find any cache entry for this fit (less accurate but better than nothing)
-            for cache_key, turret_cache in self._ammo_turret_cache.items():
-                if cache_key[0] == fit_id and turret_cache:
-                    for group_info in turret_cache.values():
-                        transitions = group_info.get('transitions')
-                        if transitions:
-                            return getAmmoNameAtDistance(transitions, distance)
-        
-        # Check missile cache with same logic
-        if hasattr(self, '_ammo_missile_cache') and self._ammo_missile_cache:
-            for cache_key, missile_cache in self._ammo_missile_cache.items():
-                if cache_key[0] == fit_id and missile_cache:
-                    for group_info in missile_cache.values():
-                        transitions = group_info.get('transitions')
-                        if transitions:
-                            return getAmmoNameAtDistance(transitions, distance)
-        
-        return None
 
     def _updateMiscParams(self, **kwargs):
         miscParams = super()._updateMiscParams(**kwargs)

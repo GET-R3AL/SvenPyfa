@@ -35,5 +35,4 @@ Modules:
 from .projected import (
     buildProjectedCache,
     getProjectedParamsAtDistance,
-    updateTrackingParamsFromCache,
 )

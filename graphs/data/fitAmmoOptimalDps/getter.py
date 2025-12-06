@@ -27,6 +27,7 @@ from graphs.data.fitDamageStats.calc.projected import (
     getScramRange, getScrammables
 )
 from service.settings import GraphSettings
+from .calc.valid_charges import getValidChargesForModule
 
 from .calc.turret import (
     getTurretBaseStats,
@@ -52,8 +53,7 @@ from .calc.launcher import (
     getMaxEffectiveRange as getMissileMaxEffectiveRange,
     calculateTransitions as calculateMissileTransitions,
     getVolleyAtDistance as getMissileVolleyAtDistance,
-    volleyToDps as missileVolleyToDps,
-    getAmmoNameAtDistance as getMissileAmmoNameAtDistance
+    volleyToDps as missileVolleyToDps
 )
 
 
@@ -115,7 +115,7 @@ def getTurretRangeInfo(mod, qualityTier, chargeCache=None):
     if chargeCache is not None and chargeCacheKey in chargeCache:
         charges = chargeCache[chargeCacheKey]
     else:
-        allCharges = list(mod.getValidCharges())
+        allCharges = list(getValidChargesForModule(mod))
         charges = filterChargesByQuality(allCharges, qualityTier)
         if chargeCache is not None:
             chargeCache[chargeCacheKey] = charges
@@ -166,7 +166,7 @@ def getLauncherRangeInfo(mod, qualityTier, shipRadius, chargeCache=None):
     if chargeCache is not None and chargeCacheKey in chargeCache:
         charges = chargeCache[chargeCacheKey]
     else:
-        allCharges = list(mod.getValidCharges())
+        allCharges = list(getValidChargesForModule(mod))
         charges = filterChargesByQuality(allCharges, qualityTier)
         if chargeCache is not None:
             chargeCache[chargeCacheKey] = charges
@@ -304,7 +304,7 @@ def buildTurretCacheEntry(mod, qualityTier, tgtResists, baseTrackingParams,
         if chargeCache is not None and chargeCacheKey in chargeCache:
             charges = chargeCache[chargeCacheKey]
         else:
-            allCharges = list(mod.getValidCharges())
+            allCharges = list(getValidChargesForModule(mod))
             charges = filterChargesByQuality(allCharges, qualityTier)
             if chargeCache is not None:
                 chargeCache[chargeCacheKey] = charges
@@ -400,7 +400,7 @@ def buildLauncherCacheEntry(mod, qualityTier, tgtResists, shipRadius,
         if chargeCache is not None and chargeCacheKey in chargeCache:
             charges = chargeCache[chargeCacheKey]
         else:
-            allCharges = list(mod.getValidCharges())
+            allCharges = list(getValidChargesForModule(mod))
             charges = filterChargesByQuality(allCharges, qualityTier)
             if chargeCache is not None:
                 chargeCache[chargeCacheKey] = charges
@@ -453,9 +453,16 @@ class YOptimalAmmoDpsMixin:
     def _getOptimalDpsAtDistance(self, distance, weaponCache, trackingParams, projectedCache, weaponType):
         """Get total DPS with optimal ammo at a specific distance."""
         totalDps = 0
-        
+
+        if distance == 0:  # Log details at distance 0 for debugging
+            pyfalog.debug(f"[DPS-CALC] weaponType={weaponType}, weaponCache has {len(weaponCache)} groups")
+            pyfalog.debug(f"[DPS-CALC] trackingParams={trackingParams}")
+            pyfalog.debug(f"[DPS-CALC] projectedCache has {len(projectedCache)} entries")
+
         if weaponType == 'turret':
-            for groupInfo in weaponCache.values():
+            for group_id, groupInfo in weaponCache.items():
+                if distance == 0:
+                    pyfalog.debug(f"[DPS-CALC] Turret group {group_id}: {len(groupInfo.get('transitions', []))} transitions, {len(groupInfo.get('charge_data', []))} charges")
                 volley, _ = getVolleyAtDistance(
                     groupInfo['transitions'],
                     groupInfo['charge_data'],
@@ -464,10 +471,14 @@ class YOptimalAmmoDpsMixin:
                     trackingParams,
                     projectedCache
                 )
+                if distance == 0:
+                    pyfalog.debug(f"[DPS-CALC] Turret volley at {distance}m = {volley}")
                 dps = volleyToDps(volley, groupInfo['cycle_time_ms'])
                 totalDps += dps * groupInfo['count']
         else:  # launcher
-            for groupInfo in weaponCache.values():
+            for group_id, groupInfo in weaponCache.items():
+                if distance == 0:
+                    pyfalog.debug(f"[DPS-CALC] Launcher group {group_id}: {len(groupInfo.get('transitions', []))} transitions, {len(groupInfo.get('charge_data', []))} charges")
                 volley, _ = getMissileVolleyAtDistance(
                     groupInfo['transitions'],
                     groupInfo['charge_data'],
@@ -476,9 +487,14 @@ class YOptimalAmmoDpsMixin:
                     trackingParams['tgtSigRadius'],
                     projectedCache
                 )
+                if distance == 0:
+                    pyfalog.debug(f"[DPS-CALC] Launcher volley at {distance}m = {volley}")
                 dps = missileVolleyToDps(volley, groupInfo['cycle_time_ms'])
                 totalDps += dps * groupInfo['count']
-        
+
+        if distance == 0:
+            pyfalog.debug(f"[DPS-CALC] Total DPS at {distance}m = {totalDps}")
+
         return totalDps
 
     def _getOptimalDpsWithAmmoAtDistance(self, distance, weaponCache, trackingParams, projectedCache, weaponType):
@@ -599,13 +615,13 @@ class XDistanceMixin(SmoothPointGetter):
     def _getCommonData(self, miscParams, src, tgt):
         """
         Build common data including projected cache and weapon (turret/launcher) cache.
-        
+
         Data flow (optimized):
         1. Determine dominant weapon type (turret vs launcher)
         2. Get weapon stats and charge lists (to determine max effective range)
         3. Build/extend projected cache only to max effective range
         4. Build weapon cache with transitions using the projected cache
-        
+
         The projected cache is keyed by target (tgtSpeed, tgtSigRadius) and can be
         extended if the attacker's max range increases, without recalculating
         existing entries.
@@ -614,21 +630,32 @@ class XDistanceMixin(SmoothPointGetter):
         qualityTier = getattr(self.graph, '_ammoQuality', 'all')
         ignoreResists = GraphSettings.getInstance().get('ammoOptimalIgnoreResists')
         applyProjected = GraphSettings.getInstance().get('ammoOptimalApplyProjected')
-        
+
         tgtResists = None if (ignoreResists or tgt is None) else tgt.getResists()
         tgtSpeed = miscParams.get('tgtSpeed', 0) or 0
         tgtSigRadius = tgt.getSigRadius() if tgt else 0
         shipRadius = src.getRadius()
-        
+
         # Determine dominant weapon type
         weaponType = getDominantWeaponType(src)
-        
-        # Weapon cache key - includes source fit, weapon type, and all calculation parameters
-        weaponCacheKey = (id(src.item), weaponType, qualityTier, tgtResists, applyProjected, tgtSpeed, tgtSigRadius)
-        
-        # Projected cache key - includes source fit because webs/TPs come from source
-        # Must invalidate when source fit changes (fit could have different webs/grapples/TPs)
-        projectedCacheKey = (id(src.item), applyProjected, tgtSpeed, tgtSigRadius)
+
+        # Get fit ID (database ID, not memory address) for cache keys
+        # This allows cache clearing by fitID from events
+        fit_id = src.item.ID
+
+        # Get vector parameters for cache keys
+        atkSpeed = miscParams.get('atkSpeed', 0) or 0
+        atkAngle = miscParams.get('atkAngle', 0) or 0
+        tgtAngle = miscParams.get('tgtAngle', 0) or 0
+
+        # Weapon cache key - includes source fit, weapon type, and ALL calculation parameters including vectors
+        # Vector angles affect angular speed and tracking calculations, so they MUST be in the cache key
+        weaponCacheKey = (fit_id, weaponType, qualityTier, tgtResists, applyProjected, tgtSpeed, tgtSigRadius, atkSpeed, atkAngle, tgtAngle)
+
+        # Projected cache key - includes BOTH source fit (webs/TPs) AND target params (speed/sig) AND vector angles
+        # This ensures each fit+target+vector combination gets its own projected cache
+        # Vector angles affect relative motion and thus projected effect application
+        projectedCacheKey = (fit_id, tgtSpeed, tgtSigRadius, atkSpeed, atkAngle, tgtAngle)
         
         # Initialize graph caches if needed
         if not hasattr(self.graph, '_ammo_weapon_cache'):
@@ -658,16 +685,11 @@ class XDistanceMixin(SmoothPointGetter):
             commonData['tpDrones'] = tpDrones
             commonData['webFighters'] = webFighters
             commonData['tpFighters'] = tpFighters
-            # Log projected module counts for debugging
-            webCount = len(webMods) + len(webDrones) + len(webFighters)
-            tpCount = len(tpMods) + len(tpDrones) + len(tpFighters)
-            if webCount or tpCount:
-                pyfalog.debug(f"[AMMO] Projected effects: {webCount} webs, {tpCount} TPs")
         
         # Return cached data if weapon cache is available
         if weaponCacheKey in self.graph._ammo_weapon_cache:
-            pyfalog.debug(f"[AMMO] _getCommonData: WEAPON CACHE HIT ({weaponType})")
-            commonData['weapon_cache'] = self.graph._ammo_weapon_cache[weaponCacheKey]
+            cached_weapon = self.graph._ammo_weapon_cache[weaponCacheKey]
+            commonData['weapon_cache'] = cached_weapon
             commonData['projected_cache'] = self.graph._ammo_projected_cache.get(projectedCacheKey, {})
             return commonData
         
@@ -677,13 +699,9 @@ class XDistanceMixin(SmoothPointGetter):
             commonData['projected_cache'] = {}
             return commonData
         
-        pyfalog.debug(f"[AMMO] _getCommonData: CACHE MISS - building caches for {src.item.name} ({weaponType}s)")
-        pyfalog.debug(f"[AMMO] Cache keys - weapon: {weaponCacheKey[:3]}..., projected: {projectedCacheKey[:2]}...")
-        
         # =====================================================================
         # PHASE 1: Gather weapon stats and determine max effective range
         # =====================================================================
-        pyfalog.debug(f"[AMMO] Phase 1: Getting {weaponType} stats and max effective range...")
         
         weaponRangeInfos = {}  # {mod.item.ID: rangeInfo}
         maxEffectiveRange = 0
@@ -717,21 +735,15 @@ class XDistanceMixin(SmoothPointGetter):
             commonData['projected_cache'] = {}
             return commonData
         
-        pyfalog.debug(f"[AMMO] Max effective range: {maxEffectiveRange/1000:.1f}km")
-        
         # =====================================================================
         # PHASE 2: Build/extend projected cache to max effective range
         # =====================================================================
-        pyfalog.debug("[AMMO] Phase 2: Building/extending projected cache...")
         
         # Get existing cache for this target (if any)
         existingCache = self.graph._ammo_projected_cache.get(projectedCacheKey)
         
         # Build base tracking params (used for turrets, also provides tgtSpeed/tgtSig for missiles)
-        atkSpeed = miscParams.get('atkSpeed', 0) or 0
-        atkAngle = miscParams.get('atkAngle', 0) or 0
-        tgtAngle = miscParams.get('tgtAngle', 0) or 0
-        
+        # Vector parameters already extracted above for cache keys
         baseTrackingParams = {
             'atkSpeed': atkSpeed,
             'atkAngle': atkAngle,
@@ -761,7 +773,6 @@ class XDistanceMixin(SmoothPointGetter):
         # =====================================================================
         # PHASE 3: Build weapon cache with transitions
         # =====================================================================
-        pyfalog.debug(f"[AMMO] Phase 3: Building {weaponType} cache with transitions...")
         
         weaponCache = {}
         for mod in src.item.activeModulesIter():
@@ -792,27 +803,33 @@ class XDistanceMixin(SmoothPointGetter):
             else:
                 weaponCache[key]['count'] += 1
         
-        pyfalog.debug(f"[AMMO] _getCommonData: Built cache with {len(weaponCache)} {weaponType} groups")
-        
         # Cache and return
         self.graph._ammo_weapon_cache[weaponCacheKey] = weaponCache
         commonData['weapon_cache'] = weaponCache
+        
         return commonData
 
     def _buildTrackingParams(self, distance, miscParams, src, tgt, commonData):
         """
         Build base tracking params for a distance query.
-        
+
         NOTE: This returns BASE params only. The projected effects (web/TP)
         are applied via the projected cache in getVolleyAtDistance.
         """
         tgtSpeed = miscParams.get('tgtSpeed', 0) or 0
         tgtSigRadius = tgt.getSigRadius() if tgt else 0
-        
+
+        if distance == 0:  # Debug logging at distance 0
+            sigStr = 'inf' if tgtSigRadius == float('inf') else f"{tgtSigRadius:.1f}"
+            pyfalog.debug(f"[TRACKING] Building tracking params: tgtSpeed={tgtSpeed:.1f}, tgtSigRadius={sigStr}")
+            pyfalog.debug(f"[TRACKING] tgt={tgt.name if tgt else None}")
+
+        # Only return None if sig radius is exactly 0 (not infinity - that's valid for Ideal Target)
         if tgtSigRadius == 0:
+            pyfalog.debug(f"[TRACKING] tgtSigRadius is 0, returning None!")
             return None
-        
-        return {
+
+        params = {
             'atkSpeed': miscParams.get('atkSpeed', 0) or 0,
             'atkAngle': miscParams.get('atkAngle', 0) or 0,
             'atkRadius': commonData.get('src_radius', 0),
@@ -822,20 +839,32 @@ class XDistanceMixin(SmoothPointGetter):
             'tgtSigRadius': tgtSigRadius
         }
 
+        if distance == 0:
+            pyfalog.debug(f"[TRACKING] Returning params: {params}")
+
+        return params
+
     def _calculatePoint(self, x, miscParams, src, tgt, commonData):
         """Calculate value at distance x."""
         weaponCache = commonData.get('weapon_cache', {})
         weaponType = commonData.get('weapon_type')
         if not weaponCache:
+            pyfalog.debug(f"[CALC-POINT] No weaponCache for {src.item.name} at distance {x/1000:.1f}km, returning 0")
             return 0
-        
+
         trackingParams = self._buildTrackingParams(x, miscParams, src, tgt, commonData)
         projectedCache = commonData.get('projected_cache', {})
-        
+
         if hasattr(self, '_getOptimalDpsAtDistance'):
-            return self._getOptimalDpsAtDistance(x, weaponCache, trackingParams, projectedCache, weaponType)
+            result = self._getOptimalDpsAtDistance(x, weaponCache, trackingParams, projectedCache, weaponType)
+            if x % 10000 == 0:  # Log every 10km for sampling
+                pyfalog.debug(f"[CALC-POINT] {src.item.name} at {x/1000:.1f}km: DPS={result:.1f}")
+            return result
         elif hasattr(self, '_getOptimalVolleyAtDistance'):
-            return self._getOptimalVolleyAtDistance(x, weaponCache, trackingParams, projectedCache, weaponType)
+            result = self._getOptimalVolleyAtDistance(x, weaponCache, trackingParams, projectedCache, weaponType)
+            if x % 10000 == 0:  # Log every 10km for sampling
+                pyfalog.debug(f"[CALC-POINT] {src.item.name} at {x/1000:.1f}km: Volley={result:.1f}")
+            return result
         return 0
 
     def _calculatePointExtended(self, x, miscParams, src, tgt, commonData):
@@ -856,29 +885,41 @@ class XDistanceMixin(SmoothPointGetter):
 
     def getSegments(self, xRange, miscParams, src, tgt):
         """Get plot segments with ammo transition information."""
+        pyfalog.debug(f"[SEGMENTS] ========== getSegments START for src={src.item.name}, tgt={tgt.name if tgt else None} ==========")
+        pyfalog.debug(f"[SEGMENTS] xRange={xRange}")
         # Validate xRange - can contain None from range limiters
         minX, maxX = xRange
         if minX is None or maxX is None:
+            pyfalog.debug(f"[SEGMENTS] Returning empty - xRange contains None: minX={minX}, maxX={maxX}")
             return []
-        
+
+        pyfalog.debug(f"[SEGMENTS] Calling _getCommonData for {src.item.name}...")
         commonData = self._getCommonData(miscParams=miscParams, src=src, tgt=tgt)
         weaponCache = commonData.get('weapon_cache', {})
+        weaponType = commonData.get('weapon_type')
+        pyfalog.debug(f"[SEGMENTS] After _getCommonData: weaponType={weaponType}, weaponCache has {len(weaponCache)} groups")
+        pyfalog.debug(f"[SEGMENTS] weaponCache id: {id(weaponCache)}")
         
         if not weaponCache:
+            pyfalog.debug(f"[SEGMENTS] Returning empty - no weaponCache")
             return []
         
         # Get transitions from first weapon group
         transitions = None
         for groupInfo in weaponCache.values():
             transitions = groupInfo['transitions']
+            pyfalog.debug(f"[SEGMENTS] Got {len(transitions) if transitions else 0} transitions from first weapon group")
             break
         
         if not transitions:
+            pyfalog.debug(f"[SEGMENTS] Returning empty - no transitions")
             return []
         
         # Filter valid transitions (with ammo name)
         validTransitions = [t for t in transitions if t[2] is not None]
+        pyfalog.debug(f"[SEGMENTS] {len(validTransitions)} valid transitions (with ammo name)")
         if not validTransitions:
+            pyfalog.debug(f"[SEGMENTS] Returning empty - no valid transitions")
             return []
         
         # Build ammo index mapping
@@ -912,20 +953,23 @@ class XDistanceMixin(SmoothPointGetter):
                 xs.append(x)
                 ys.append(y)
                 x += step
-            
+
             # Always include the segment end point for smooth transitions
             if xs[-1] < segEnd:
                 y = self._calculatePoint(segEnd, miscParams, src, tgt, commonData)
                 xs.append(segEnd)
                 ys.append(y)
-            
+
+            pyfalog.debug(f"[SEGMENTS] Segment {i} ({ammoName}): {len(xs)} points, y_range=[{min(ys) if ys else 'empty'}, {max(ys) if ys else 'empty'}]")
+
             segments.append({
                 'xs': xs,
                 'ys': ys,
                 'ammo': ammoName,
                 'ammoIndex': ammoToIndex[ammoName]
             })
-        
+
+        pyfalog.debug(f"[SEGMENTS] ========== Returning {len(segments)} segments for {src.item.name} ==========")
         return segments
 
 
