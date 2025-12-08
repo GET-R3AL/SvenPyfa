@@ -19,7 +19,7 @@
 
 
 from . import fitDamageStats
-from . import fitAmmoOptimalDps
+from . import fitApplicationProfile
 from . import fitEwarStats
 from . import fitRemoteReps
 from . import fitShieldRegen

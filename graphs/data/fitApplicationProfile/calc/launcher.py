@@ -1,39 +1,3 @@
-# =============================================================================
-# Copyright (C) 2010 Diego Duclos
-#
-# This file is part of pyfa.
-#
-# pyfa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# pyfa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with pyfa.  If not, see <http://www.gnu.org/licenses/>.
-# =============================================================================
-
-"""
-Missile launcher mechanics calculations for optimal ammo selection.
-
-This module contains EVE missile formulas for:
-- Missile application factor calculation
-- Multiplier extraction from module with loaded charge
-- Charge data precomputation with skill bonuses
-- Range calculation with flight time mechanics
-- Transition point calculation
-- Applied volley/DPS queries
-
-Key difference from turrets:
-- Turrets: We extract base turret stats and apply charge multipliers
-- Missiles: Skills modify charge attributes directly, so we extract multipliers
-            from a loaded charge and apply them to other charges
-"""
-
 import math
 from bisect import bisect_right
 

@@ -1,24 +1,3 @@
-
-
-"""
-Optimal Ammo Selection Graph Getters
-
-This module provides tracking-aware optimal ammo selection for turrets and
-application-aware optimal ammo selection for missile launchers.
-All calculations are based on VOLLEY - DPS is derived by dividing by cycle time.
-
-Key insight: DPS = volley / cycle_time. Since cycle_time is a turret/launcher
-property (not affected by ammo), we only need to calculate volley and convert
-at the end.
-
-Performance optimization: This module pre-computes a distance-keyed cache of
-target speed/sig radius at startup, avoiding expensive projected effect 
-calculations during transition scanning and point queries.
-
-Group Selection: Only the dominant weapon group (turrets OR launchers) is shown,
-based on which type has more fitted modules. Missiles use projected effects cache.
-"""
-
 from eos.const import FittingHardpoint
 from logbook import Logger
 
@@ -266,12 +245,6 @@ def buildTurretCacheEntry(mod, qualityTier, tgtResists, baseTrackingParams,
     """
     Build a complete cache entry for a single turret type.
     
-    This is the main entry point for building turret data. It:
-    1. Gets turret base stats (or uses rangeInfo if provided)
-    2. Gets cycle time
-    3. Filters and precomputes charge data
-    4. Calculates transition points (using pre-built projectedCache)
-    
     Args:
         mod: The turret module
         qualityTier: 't1', 'navy', or 'all'
@@ -359,10 +332,6 @@ def buildLauncherCacheEntry(mod, qualityTier, tgtResists, shipRadius,
     """
     Build a complete cache entry for a single launcher type.
     
-    This is the main entry point for building launcher data. It:
-    1. Gets launcher cycle time and multipliers (or uses rangeInfo if provided)
-    2. Filters and precomputes charge data
-    3. Calculates transition points (using pre-built projectedCache)
     
     Args:
         mod: The launcher module
@@ -610,17 +579,11 @@ class XDistanceMixin(SmoothPointGetter):
 
     # Coarse resolution for graph display - 500m intervals
     # Exact calculations are done on-demand via getPoint/getPointExtended
-    _baseResolution = 100  # ~500m intervals for a 25km range
+    _baseResolution = 100  # meters
 
     def _getCommonData(self, miscParams, src, tgt):
         """
         Build common data including projected cache and weapon (turret/launcher) cache.
-
-        Data flow (optimized):
-        1. Determine dominant weapon type (turret vs launcher)
-        2. Get weapon stats and charge lists (to determine max effective range)
-        3. Build/extend projected cache only to max effective range
-        4. Build weapon cache with transitions using the projected cache
 
         The projected cache is keyed by target (tgtSpeed, tgtSigRadius) and can be
         extended if the attacker's max range increases, without recalculating
@@ -636,25 +599,16 @@ class XDistanceMixin(SmoothPointGetter):
         tgtSigRadius = tgt.getSigRadius() if tgt else 0
         shipRadius = src.getRadius()
 
-        # Determine dominant weapon type
         weaponType = getDominantWeaponType(src)
 
-        # Get fit ID (database ID, not memory address) for cache keys
-        # This allows cache clearing by fitID from events
         fit_id = src.item.ID
 
-        # Get vector parameters for cache keys
         atkSpeed = miscParams.get('atkSpeed', 0) or 0
         atkAngle = miscParams.get('atkAngle', 0) or 0
         tgtAngle = miscParams.get('tgtAngle', 0) or 0
 
-        # Weapon cache key - includes source fit, weapon type, and ALL calculation parameters including vectors
-        # Vector angles affect angular speed and tracking calculations, so they MUST be in the cache key
         weaponCacheKey = (fit_id, weaponType, qualityTier, tgtResists, applyProjected, tgtSpeed, tgtSigRadius, atkSpeed, atkAngle, tgtAngle)
 
-        # Projected cache key - includes BOTH source fit (webs/TPs) AND target params (speed/sig) AND vector angles
-        # This ensures each fit+target+vector combination gets its own projected cache
-        # Vector angles affect relative motion and thus projected effect application
         projectedCacheKey = (fit_id, tgtSpeed, tgtSigRadius, atkSpeed, atkAngle, tgtAngle)
         
         # Initialize graph caches if needed
@@ -686,22 +640,17 @@ class XDistanceMixin(SmoothPointGetter):
             commonData['webFighters'] = webFighters
             commonData['tpFighters'] = tpFighters
         
-        # Return cached data if weapon cache is available
         if weaponCacheKey in self.graph._ammo_weapon_cache:
             cached_weapon = self.graph._ammo_weapon_cache[weaponCacheKey]
             commonData['weapon_cache'] = cached_weapon
             commonData['projected_cache'] = self.graph._ammo_projected_cache.get(projectedCacheKey, {})
             return commonData
         
-        # Handle no weapons
         if weaponType is None:
             commonData['weapon_cache'] = {}
             commonData['projected_cache'] = {}
             return commonData
         
-        # =====================================================================
-        # PHASE 1: Gather weapon stats and determine max effective range
-        # =====================================================================
         
         weaponRangeInfos = {}  # {mod.item.ID: rangeInfo}
         maxEffectiveRange = 0

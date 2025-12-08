@@ -1,11 +1,3 @@
-"""
-Optimized charge lookup for graph calculations.
-
-This module provides a cached, optimized version of Module.getValidCharges()
-specifically for graph rendering performance. It uses a class-level cache
-and optimized database queries to avoid repeated lookups for the same module type.
-"""
-
 import eos.db
 from eos.gamedata import Item
 

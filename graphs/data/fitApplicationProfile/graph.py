@@ -6,14 +6,14 @@ from logbook import Logger
 from eos.const import FittingHardpoint
 from eos.saveddata.fit import Fit
 from graphs.data.base import FitGraph, XDef, YDef, Input, VectorDef
-from graphs.data.fitAmmoOptimalDps.getter import (
+from graphs.data.fitApplicationProfile.getter import (
     Distance2OptimalAmmoDpsGetter,
     Distance2OptimalAmmoVolleyGetter,
 )
-from graphs.data.fitAmmoOptimalDps.calc.turret import getTurretBaseStats
-from graphs.data.fitAmmoOptimalDps.calc.charges import getChargeStats
-from graphs.data.fitAmmoOptimalDps.calc.valid_charges import getValidChargesForModule
-from graphs.data.fitAmmoOptimalDps.calc.launcher import getFlightMultipliers
+from graphs.data.fitApplicationProfile.calc.turret import getTurretBaseStats
+from graphs.data.fitApplicationProfile.calc.charges import getChargeStats
+from graphs.data.fitApplicationProfile.calc.valid_charges import getValidChargesForModule
+from graphs.data.fitApplicationProfile.calc.launcher import getFlightMultipliers
 from graphs.data.fitDamageStats.cache import ProjectedDataCache
 from service.const import GraphCacheCleanupReason
 from service.settings import GraphSettings
@@ -30,13 +30,13 @@ AMMO_COLORS = {
     "Spike": (194, 255, 43),
     "Javelin": (112, 251, 0),
     # Hybrid - Standard
-    "Antimatter": (179, 26, 179),
+    "Antimatter": (15, 0, 0),
     "Iridium": (26, 179, 179),
-    "Lead": (179, 179, 26),
-    "Plutonium": (110, 222, 255),
-    "Thorium": (179, 26, 26),
-    "Uranium": (26, 214, 161),
-    "Tungsten": (77, 77, 153),
+    "Lead": (114, 120, 125),
+    "Plutonium": (0, 150, 68),
+    "Thorium": (148, 127, 115),
+    "Uranium": (94, 230, 73),
+    "Tungsten": (8, 0, 38),
     "Iron": (153, 77, 77),
     
     # Energy - Short Range
@@ -425,32 +425,25 @@ class FitAmmoOptimalDpsGraph(FitGraph):
                 pyfalog.debug(f"[CLEAR-CACHE] Removed {len(keys_to_remove)} range cache entries for fit {fit_id}")
             
             # Clear charge cache - when fits change, weapon types might change
-            # This ensures we refetch charges if switching between turret/missile fits
             if hasattr(self, '_ammo_charge_cache'):
                 count = len(self._ammo_charge_cache)
                 self._ammo_charge_cache = {}
                 pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} charge cache entries for fit change")
 
         elif reason in (GraphCacheCleanupReason.profileChanged, GraphCacheCleanupReason.profileRemoved):
-            # extraData is the profile ID (integer)
             profile_id = extraData
             pyfalog.debug(f"[CLEAR-CACHE] Clearing caches for profile ID {profile_id}")
 
-            # Target profile changed - weapon caches depend on target params (tgtSpeed, tgtSigRadius)
-            # Since we don't track which caches used which profile, clear ALL weapon caches
             if hasattr(self, '_ammo_weapon_cache'):
                 count = len(self._ammo_weapon_cache)
                 self._ammo_weapon_cache = {}
                 pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} weapon cache entries due to profile change")
 
-            # Projected cache is ALSO target-based (tgtSpeed, tgtSigRadius in key)
-            # Clear ALL projected caches since target params changed
             if hasattr(self, '_ammo_projected_cache'):
                 count = len(self._ammo_projected_cache)
                 self._ammo_projected_cache = {}
                 pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} projected cache entries due to profile change")
             
-            # Clear range cache since skill changes might affect range calculations
             if hasattr(self, '_rangeCache'):
                 count = len(self._rangeCache)
                 self._rangeCache = {}
@@ -482,8 +475,6 @@ class FitAmmoOptimalDpsGraph(FitGraph):
                 pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} charge cache entries")
 
         elif reason in (GraphCacheCleanupReason.inputChanged, GraphCacheCleanupReason.optionChanged):
-            # Input changes (including vectors) and option changes require clearing all caches
-            # since vector angles affect angular speed and tracking calculations
             pyfalog.debug(f"[CLEAR-CACHE] Clearing ALL caches for {reason.name}")
             
             if hasattr(self, '_ammo_weapon_cache'):
@@ -496,7 +487,6 @@ class FitAmmoOptimalDpsGraph(FitGraph):
                 self._ammo_projected_cache = {}
                 pyfalog.debug(f"[CLEAR-CACHE] Cleared {count} projected cache entries due to {reason.name}")
 
-            # Don't clear charge cache on input changes - it doesn't depend on vectors
 
     def getPlotSegments(self, mainInput, miscInputs, xSpec, ySpec, src, tgt=None):
         """
