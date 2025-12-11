@@ -43,6 +43,46 @@ def calcMissileFactor(atkEr, atkEv, atkDrf, tgtSpeed, tgtSigRadius):
 # Multiplier Extraction
 # =============================================================================
 
+def _extractMultiplier(mod, attr):
+    """
+    Extract multiplier for a specific attribute.
+    
+    If the base value is 0 (e.g. Mjolnir has 0 thermal damage), we cannot
+    calculate the multiplier by division (x / 0).
+    
+    In that case, we temporarily inject a base value of 1.0 into the modifier
+    dictionary, read the modified value (which will be 1.0 * multiplier),
+    and use that as the multiplier.
+    """
+    base = mod.getChargeBaseAttrValue(attr) or 0
+    
+    if base > 0:
+        modified = mod.getModifiedChargeAttr(attr) or 0
+        pyfalog.debug(f"DEBUG: _extractMultiplier({attr}): base={base}, modified={modified}, mult={modified/base}")
+        return modified / base
+    
+    # Base is 0, we need to trick the eos logic to give us the multiplier
+    # We use preAssign to set the base value to 1.0 for this calculation
+    pyfalog.debug(f"DEBUG: _extractMultiplier({attr}): base is 0, attempting injection")
+    mod.chargeModifiedAttributes.preAssign(attr, 1.0)
+    try:
+        # Get the modified value, which should now be 1.0 * multiplier
+        multiplier = mod.getModifiedChargeAttr(attr) or 1.0
+        pyfalog.debug(f"DEBUG: _extractMultiplier({attr}): injected base 1.0, got modified={multiplier}")
+    finally:
+        # Cleanup: remove the preAssign
+        # Accessing private members is naughty but eos doesn't give us a clean way to remove preAssigns
+        # and we must clean up to avoid side effects
+        if attr in mod.chargeModifiedAttributes._ModifiedAttributeDict__preAssigns:
+            del mod.chargeModifiedAttributes._ModifiedAttributeDict__preAssigns[attr]
+            # Force recalculation by removing from cache
+            if attr in mod.chargeModifiedAttributes._ModifiedAttributeDict__modified:
+                del mod.chargeModifiedAttributes._ModifiedAttributeDict__modified[attr]
+            if attr in mod.chargeModifiedAttributes._ModifiedAttributeDict__intermediary:
+                del mod.chargeModifiedAttributes._ModifiedAttributeDict__intermediary[attr]
+    
+    return multiplier
+
 def getDamageMultipliers(mod):
     """
     Extract per-damage-type multipliers by comparing modified to base values.
@@ -67,13 +107,7 @@ def getDamageMultipliers(mod):
     
     multipliers = {}
     for dmgType in ('emDamage', 'thermalDamage', 'kineticDamage', 'explosiveDamage'):
-        modified = mod.getModifiedChargeAttr(dmgType) or 0
-        base = mod.getChargeBaseAttrValue(dmgType) or 0
-        if base > 0 and modified > 0:
-            multipliers[dmgType] = modified / base
-        else:
-            # If this damage type isn't present on the charge, use 1.0
-            multipliers[dmgType] = 1.0
+        multipliers[dmgType] = _extractMultiplier(mod, dmgType)
     
     return multipliers
 
@@ -96,12 +130,7 @@ def getFlightMultipliers(mod):
     
     multipliers = {}
     for attr in ('maxVelocity', 'explosionDelay'):
-        modified = mod.getModifiedChargeAttr(attr) or 0
-        base = mod.getChargeBaseAttrValue(attr) or 0
-        if base > 0 and modified > 0:
-            multipliers[attr] = modified / base
-        else:
-            multipliers[attr] = 1.0
+        multipliers[attr] = _extractMultiplier(mod, attr)
     
     return multipliers
 
@@ -124,12 +153,7 @@ def getApplicationMultipliers(mod):
     
     multipliers = {}
     for attr in ('aoeCloudSize', 'aoeVelocity', 'aoeDamageReductionFactor'):
-        modified = mod.getModifiedChargeAttr(attr) or 0
-        base = mod.getChargeBaseAttrValue(attr) or 0
-        if base > 0:
-            multipliers[attr] = modified / base if modified > 0 else 1.0
-        else:
-            multipliers[attr] = 1.0
+        multipliers[attr] = _extractMultiplier(mod, attr)
     
     return multipliers
 
@@ -144,6 +168,7 @@ def getAllMultipliers(mod):
     Returns:
         Tuple of (damageMults, flightMults, appMults)
     """
+    # pyfalog.debug(f"DEBUG: getAllMultipliers called for {mod.item.name}, charge={mod.charge}")
     return (
         getDamageMultipliers(mod),
         getFlightMultipliers(mod),

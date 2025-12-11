@@ -661,6 +661,7 @@ class XDistanceMixin(SmoothPointGetter):
             hardpointType = FittingHardpoint.MISSILE
         
         for mod in src.item.activeModulesIter():
+            # pyfalog.debug(f"DEBUG: Processing module {mod.item.name}, hardpoint={mod.hardpoint}, charge={mod.charge}")
             if mod.hardpoint != hardpointType:
                 continue
             if mod.getModifiedItemAttr('miningAmount'):
@@ -671,7 +672,66 @@ class XDistanceMixin(SmoothPointGetter):
                 if weaponType == 'turret':
                     rangeInfo = getTurretRangeInfo(mod, qualityTier, self.graph._ammo_charge_cache)
                 else:
-                    rangeInfo = getLauncherRangeInfo(mod, qualityTier, shipRadius, self.graph._ammo_charge_cache)
+                    # Special handling for empty launchers (Missiles only):
+                    # To apply skill/ship modifiers correctly, eos needs a charge loaded.
+                    # If launcher is empty, temporarily load a charge to extract multipliers.
+                    if mod.charge is None:
+                        # Find a valid charge to simulate load
+                        chargeCacheKey = (mod.item.ID, qualityTier)
+                        validCharges = None
+                        if self.graph._ammo_charge_cache is not None and chargeCacheKey in self.graph._ammo_charge_cache:
+                             validCharges = self.graph._ammo_charge_cache[chargeCacheKey]
+                        
+                        if validCharges is None:
+                            allCharges = list(getValidChargesForModule(mod))
+                            validCharges = filterChargesByQuality(allCharges, qualityTier)
+                            if self.graph._ammo_charge_cache is not None:
+                                self.graph._ammo_charge_cache[chargeCacheKey] = validCharges
+                        
+                        if validCharges:
+                            # Temporarily load the first valid charge
+                            tempCharge = validCharges[0]
+                            try:
+                                # pyfalog.debug(f"DEBUG: Temporarily loading {tempCharge.name} into {mod.item.name} for modifier extraction")
+                                mod.charge = tempCharge
+                                # Force fit update (important for effects to apply)
+                                if mod.owner:
+                                    # pyfalog.debug("DEBUG: Forcing fit recalculation (1)")
+                                    mod.owner.calculated = False
+                                    mod.owner.calculateModifiedAttributes()
+                                
+                                # Extract multipliers (optional debug)
+                                # damageMults, flightMults, appMults = getLauncherMultipliers(mod)
+                                # pyfalog.debug(f"DEBUG: Extracted multipliers: Dmg={damageMults}, Flt={flightMults}, App={appMults}")
+                                
+                                # pyfalog.debug("DEBUG: calling getLauncherRangeInfo with temp charge loaded")
+                                ranges = getLauncherRangeInfo(mod, qualityTier, shipRadius, self.graph._ammo_charge_cache)
+                                # p_dmults, p_fmults, p_amults = getLauncherMultipliers(mod)
+                                # pyfalog.debug(f"DEBUG: Multipliers during range calc: Dmg={p_dmults}")
+                                rangeInfo = ranges
+                                
+                                # Unload charge
+                                mod.charge = None
+                                if mod.owner:
+                                    # pyfalog.debug("DEBUG: Forcing fit recalculation (Cleanup)")
+                                    mod.owner.calculated = False
+                                    mod.owner.calculateModifiedAttributes()
+                                # pyfalog.debug("DEBUG: Charge unloaded")
+                                
+                            except Exception as e:
+                                pyfalog.error(f"Error simulating charge for {mod.item.name}: {e}")
+                                mod.charge = None # Ensure cleanup
+                                if mod.owner:
+                                    mod.owner.calculated = False
+                                    try:
+                                        mod.owner.calculateModifiedAttributes()
+                                    except:
+                                        pass
+                                rangeInfo = None
+                        else:
+                            rangeInfo = None
+                    else:
+                        rangeInfo = getLauncherRangeInfo(mod, qualityTier, shipRadius, self.graph._ammo_charge_cache)
                 
                 if rangeInfo:
                     weaponRangeInfos[key] = rangeInfo

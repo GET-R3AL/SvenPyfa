@@ -358,10 +358,31 @@ class FitAmmoOptimalDpsGraph(FitGraph):
                 elif mod.hardpoint == FittingHardpoint.MISSILE:
                     # For missiles, check ALL compatible charges to find longest range
                     # We need the max range across all ammo types, not just the loaded one
-                    # Get flight multipliers from skills/ship (if charge is loaded)
-                    flight_mults = getFlightMultipliers(mod)
                     
-                    for charge in getValidChargesForModule(mod):
+                    valid_charges = list(getValidChargesForModule(mod))
+                    if not valid_charges:
+                        continue
+
+                    # Get flight multipliers from skills/ship (handling empty launcher case)
+                    if mod.charge is None:
+                        # Temp load first valid charge to extract multipliers
+                        temp_charge = valid_charges[0]
+                        mod.charge = temp_charge
+                        if mod.owner:
+                            mod.owner.calculated = False
+                            mod.owner.calculateModifiedAttributes()
+                        
+                        flight_mults = getFlightMultipliers(mod)
+                        
+                        # Cleanup
+                        mod.charge = None
+                        if mod.owner:
+                            mod.owner.calculated = False
+                            mod.owner.calculateModifiedAttributes()
+                    else:
+                        flight_mults = getFlightMultipliers(mod)
+                    
+                    for charge in valid_charges:
                         base_velocity = charge.getAttribute('maxVelocity') or 0
                         base_explosion_delay = charge.getAttribute('explosionDelay') or 0
                         if base_velocity > 0 and base_explosion_delay > 0:
