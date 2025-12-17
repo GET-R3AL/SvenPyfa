@@ -353,7 +353,7 @@ def buildLauncherCacheEntry(mod, qualityTier, tgtResists, shipRadius,
     # Use pre-computed range info if available, otherwise compute now
     if rangeInfo is not None:
         charges = rangeInfo['charges']
-        chargeData = rangeInfo['charge_data']
+        # chargeData = rangeInfo['charge_data']  # Don't use cached data (it ignores resists)
         cycleTimeMs = rangeInfo['cycle_time_ms']
         damageMults = rangeInfo['damage_mults']
         flightMults = rangeInfo['flight_mults']
@@ -380,11 +380,11 @@ def buildLauncherCacheEntry(mod, qualityTier, tgtResists, shipRadius,
         # Get multipliers from the currently loaded charge
         damageMults, flightMults, appMults = getLauncherMultipliers(mod)
         
-        # Precompute charge data
-        chargeData = precomputeMissileChargeData(
-            mod, charges, cycleTimeMs, shipRadius,
-            damageMults, flightMults, appMults, tgtResists
-        )
+    # Precompute charge data with current resists
+    chargeData = precomputeMissileChargeData(
+        mod, charges, cycleTimeMs, shipRadius,
+        damageMults, flightMults, appMults, tgtResists
+    )
     
     if not chargeData:
         return None
