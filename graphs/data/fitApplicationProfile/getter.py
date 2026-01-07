@@ -14,7 +14,6 @@ from .calc.turret import (
 )
 from .calc.charges import (
     filterChargesByQuality,
-    filterProjectileByBand,
     precomputeChargeData,
     getLongestRangeMultiplier
 )
@@ -284,11 +283,6 @@ def buildTurretCacheEntry(mod, qualityTier, tgtResists, baseTrackingParams,
         
         if not charges:
             return None
-    
-    # Filter projectile ammo by damage band if using resists
-    if tgtResists:
-        charges = filterProjectileByBand(charges, tgtResists)
-        pyfalog.debug(f"[AMMO] After projectile band filter: {len(charges)} charges")
     
     if not charges:
         return None

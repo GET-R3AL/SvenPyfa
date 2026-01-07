@@ -18,23 +18,6 @@ CAPITAL_NAVY_PREFIXES = (
     'Shadow '
 )
 
-# Projectile damage bands - map prefixes to damage type groups
-# Used to filter redundant ammo when target resists are known
-PROJECTILE_DAMAGE_BANDS = {
-    # EMP variants - EM heavy
-    'EMP': 'emp',
-    # Phased Plasma variants - Thermal heavy
-    'Phased Plasma': 'plasma',
-    # Fusion variants - Explosive heavy
-    'Fusion': 'fusion',
-    # Titanium Sabot / Depleted Uranium - Kinetic heavy (long range)
-    'Titanium Sabot': 'kinetic_long',
-    'Depleted Uranium': 'kinetic_long',
-    # Proton / Nuclear - short range variants
-    'Proton': 'proton',
-    'Nuclear': 'nuclear',
-}
-
 
 # =============================================================================
 # Quality Tier Filtering
@@ -92,59 +75,6 @@ def filterChargesByQuality(charges, qualityTier):
                     filtered.append(charge)
     
     return filtered if filtered else charges
-
-
-# =============================================================================
-# Projectile Damage Band Filtering
-# =============================================================================
-
-def filterProjectileByBand(charges, tgtResists):
-    """
-    Filter projectile ammo to only keep the best variant per damage band.
-    
-    When target resists are known, we only need one variant per damage profile
-    since Navy variants just have slightly higher raw damage but identical profiles.
-    
-    Args:
-        charges: List of charge items
-        tgtResists: Target resists tuple (em, therm, kin, explo) or None
-    
-    Returns:
-        Filtered list of charges
-    """
-    if not tgtResists:
-        return charges
-    
-    bands = {}
-    other = []
-    
-    for charge in charges:
-        name = charge.name
-        band = None
-        
-        # Strip Navy prefix if present
-        baseName = name
-        for prefix in NAVY_PREFIXES:
-            if name.startswith(prefix):
-                baseName = name[len(prefix):]
-                break
-        
-        # Check which band this charge belongs to
-        for bandPrefix, bandName in PROJECTILE_DAMAGE_BANDS.items():
-            if baseName.startswith(bandPrefix):
-                band = bandName
-                break
-        
-        if band:
-            if band not in bands:
-                bands[band] = charge
-            # Keep non-Navy over Navy (shorter name = base variant)
-            elif len(name) < len(bands[band].name):
-                bands[band] = charge
-        else:
-            other.append(charge)
-    
-    return list(bands.values()) + other
 
 
 # =============================================================================
