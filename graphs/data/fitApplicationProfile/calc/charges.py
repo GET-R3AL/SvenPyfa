@@ -1,4 +1,3 @@
-```python
 NAVY_PREFIXES = (
     'Imperial Navy ',
     'Republic Fleet ', 
@@ -12,10 +11,6 @@ CAPITAL_NAVY_PREFIXES = (
     'Shadow '
 )
 
-
-# =============================================================================
-# Quality Tier Filtering
-# =============================================================================
 
 def filterChargesByQuality(charges, qualityTier):
     if qualityTier == 'all':
