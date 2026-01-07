@@ -21,7 +21,6 @@ from service.settings import GraphSettings
 pyfalog = Logger(__name__)
 
 
-# Ammo color definitions (RGB tuples, 0-255 range)
 AMMO_COLORS = {
     # Hybrid - Short Range
     "Null": (179, 179, 166),
@@ -89,15 +88,6 @@ AMMO_COLORS = {
     "SlamBolt Condenser Pack": (194,230,153),
 }
 
-# Missile damage type hues (0-360 degrees)
-MISSILE_DAMAGE_HUES = {
-    'Mjolnir': 210,   # Blue (EM)
-    'Inferno': 0,     # Red (Thermal)
-    'Scourge': 180,   # Cyan/Teal (Kinetic)
-    'Nova': 30,       # Orange (Explosive)
-}
-
-# Charge type saturation and value/brightness (0-100 scale)
 MISSILE_CHARGE_SV = {
     'Rage': (90, 55),
     'Fury': (90, 55),
@@ -109,13 +99,11 @@ MISSILE_CHARGE_SV = {
 
 
 def _hsv_to_rgb_255(h, s, v):
-    """Convert HSV (h: 0-360, s: 0-100, v: 0-100) to RGB (0-255)."""
     r, g, b = colorsys.hsv_to_rgb(h / 360, s / 100, v / 100)
     return (int(r * 255), int(g * 255), int(b * 255))
 
 
 def _generate_missile_colors():
-    """Generate missile ammo colors based on damage type hue and charge type sat/brightness."""
     colors = {}
     
     for damage_type, hue in MISSILE_DAMAGE_HUES.items():
@@ -145,14 +133,10 @@ def _generate_missile_colors():
     
     return colors
 
-# Add generated missile colors to AMMO_COLORS
 AMMO_COLORS.update(_generate_missile_colors())
 
 
 def get_ammo_base_name(ammo_name):
-    """
-    Extract base ammo name by removing size suffix (S/M/L/XL), missile type suffixes, and other common suffixes.
-    """
     if not ammo_name:
         return None
     
@@ -192,10 +176,8 @@ def get_ammo_base_name(ammo_name):
     return cleaned
 
 
-# Missile damage type base names for faction lookup
 MISSILE_DAMAGE_TYPES = {'Mjolnir', 'Inferno', 'Scourge', 'Nova'}
 
-# Faction prefixes to normalize for missile color lookup
 FACTION_PREFIXES = [
     'Caldari Navy ', 'Dread Guristas ', 'True Sansha ', 'Shadow Serpentis ', 
     'Domination ', 'Dark Blood ', "Arch Angel ", 'Guristas ', 'Sansha ', 
@@ -205,10 +187,6 @@ FACTION_PREFIXES = [
 
 
 def get_ammo_color(ammo_name):
-    """
-    Get RGB color tuple for an ammo type.
-    Returns color in 0-1 range for matplotlib, or None if no color defined.
-    """
     base_name = get_ammo_base_name(ammo_name)
     if not base_name:
         return None
@@ -292,10 +270,8 @@ class FitAmmoOptimalDpsGraph(FitGraph):
         ('distance', 'dps'): Distance2OptimalAmmoDpsGetter,
         ('distance', 'volley'): Distance2OptimalAmmoVolleyGetter}
     
-    # Enable segmented plotting for this graph
     hasSegments = True
     
-    # Ammo color mode: True = use ammo-specific colors, False = use line patterns
     useAmmoColors = True
 
     def __init__(self):
@@ -304,17 +280,9 @@ class FitAmmoOptimalDpsGraph(FitGraph):
         self._rangeCache = {}  # Cache for getDefaultInputRange: {frozenset(fitIDs): (min, max)}
     
     def getAmmoColor(self, ammoName):
-        """Get RGB color tuple for an ammo type."""
         return get_ammo_color(ammoName)
 
     def getDefaultInputRange(self, inputDef, sources):
-        """
-        Calculate dynamic default range based on the turrets/missiles max effective range.
-        
-        Returns (min, max) tuple in the input's units (km for distance).
-        For turrets: the longest range ammo's optimal+falloff*2 + 10%, capped at 300km.
-        For missiles: the longest range missile's max range + 10%, capped at 300km.
-        """
         if inputDef.handle != 'distance' or not sources:
             return inputDef.defaultRange
         
@@ -510,12 +478,6 @@ class FitAmmoOptimalDpsGraph(FitGraph):
 
 
     def getPlotSegments(self, mainInput, miscInputs, xSpec, ySpec, src, tgt=None):
-        """
-        Get segmented plot data with ammo information for color coding.
-        
-        Returns list of segments, each with xs, ys, ammo name, and ammo index.
-        Returns None if this graph doesn't support segments or getter doesn't have getSegments.
-        """
         pyfalog.debug(f"[GRAPH] getPlotSegments called for src={src.item.name}, mainInput.value={mainInput.value}")
         try:
             getterClass = self._getters[(xSpec.handle, ySpec.handle)]
@@ -558,12 +520,6 @@ class FitAmmoOptimalDpsGraph(FitGraph):
         return segments
 
     def getPointExtended(self, x, miscInputs, xSpec, ySpec, src, tgt=None):
-        """
-        Get point value with extended info (like ammo name) at x.
-        
-        Returns (y_value, extra_info_dict) tuple.
-        extra_info_dict may contain 'ammo' key with the ammo name.
-        """
         try:
             getterClass = self._getters[(xSpec.handle, ySpec.handle)]
         except KeyError:

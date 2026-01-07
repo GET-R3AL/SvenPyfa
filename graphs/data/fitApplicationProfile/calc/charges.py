@@ -1,8 +1,4 @@
-# =============================================================================
-# Constants
-# =============================================================================
-
-# Navy faction ammo prefixes (for S/M/L ammo)
+```python
 NAVY_PREFIXES = (
     'Imperial Navy ',
     'Republic Fleet ', 
@@ -10,55 +6,25 @@ NAVY_PREFIXES = (
     'Federation Navy '
 )
 
-# Capital (XL) "navy-tier" faction ammo prefixes
-# There is no empire Navy XL ammo, so pirate faction serves as the "navy" tier for capitals
 CAPITAL_NAVY_PREFIXES = (
     'Sansha ',
     'Arch Angel ',
     'Shadow '
 )
 
-# Projectile damage bands - map prefixes to damage type groups
-# Used to filter redundant ammo when target resists are known
 PROJECTILE_DAMAGE_BANDS = {
-    # EMP variants - EM heavy
-    'EMP': 'emp',
-    # Phased Plasma variants - Thermal heavy
-    'Phased Plasma': 'plasma',
-    # Fusion variants - Explosive heavy
-    'Fusion': 'fusion',
-    # Titanium Sabot / Depleted Uranium - Kinetic heavy (long range)
-    'Titanium Sabot': 'kinetic_long',
-    'Depleted Uranium': 'kinetic_long',
-    # Proton / Nuclear - short range variants
-    'Proton': 'proton',
-    'Nuclear': 'nuclear',
+    'EMP': 'short',
+    'Phased Plasma': 'short',
+    'Fusion': 'short',
+    'Titanium Sabot': 'mid',
+    'Depleted Uranium': 'mid',
+    'Proton': 'long',
+    'Nuclear': 'long',
+    'Carbonized Lead': 'long'
 }
 
 
-# =============================================================================
-# Quality Tier Filtering
-# =============================================================================
-
 def filterChargesByQuality(charges, qualityTier):
-    """
-    Filter charges based on quality tier selection.
-    
-    Args:
-        charges: List of charge items
-        qualityTier: 't1', 'navy', or 'all'
-    
-    Returns:
-        Filtered list of charges
-        
-    Tiers are cumulative:
-        - 't1': Tech I (metaGroup 1) + Tech II (metaGroup 2)
-        - 'navy': t1 + Navy faction ammo (Imperial Navy, Republic Fleet, Caldari Navy, Federation Navy)
-                  For XL (capital) ammo: includes pirate faction (Sansha, Arch Angel, Shadow)
-        - 'all': Everything including high-tier faction (Blood, Dark Blood, True Sansha, etc.)
-    
-    Tech II ammo is always included as it's a distinct ammo type, not a "better" variant.
-    """
     if qualityTier == 'all':
         return charges
     
@@ -67,51 +33,29 @@ def filterChargesByQuality(charges, qualityTier):
         mg = charge.metaGroup
         mgId = mg.ID if mg else None
         
-        # Tech I (metaGroup 1) - always included
         if mgId == 1:
             filtered.append(charge)
             continue
         
-        # Tech II (metaGroup 2) - always included (distinct ammo type like Conflagration, Void, etc.)
         if mgId == 2:
             filtered.append(charge)
             continue
         
-        # For 'navy' tier, include Navy faction ammo
-        if qualityTier == 'navy' and mgId == 4:  # Faction
-            # Check if it's XL (capital) ammo by name suffix
+        if qualityTier == 'navy' and mgId == 4:
             isCapital = charge.name.endswith(' XL')
             
             if isCapital:
-                # For capital ammo, use pirate faction prefixes as "navy" tier
                 if any(charge.name.startswith(prefix) for prefix in CAPITAL_NAVY_PREFIXES):
                     filtered.append(charge)
             else:
-                # For subcap ammo, use empire Navy prefixes
                 if any(charge.name.startswith(prefix) for prefix in NAVY_PREFIXES):
                     filtered.append(charge)
     
     return filtered if filtered else charges
 
 
-# =============================================================================
-# Projectile Damage Band Filtering
-# =============================================================================
 
 def filterProjectileByBand(charges, tgtResists):
-    """
-    Filter projectile ammo to only keep the best variant per damage band.
-    
-    When target resists are known, we only need one variant per damage profile
-    since Navy variants just have slightly higher raw damage but identical profiles.
-    
-    Args:
-        charges: List of charge items
-        tgtResists: Target resists tuple (em, therm, kin, explo) or None
-    
-    Returns:
-        Filtered list of charges
-    """
     if not tgtResists:
         return charges
     
@@ -122,45 +66,38 @@ def filterProjectileByBand(charges, tgtResists):
         name = charge.name
         band = None
         
-        # Strip Navy prefix if present
         baseName = name
         for prefix in NAVY_PREFIXES:
             if name.startswith(prefix):
                 baseName = name[len(prefix):]
                 break
         
-        # Check which band this charge belongs to
         for bandPrefix, bandName in PROJECTILE_DAMAGE_BANDS.items():
             if baseName.startswith(bandPrefix):
                 band = bandName
                 break
         
         if band:
+            # Calculate effective damage for comparison
+            stats = getChargeStats(charge)
+            stats = applyResists(stats, tgtResists)
+            effDamage = stats['totalDamage']
+            
             if band not in bands:
-                bands[band] = charge
-            # Keep non-Navy over Navy (shorter name = base variant)
-            elif len(name) < len(bands[band].name):
-                bands[band] = charge
+                bands[band] = (charge, effDamage)
+            else:
+                # Keep the one with higher effective damage
+                currentCharge, currentEffDamage = bands[band]
+                if effDamage > currentEffDamage:
+                    bands[band] = (charge, effDamage)
         else:
             other.append(charge)
     
-    return list(bands.values()) + other
+    return [b[0] for b in bands.values()] + other
 
 
-# =============================================================================
-# Charge Stats Extraction
-# =============================================================================
 
 def getChargeStats(charge):
-    """
-    Extract charge stats including damage values and multipliers.
-    
-    Args:
-        charge: The charge item
-    
-    Returns:
-        Dict with damage values and range/falloff/tracking multipliers
-    """
     em = charge.getAttribute('emDamage') or 0
     thermal = charge.getAttribute('thermalDamage') or 0
     kinetic = charge.getAttribute('kineticDamage') or 0
@@ -173,26 +110,13 @@ def getChargeStats(charge):
         'explosiveDamage': explosive,
         'totalDamage': em + thermal + kinetic + explosive,
         'rangeMultiplier': charge.getAttribute('weaponRangeMultiplier') or 1,
-        'falloffMultiplier': charge.getAttribute('fallofMultiplier') or 1,  # EVE typo
+        'falloffMultiplier': charge.getAttribute('fallofMultiplier') or 1,
         'trackingMultiplier': charge.getAttribute('trackingSpeedMultiplier') or 1
     }
 
 
-# =============================================================================
-# Resist Application
-# =============================================================================
 
 def applyResists(chargeStats, tgtResists):
-    """
-    Apply target resists to charge stats.
-    
-    Args:
-        chargeStats: Dict from getChargeStats
-        tgtResists: Tuple of (em, therm, kin, explo) resist values (0-1)
-    
-    Returns:
-        New dict with resisted damage values
-    """
     if not tgtResists:
         return chargeStats
     
@@ -214,45 +138,20 @@ def applyResists(chargeStats, tgtResists):
     return result
 
 
-# =============================================================================
-# Charge Data Precomputation
-# =============================================================================
 
 def precomputeChargeData(turretBase, charges, skillMult=1.0, tgtResists=None):
-    """
-    Pre-compute constant values for each charge.
-    
-    This computes effective stats (turret base * charge multipliers) and
-    raw volley for each charge, which can then be used for fast lookups.
-    
-    Args:
-        turretBase: Base turret stats dict from getTurretBaseStats
-        charges: List of charge items
-        skillMult: Skill damage multiplier from getSkillMultiplier
-        tgtResists: Target resists tuple or None
-    
-    Returns:
-        List of dicts with: name, raw_volley, effective_optimal, 
-        effective_falloff, effective_tracking
-    
-    Note: We do NOT store raw_dps - it's derived from raw_volley / cycle_time
-    when needed at the mixin level.
-    """
     chargeData = []
     
     for charge in charges:
         stats = getChargeStats(charge)
         
-        # Apply resists early for efficiency
         if tgtResists:
             stats = applyResists(stats, tgtResists)
         
-        # Compute effective turret stats with charge modifiers
         effectiveOptimal = turretBase['optimal'] * stats['rangeMultiplier']
         effectiveFalloff = turretBase['falloff'] * stats['falloffMultiplier']
         effectiveTracking = turretBase['tracking'] * stats['trackingMultiplier']
         
-        # Compute raw volley (unmodified by range/tracking)
         rawVolley = stats['totalDamage'] * skillMult * turretBase['damageMultiplier']
         
         chargeData.append({
@@ -267,17 +166,6 @@ def precomputeChargeData(turretBase, charges, skillMult=1.0, tgtResists=None):
 
 
 def getLongestRangeMultiplier(charges):
-    """
-    Get the maximum range multiplier from a list of charges.
-    
-    Used to calculate the max effective range of a turret for cache sizing.
-    
-    Args:
-        charges: List of charge items
-    
-    Returns:
-        The highest rangeMultiplier value among all charges
-    """
     if not charges:
         return 1.0
     
