@@ -3,44 +3,15 @@ import math
 from eos.calc import calculateRangeFactor
 
 
-# =============================================================================
-# Angular Speed
-# =============================================================================
 
 def calcAngularSpeed(atkSpeed, atkAngle, atkRadius, distance, tgtSpeed, tgtAngle, tgtRadius):
-    """
-    Calculate angular speed (rad/s) between attacker and target.
-    
-    Angular speed = transversal_velocity / center_to_center_distance
-    
-    Based on EVE formula:
-    Target is to the right of the attacker, so transversal is projection onto Y axis.
-    The relative transversal is the difference of the two transversal components.
-    
-    Args:
-        atkSpeed: Attacker absolute speed (m/s)
-        atkAngle: Attacker movement angle (degrees, 0 = towards target)
-        atkRadius: Attacker ship radius (m)
-        distance: Surface-to-surface distance (m)
-        tgtSpeed: Target absolute speed (m/s)
-        tgtAngle: Target movement angle (degrees, 0 = towards attacker)
-        tgtRadius: Target ship radius (m)
-    
-    Returns:
-        Angular speed in rad/s
-    """
     if distance is None:
         return 0
     
-    # Convert angles to radians
     atkAngleRad = atkAngle * math.pi / 180
     tgtAngleRad = tgtAngle * math.pi / 180
     
-    # Convert to center-to-center distance
     ctcDistance = atkRadius + distance + tgtRadius
-    
-    # Target is to the right of the attacker, so transversal is projection onto Y axis
-    # Relative transversal is the DIFFERENCE (not sum) of transversal components
     transSpeed = abs(atkSpeed * math.sin(atkAngleRad) - tgtSpeed * math.sin(tgtAngleRad))
     
     if ctcDistance == 0:
@@ -49,25 +20,8 @@ def calcAngularSpeed(atkSpeed, atkAngle, atkRadius, distance, tgtSpeed, tgtAngle
         return transSpeed / ctcDistance
 
 
-# =============================================================================
-# Tracking Factor
-# =============================================================================
 
 def calcTrackingFactor(tracking, optimalSigRadius, angularSpeed, tgtSigRadius):
-    """
-    Calculate the tracking factor component of chance to hit.
-    
-    Formula: trackingFactor = 0.5 ^ ((angularSpeed * optimalSigRadius) / (tracking * tgtSigRadius))^2
-    
-    Args:
-        tracking: Turret tracking speed (rad/s)
-        optimalSigRadius: Turret's optimal signature radius (m)
-        angularSpeed: Angular velocity of target (rad/s)
-        tgtSigRadius: Target's signature radius (m)
-    
-    Returns:
-        Tracking factor (0-1)
-    """
     if tracking <= 0 or tgtSigRadius <= 0:
         return 0
     if angularSpeed <= 0:
@@ -77,37 +31,13 @@ def calcTrackingFactor(tracking, optimalSigRadius, angularSpeed, tgtSigRadius):
     return 0.5 ** (exponent ** 2)
 
 
-# =============================================================================
-# Turret Damage Multiplier
-# =============================================================================
 
 def calcTurretDamageMult(chanceToHit):
-    """
-    Calculate turret damage multiplier from chance to hit.
-    
-    Based on EVE formula:
-    https://wiki.eveuniversity.org/Turret_mechanics#Damage
-    
-    Includes wrecking hit calculation for proper damage distribution.
-    
-    Note: This can return values > 1.0 at high CTH because wrecking hits
-    deal 3x damage. At CTH=1.0, expected damage mult is ~1.015.
-    
-    Args:
-        chanceToHit: Chance to hit (0-1)
-    
-    Returns:
-        Expected damage multiplier
-    """
-    # Wrecking hits: 1% of hits that land do 3x damage
     wreckingChance = min(chanceToHit, 0.01)
     wreckingPart = wreckingChance * 3
     
-    # Normal hits: damage varies from (0.01 + 0.49) to (CTH + 0.49)
     normalChance = chanceToHit - wreckingChance
     if normalChance > 0:
-        # Average damage multiplier: (min_quality + max_quality) / 2 + 0.49
-        # where min_quality = 0.01, max_quality = chanceToHit
         avgDamageMult = (0.01 + chanceToHit) / 2 + 0.49
         normalPart = normalChance * avgDamageMult
     else:
@@ -117,33 +47,14 @@ def calcTurretDamageMult(chanceToHit):
     return totalMult
 
 
-# =============================================================================
-# Turret Base Stats Extraction
-# =============================================================================
 
 def getTurretBaseStats(mod):
-    """
-    Get turret stats with ship/skill bonuses but WITHOUT charge modifiers.
-    
-    When a charge is loaded, getModifiedItemAttr returns values that already
-    include the charge's range/falloff/tracking multipliers. We need to undo
-    those effects to get the true base turret stats (with only ship/skill bonuses).
-    
-    Args:
-        mod: The turret module
-    
-    Returns:
-        Dict with: optimal, falloff, tracking, optimalSigRadius, damageMultiplier
-    """
-    # Get the modified values (includes charge effects if charge is loaded)
     optimal = mod.getModifiedItemAttr('maxRange') or 0
     falloff = mod.getModifiedItemAttr('falloff') or 0
     tracking = mod.getModifiedItemAttr('trackingSpeed') or 0
     optimalSigRadius = mod.getModifiedItemAttr('optimalSigRadius') or 0
     damageMult = mod.getModifiedItemAttr('damageMultiplier') or 1
     
-    # If a charge is loaded, undo its range/falloff/tracking multiplier effects
-    # Charges multiply these stats, so we divide them out to get base stats
     if mod.charge:
         chargeRangeMult = mod.charge.getAttribute('weaponRangeMultiplier') or 1
         chargeFalloffMult = mod.charge.getAttribute('fallofMultiplier') or 1  # EVE typo
@@ -165,23 +76,8 @@ def getTurretBaseStats(mod):
     }
 
 
-# =============================================================================
-# Skill Multiplier
-# =============================================================================
 
 def getSkillMultiplier(mod):
-    """
-    Get the skill-based damage multiplier for a turret.
-    
-    Compares damage with current charge vs base charge damage to extract
-    the multiplier from skills/ship bonuses.
-    
-    Args:
-        mod: The turret module with a charge loaded
-    
-    Returns:
-        Skill damage multiplier (float)
-    """
     charge = mod.charge
     if not charge:
         return 1.0
@@ -206,28 +102,8 @@ def getSkillMultiplier(mod):
     return modifiedDamage / baseDamage if baseDamage > 0 else 1.0
 
 
-# =============================================================================
-# Applied Volley Calculation
-# =============================================================================
 
 def calculateAppliedVolley(chargeData, distance, turretBase, trackingParams):
-    """
-    Calculate applied volley for a charge at a distance.
-    
-    Applies both range factor and tracking factor.
-    
-    Args:
-        chargeData: Charge data dict with effective_optimal, effective_falloff, 
-                    effective_tracking, raw_volley
-        distance: Surface-to-surface distance (m)
-        turretBase: Base turret stats dict
-        trackingParams: Dict with atkSpeed, atkAngle, atkRadius, tgtSpeed, 
-                        tgtAngle, tgtRadius, tgtSigRadius. None = perfect tracking.
-    
-    Returns:
-        Applied volley (damage per shot accounting for range and tracking)
-    """
-    # Range factor
     if distance <= chargeData['effective_optimal']:
         rangeFactor = 1.0
     else:
@@ -238,7 +114,6 @@ def calculateAppliedVolley(chargeData, distance, turretBase, trackingParams):
             restrictedRange=False
         )
     
-    # Tracking factor
     if trackingParams is None:
         trackingFactor = 1.0
     else:
@@ -258,7 +133,6 @@ def calculateAppliedVolley(chargeData, distance, turretBase, trackingParams):
             trackingParams['tgtSigRadius']
         )
     
-    # Chance to hit and damage multiplier
     cth = rangeFactor * trackingFactor
     damageMult = calcTurretDamageMult(cth)
     
