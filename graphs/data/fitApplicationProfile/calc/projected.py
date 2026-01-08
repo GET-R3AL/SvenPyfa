@@ -29,7 +29,7 @@ from graphs.data.fitDamageStats.calc.projected import (
 # =============================================================================
 
 def buildProjectedCache(src, tgt, commonData, baseTgtSpeed, baseTgtSigRadius,
-                        maxDistance=300000, resolution=1000, existingCache=None):
+                        maxDistance=300000, resolution=100, existingCache=None):
     """
     Build a distance-keyed cache of target speed and signature radius.
     
@@ -96,7 +96,6 @@ def buildProjectedCache(src, tgt, commonData, baseTgtSpeed, baseTgtSigRadius,
         startDistance = existingMax + resolution
     else:
         sigStr = 'inf' if baseTgtSigRadius == float('inf') else f"{baseTgtSigRadius:.1f}m"
-        pyfalog.debug(f"[PROJECTED] Building new cache: 0-{maxDistance/1000:.0f}km @ {resolution/1000:.1f}km intervals (baseSig={sigStr})")
         distances = []
         cache = {}
         startDistance = 0

@@ -92,7 +92,7 @@ def _updateTrackingWithCache(baseTrackingParams, projectedCache, distance):
 
 def calculateTransitions(chargeData, turretBase, baseTrackingParams,
                          projectedCache,
-                         maxDistance=300000, resolution=1000):
+                         maxDistance=300000, resolution=100):
     """
     Calculate distances where optimal ammo changes.
     
@@ -114,15 +114,7 @@ def calculateTransitions(chargeData, turretBase, baseTrackingParams,
         List of tuples: [(distance, charge_index, charge_name, volley), ...]
     """
     if not chargeData:
-        pyfalog.debug("[AMMO] calculateTransitions: no chargeData")
         return []
-    
-    pyfalog.debug(f"[AMMO] Starting transition calculation with {len(chargeData)} charges, "
-                  f"resolution={resolution}m, max={maxDistance/1000:.0f}km")
-    if baseTrackingParams:
-        pyfalog.debug(f"[AMMO] Base params: tgtSpeed={baseTrackingParams.get('tgtSpeed', 0):.0f}, "
-                      f"tgtSig={baseTrackingParams.get('tgtSigRadius', 0):.0f}")
-        pyfalog.debug(f"[AMMO] Using projected cache: {projectedCache.get('hasProjected', False)}")
     
     transitions = []
     currentCharge = None
@@ -156,14 +148,9 @@ def calculateTransitions(chargeData, turretBase, baseTrackingParams,
             bestVolley, _, _ = findBestCharge(chargeData, high, turretBase, paramsHigh)
             
             transitions.append((high, bestIdx, bestName, bestVolley))
-            pyfalog.debug(f"[AMMO] Transition @ {high/1000:.1f}km: {currentCharge} -> {bestName}")
             currentCharge = bestName
         
         distance += resolution
-    
-    pyfalog.debug(f"[AMMO] Completed: {len(transitions)} transition points found")
-    for t in transitions:
-        pyfalog.debug(f"[AMMO]   {t[0]/1000:.1f}km: {t[2]}")
     
     return transitions
 

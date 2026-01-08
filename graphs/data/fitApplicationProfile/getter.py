@@ -765,7 +765,7 @@ class XDistanceMixin(SmoothPointGetter):
             baseTgtSpeed=tgtSpeed,
             baseTgtSigRadius=tgtSigRadius,
             maxDistance=maxEffectiveRange,
-            resolution=1000,  # 1km intervals
+            resolution=100,  # 1km intervals
             existingCache=existingCache
         )
         
@@ -948,7 +948,7 @@ class XDistanceMixin(SmoothPointGetter):
                 continue
             
             # Generate points at fixed 500m resolution for performance
-            step = 500
+            step = 100
             xs, ys = [], []
             x = segStart
             while x <= segEnd:
