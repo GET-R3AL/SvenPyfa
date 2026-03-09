@@ -923,17 +923,17 @@ class Fit:
                                      or mod.item.requiresSkill("Capital Repair Systems")),
                         "armorDamageAmount", value, stackingPenalties=True)
                 if warfareBuffID == 2464:  # Expedition Burst: Probe Strength
-                    self.modules.filteredItemBoost(
+                    self.modules.filteredChargeBoost(
                         lambda mod: mod.charge.requiresSkill('Astrometrics'),
-                        'expeditionCommandBurstProbeStrengthBonusCharID', value, stackingPenalties=True)
+                        'baseSensorStrength', value, stackingPenalties=True)
                 if warfareBuffID == 2465:  # Expedition Burst: Directional Scanner, Hacking and Salvager Range
                     self.ship.boostItemAttr("maxDirectionalScanRange", value)
                     self.modules.filteredItemBoost(
                         lambda mod: mod.item.group.name in ("Data Miners", "Salvager"), "maxRange", value, stackingPenalties=True)
                 if warfareBuffID == 2466:  # Expedition Burst: Maximum Scan Deviation Modifier
-                    self.modules.filteredItemBoost(
+                    self.modules.filteredChargeBoost(
                         lambda mod: mod.charge.requiresSkill('Astrometrics'),
-                        'expeditionCommandBurstProbeDeviationBonusCharID', value, stackingPenalties=True)
+                        'baseMaxScanDeviation', value, stackingPenalties=True)
                 if warfareBuffID == 2468:  # Expedition Burst: Virus Coherence
                     self.modules.filteredItemIncrease(
                         lambda mod: mod.item.group.name == "Data Miners", "virusCoherence", value)
@@ -951,7 +951,7 @@ class Fit:
                                 mod.item.requiresSkill("Mining")
                                 or mod.item.requiresSkill("Ice Harvesting")
                                 or mod.item.requiresSkill("Gas Cloud Harvesting")),
-                        "miningWasteProbability", value, stackingPenalties=True)
+                        "miningWasteProbability", value)
 
             del self.commandBonuses[warfareBuffID]
 

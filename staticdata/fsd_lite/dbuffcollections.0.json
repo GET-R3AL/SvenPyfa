@@ -70,7 +70,7 @@
     "displayNameID": 517442, 
     "itemModifiers": [
       {
-        "dogmaAttributeID": 3171
+        "dogmaAttributeID": 37
       }
     ], 
     "locationGroupModifiers": [], 
@@ -4189,7 +4189,7 @@
     "locationModifiers": [], 
     "locationRequiredSkillModifiers": [
       {
-        "dogmaAttributeID": 6118, 
+        "dogmaAttributeID": 1371, 
         "skillID": 3412
       }
     ], 
@@ -4247,7 +4247,7 @@
     "locationModifiers": [], 
     "locationRequiredSkillModifiers": [
       {
-        "dogmaAttributeID": 6119, 
+        "dogmaAttributeID": 1372, 
         "skillID": 3412
       }
     ], 
@@ -4529,7 +4529,7 @@
     "locationModifiers": [], 
     "locationRequiredSkillModifiers": [
       {
-        "dogmaAttributeID": 6118, 
+        "dogmaAttributeID": 1371, 
         "skillID": 3412
       }
     ], 
@@ -4804,7 +4804,7 @@
     "locationModifiers": [], 
     "locationRequiredSkillModifiers": [
       {
-        "dogmaAttributeID": 6118, 
+        "dogmaAttributeID": 1371, 
         "skillID": 3412
       }
     ], 
@@ -4853,7 +4853,7 @@
     "locationModifiers": [], 
     "locationRequiredSkillModifiers": [
       {
-        "dogmaAttributeID": 6118, 
+        "dogmaAttributeID": 1371, 
         "skillID": 3412
       }
     ], 
@@ -4871,7 +4871,7 @@
     "displayName_ja": "エネルギー戦レジスタンス・ボーナス（メタリミナルガンマ線嵐）", 
     "displayName_ko": "에너지전 저항 보너스(메타경계성 감마 폭풍)", 
     "displayName_ru": "+ к сопротивляемости энергетич. воздействию (металиминальная гамма-буря)", 
-    "displayName_zh": "电容战抗性加成（超阈限伽马风暴）", 
+    "displayName_zh": "能量战抗性加成（金属极限伽马风暴）", 
     "displayNameID": 1025540, 
     "itemModifiers": [
       {
@@ -4895,7 +4895,7 @@
     "displayName_ja": "モジュール熱ダメージ減少（メタリミナルプラズマ嵐）", 
     "displayName_ko": "모듈 과부하 피해 감소(메타경계성 플라즈마 폭풍)", 
     "displayName_ru": "Снижение теплового урона для модулей (металиминальная пламенная буря)", 
-    "displayName_zh": "装备超载伤害降低（超阈限等离子体风暴）", 
+    "displayName_zh": "装备超载伤害降低（金属极限等离子体风暴）", 
     "displayNameID": 1025539, 
     "itemModifiers": [], 
     "locationGroupModifiers": [], 
@@ -4919,7 +4919,7 @@
     "displayName_ja": "スキャン分解能ボーナス（メタリミナルエキゾチック嵐）", 
     "displayName_ko": "스캔 정밀도 보너스(메타경계성 엑조틱 폭풍)", 
     "displayName_ru": "Повышение эффективности сканирования (металиминальная экзотическая буря)", 
-    "displayName_zh": "扫描分辨率加成（超阈限异种风暴）", 
+    "displayName_zh": "扫描分辨率加成（金属极限异种风暴）", 
     "displayNameID": 1025538, 
     "itemModifiers": [
       {
@@ -4943,7 +4943,7 @@
     "displayName_ja": "キャパシタ量ボーナス（メタリミナル電気嵐）", 
     "displayName_ko": "캐패시터 용량 보너스(메타경계성 전기 폭풍)", 
     "displayName_ru": "Увеличение заряда накопителя (металиминальная электрическая буря)", 
-    "displayName_zh": "电容量加成（超阈限电子风暴）", 
+    "displayName_zh": "电容数量加成（金属极限电子风暴）", 
     "displayNameID": 1025537, 
     "itemModifiers": [
       {
@@ -5260,136 +5260,6 @@
       }
     ], 
     "operationName": "PostPercent", 
-    "showOutputValueInUI": "ShowNormal"
-  }, 
-  "2518": {
-    "aggregateMode": "Minimum", 
-    "developerDescription": "Sisters of EVE Metaliminal Storm Bonus 5 - Winter Nexus Storm", 
-    "displayName_de": "Thermalresistenz-Bonus (unbeständiger Eissturm)", 
-    "displayName_en-us": "Thermal Resistance Bonus (Volatile Ice Storm)", 
-    "displayName_es": "Bonificación de resistencia térmica (tormenta de hielo volátil)", 
-    "displayName_fr": "Bonus de résistance thermique (tempête de glace volatile)", 
-    "displayName_it": "Thermal Resistance Bonus (Volatile Ice Storm)", 
-    "displayName_ja": "サーマルレジスタンスボーナス（揮発性アイスストーム）", 
-    "displayName_ko": "열 저항력 보너스(불안정한 얼음 폭풍)", 
-    "displayName_ru": "Бонус к сопротивляемости термальному урону (нестабильная ледяная буря)", 
-    "displayName_zh": "热能抗性加成（不稳定冰风暴）", 
-    "displayNameID": 1030721, 
-    "itemModifiers": [
-      {
-        "dogmaAttributeID": 110
-      }, 
-      {
-        "dogmaAttributeID": 270
-      }, 
-      {
-        "dogmaAttributeID": 274
-      }
-    ], 
-    "locationGroupModifiers": [], 
-    "locationModifiers": [], 
-    "locationRequiredSkillModifiers": [], 
-    "operationName": "PostPercent", 
-    "showOutputValueInUI": "ShowInverted"
-  }, 
-  "2519": {
-    "aggregateMode": "Maximum", 
-    "developerDescription": "Sisters of EVE Landmark Bonus 21", 
-    "itemModifiers": [], 
-    "locationGroupModifiers": [], 
-    "locationModifiers": [], 
-    "locationRequiredSkillModifiers": [], 
-    "operationName": "PreAssignment", 
-    "showOutputValueInUI": "ShowNormal"
-  }, 
-  "2520": {
-    "aggregateMode": "Maximum", 
-    "developerDescription": "Sisters of EVE Landmark Bonus 22", 
-    "itemModifiers": [], 
-    "locationGroupModifiers": [], 
-    "locationModifiers": [], 
-    "locationRequiredSkillModifiers": [], 
-    "operationName": "PreAssignment", 
-    "showOutputValueInUI": "ShowNormal"
-  }, 
-  "2521": {
-    "aggregateMode": "Maximum", 
-    "developerDescription": "Sisters of EVE Landmark Bonus 23", 
-    "itemModifiers": [], 
-    "locationGroupModifiers": [], 
-    "locationModifiers": [], 
-    "locationRequiredSkillModifiers": [], 
-    "operationName": "PreAssignment", 
-    "showOutputValueInUI": "ShowNormal"
-  }, 
-  "2522": {
-    "aggregateMode": "Maximum", 
-    "developerDescription": "Sisters of EVE Landmark Bonus 24", 
-    "itemModifiers": [], 
-    "locationGroupModifiers": [], 
-    "locationModifiers": [], 
-    "locationRequiredSkillModifiers": [], 
-    "operationName": "PreAssignment", 
-    "showOutputValueInUI": "ShowNormal"
-  }, 
-  "2523": {
-    "aggregateMode": "Maximum", 
-    "developerDescription": "Sisters of EVE Landmark Bonus 25", 
-    "itemModifiers": [], 
-    "locationGroupModifiers": [], 
-    "locationModifiers": [], 
-    "locationRequiredSkillModifiers": [], 
-    "operationName": "PreAssignment", 
-    "showOutputValueInUI": "ShowNormal"
-  }, 
-  "2524": {
-    "aggregateMode": "Maximum", 
-    "developerDescription": "Sisters of EVE Landmark Bonus 27", 
-    "itemModifiers": [], 
-    "locationGroupModifiers": [], 
-    "locationModifiers": [], 
-    "locationRequiredSkillModifiers": [], 
-    "operationName": "PreAssignment", 
-    "showOutputValueInUI": "ShowNormal"
-  }, 
-  "2525": {
-    "aggregateMode": "Maximum", 
-    "developerDescription": "Sisters of EVE Landmark Bonus 28", 
-    "itemModifiers": [], 
-    "locationGroupModifiers": [], 
-    "locationModifiers": [], 
-    "locationRequiredSkillModifiers": [], 
-    "operationName": "PreAssignment", 
-    "showOutputValueInUI": "ShowNormal"
-  }, 
-  "2526": {
-    "aggregateMode": "Maximum", 
-    "developerDescription": "Sisters of EVE Landmark Bonus 26", 
-    "itemModifiers": [], 
-    "locationGroupModifiers": [], 
-    "locationModifiers": [], 
-    "locationRequiredSkillModifiers": [], 
-    "operationName": "PreAssignment", 
-    "showOutputValueInUI": "ShowNormal"
-  }, 
-  "2527": {
-    "aggregateMode": "Maximum", 
-    "developerDescription": "Sisters of EVE Landmark Bonus 29", 
-    "itemModifiers": [], 
-    "locationGroupModifiers": [], 
-    "locationModifiers": [], 
-    "locationRequiredSkillModifiers": [], 
-    "operationName": "PreAssignment", 
-    "showOutputValueInUI": "ShowNormal"
-  }, 
-  "2528": {
-    "aggregateMode": "Maximum", 
-    "developerDescription": "Sisters of EVE Landmark Bonus 30", 
-    "itemModifiers": [], 
-    "locationGroupModifiers": [], 
-    "locationModifiers": [], 
-    "locationRequiredSkillModifiers": [], 
-    "operationName": "PreAssignment", 
     "showOutputValueInUI": "ShowNormal"
   }
 }
