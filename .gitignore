@@ -129,3 +129,4 @@ gitversion
 .vscode
 
 eve.db
+eve.db-journal
