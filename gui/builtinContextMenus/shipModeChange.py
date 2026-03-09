@@ -17,7 +17,10 @@ class ChangeShipTacticalMode(ContextMenuUnconditional):
         self.modeMap = {
             'Defense': _t('Defense'),
             'Propulsion': _t('Propulsion'),
-            'Sharpshooter': _t('Sharpshooter')
+            'Sharpshooter': _t('Sharpshooter'),
+            'Primary': _t('Primary'),
+            'Secondary': _t('Secondary'),
+            'Tertiary': _t('Tertiary'),
         }
 
     def display(self, callingWindow, srcContext):
