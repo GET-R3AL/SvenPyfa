@@ -7,7 +7,8 @@ NAVY_PREFIXES = (
     'Imperial Navy ',
     'Republic Fleet ', 
     'Caldari Navy ',
-    'Federation Navy '
+    'Federation Navy ',
+    'Plasma '
 )
 
 # Capital (XL) "navy-tier" faction ammo prefixes
@@ -15,7 +16,8 @@ NAVY_PREFIXES = (
 CAPITAL_NAVY_PREFIXES = (
     'Sansha ',
     'Arch Angel ',
-    'Shadow '
+    'Shadow ',
+    'Plasma'
 )
 
 
@@ -103,7 +105,7 @@ def getChargeStats(charge):
         'explosiveDamage': explosive,
         'totalDamage': em + thermal + kinetic + explosive,
         'rangeMultiplier': charge.getAttribute('weaponRangeMultiplier') or 1,
-        'falloffMultiplier': charge.getAttribute('fallofMultiplier') or 1,  # EVE typo
+        'falloffMultiplier': charge.getAttribute('fallofMultiplier') or 1,
         'trackingMultiplier': charge.getAttribute('trackingSpeedMultiplier') or 1
     }
 
