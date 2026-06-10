@@ -438,7 +438,7 @@
           "bonuses": [
             {
               "number": "5%", 
-              "text": "Bonus auf die Feuerrate von schweren Lenkwaffenwerfern und schweren Angriffslenkwaffenwerfern"
+              "text": "Bonus auf die Feuerrate von Werfern für schwere Lenkwaffen und schwere Angriffslenkwaffen"
             }, 
             {
               "number": "10%", 
@@ -454,8 +454,8 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
-              "text": "Bonus auf die Feuerrate von schweren Lenkwaffenwerfern und schweren Angriffslenkwaffenwerfern"
+              "number": "7.5%", 
+              "text": "Bonus auf den Schaden von schweren Angriffslenkwaffen und schweren Lenkwaffen"
             }, 
             {
               "number": "4%", 
@@ -500,8 +500,8 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
-              "text": "bonus to Heavy Missile and Heavy Assault Missile Launcher rate of fire"
+              "number": "7.5%", 
+              "text": "bonus to Heavy Missile and Heavy Assault Missile damage"
             }, 
             {
               "number": "4%", 
@@ -546,8 +546,8 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
-              "text": "de bonificación a la cadencia de tiro de los lanzamisiles pesados y los lanzamisiles de asalto pesados."
+              "number": "7.5%", 
+              "text": "de bonificación al daño de los misiles pesados y los misiles de asalto pesados."
             }, 
             {
               "number": "4%", 
@@ -592,8 +592,8 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
-              "text": "de bonus à la cadence de tir des lance-missiles lourds et des lance-missiles d'assaut lourds"
+              "number": "7.5%", 
+              "text": "de bonus aux dégâts des missiles lourds et des missiles d'assaut lourds"
             }, 
             {
               "number": "4%", 
@@ -638,8 +638,8 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
-              "text": "bonus to Heavy Missile and Heavy Assault Missile Launcher rate of fire"
+              "number": "7.5%", 
+              "text": "bonus to Heavy Missile and Heavy Assault Missile damage"
             }, 
             {
               "number": "4%", 
@@ -668,7 +668,7 @@
           "bonuses": [
             {
               "number": "5%", 
-              "text": "ヘビーミサイル・ヘビーアサルトミサイルランチャーの発射間隔が短縮"
+              "text": "ヘビーミサイルとヘビーアサルトミサイルランチャーの発射間隔にボーナス"
             }, 
             {
               "number": "10%", 
@@ -684,8 +684,8 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
-              "text": "ヘビーミサイル・ヘビーアサルトミサイルランチャーの発射間隔が短縮"
+              "number": "7.5%", 
+              "text": "ヘビーミサイルとヘビーアサルトミサイルのダメージにボーナス"
             }, 
             {
               "number": "4%", 
@@ -730,8 +730,8 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
-              "text": "헤비 미사일, 헤비 어썰트 미사일 런처 연사속도 증가"
+              "number": "7.5%", 
+              "text": "헤비 미사일 및 헤비 어썰트 미사일 피해량 증가"
             }, 
             {
               "number": "4%", 
@@ -760,7 +760,7 @@
           "bonuses": [
             {
               "number": "на 5%", 
-              "text": "увеличивается скорострельность ПУ тяжёлых ракет и тяжёлых штурмовых ракет"
+              "text": "бонус к скорострельности пусковых установок тяжёлых ракет и тяжёлых штурмовых ракет"
             }, 
             {
               "number": "на 10%", 
@@ -776,8 +776,8 @@
         {
           "bonuses": [
             {
-              "number": "на 5%", 
-              "text": "увеличивается скорострельность ПУ тяжёлых ракет и тяжёлых штурмовых ракет"
+              "number": "на 7.5%", 
+              "text": "бонус к урону от тяжёлых ракет и тяжёлых штурмовых ракет"
             }, 
             {
               "number": "на 4%", 
@@ -822,8 +822,8 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
-              "text": "重型导弹发射器和重型攻击导弹发射器射速加成"
+              "number": "7.5%", 
+              "text": "重型导弹和重型攻击导弹伤害加成"
             }, 
             {
               "number": "4%", 
@@ -956,8 +956,8 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
-              "text": "Bonus auf die Feuerrate von mittelgroßen Hybridgeschütztürmen"
+              "number": "10%", 
+              "text": "Bonus auf den Schaden von mittleren Hybridgeschütztürmen"
             }, 
             {
               "number": "10%", 
@@ -973,7 +973,7 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
+              "number": "10%", 
               "text": "Bonus auf den Schaden von mittelgroßen Hybridgeschütztürmen"
             }, 
             {
@@ -1002,8 +1002,8 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
-              "text": "bonus to Medium Hybrid Turret rate of fire"
+              "number": "10%", 
+              "text": "bonus to Medium Hybrid Turret damage"
             }, 
             {
               "number": "10%", 
@@ -1019,7 +1019,7 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
+              "number": "10%", 
               "text": "bonus to Medium Hybrid Turret damage"
             }, 
             {
@@ -1048,8 +1048,8 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
-              "text": "de bonificación a la cadencia de tiro de la torreta híbrida mediana."
+              "number": "10%", 
+              "text": "de bonificación al daño de la torreta híbrida mediana."
             }, 
             {
               "number": "10%", 
@@ -1065,7 +1065,7 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
+              "number": "10%", 
               "text": "de bonificación al daño de la torreta híbrida mediana."
             }, 
             {
@@ -1094,8 +1094,8 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
-              "text": "de bonus à la cadence de tir des tourelles hybrides intermédiaires"
+              "number": "10%", 
+              "text": "de bonus aux dégâts des tourelles hybrides intermédiaires"
             }, 
             {
               "number": "10%", 
@@ -1111,7 +1111,7 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
+              "number": "10%", 
               "text": "de bonus aux dégâts des tourelles hybrides intermédiaires"
             }, 
             {
@@ -1140,8 +1140,8 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
-              "text": "bonus to Medium Hybrid Turret rate of fire"
+              "number": "10%", 
+              "text": "bonus to Medium Hybrid Turret damage"
             }, 
             {
               "number": "10%", 
@@ -1157,7 +1157,7 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
+              "number": "10%", 
               "text": "bonus to Medium Hybrid Turret damage"
             }, 
             {
@@ -1186,8 +1186,8 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
-              "text": "中型ハイブリッドタレットの発射間隔が短縮"
+              "number": "10%", 
+              "text": "中型ハイブリッドタレットのダメージにボーナス"
             }, 
             {
               "number": "10%", 
@@ -1203,7 +1203,7 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
+              "number": "10%", 
               "text": "中型ハイブリッドタレットのダメージが増加"
             }, 
             {
@@ -1232,8 +1232,8 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
-              "text": "중형 하이브리드 터렛 연사속도 증가"
+              "number": "10%", 
+              "text": "중형 하이브리드 터렛 피해량 증가"
             }, 
             {
               "number": "10%", 
@@ -1249,7 +1249,7 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
+              "number": "10%", 
               "text": "중형 하이브리드 터렛 피해량 증가"
             }, 
             {
@@ -1278,8 +1278,8 @@
         {
           "bonuses": [
             {
-              "number": "на 7.5%", 
-              "text": "повышается скорострельность средних гибридных орудий"
+              "number": "на 10%", 
+              "text": "бонус к урону средних гибридных орудий"
             }, 
             {
               "number": "на 10%", 
@@ -1295,7 +1295,7 @@
         {
           "bonuses": [
             {
-              "number": "на 7.5%", 
+              "number": "на 10%", 
               "text": "увеличивается урон боеприпасов средних гибридных орудий"
             }, 
             {
@@ -1324,8 +1324,8 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
-              "text": "中型混合炮台射速加成"
+              "number": "10%", 
+              "text": "中型混合炮台伤害加成"
             }, 
             {
               "number": "10%", 
@@ -1341,7 +1341,7 @@
         {
           "bonuses": [
             {
-              "number": "7.5%", 
+              "number": "10%", 
               "text": "中型混合炮台伤害加成"
             }, 
             {
@@ -6062,6 +6062,10 @@
             {
               "number": "10%", 
               "text": "Bonus auf die optimale Reichweite von Energie-Nosferatus und Energieneutralisierern"
+            }, 
+            {
+              "number": "5%", 
+              "text": "Bonus auf die Präzisionsabfall-Reichweite von Energie-Nosferatu und Energieneutralisierer"
             }
           ], 
           "header": "Amarr Battleship Boni (je Skillstufe):"
@@ -6100,6 +6104,10 @@
             {
               "number": "10%", 
               "text": "bonus to Energy Nosferatu and Energy Neutralizer optimal range"
+            }, 
+            {
+              "number": "5%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer falloff range"
             }
           ], 
           "header": "Amarr Battleship bonuses (per skill level):"
@@ -6138,6 +6146,10 @@
             {
               "number": "10%", 
               "text": "de bonificación al alcance óptimo del nosferatu de energía y el neutralizador energético."
+            }, 
+            {
+              "number": "5%", 
+              "text": "de bonificación al alcance efectivo del nosferatu de energía y el neutralizador energético."
             }
           ], 
           "header": "Bonificaciones de Acorazado de Amarr (por nivel de habilidad):"
@@ -6176,6 +6188,10 @@
             {
               "number": "10%", 
               "text": "de bonus à la portée optimale des Nosferatu à énergie et des neutraliseurs d'énergie"
+            }, 
+            {
+              "number": "5%", 
+              "text": "de bonus à la portée de déperdition des Nosferatu à énergie et des neutraliseurs d'énergie"
             }
           ], 
           "header": " Bonus (par niveau de compétence) Cuirassé amarr :"
@@ -6214,6 +6230,10 @@
             {
               "number": "10%", 
               "text": "bonus to Energy Nosferatu and Energy Neutralizer optimal range"
+            }, 
+            {
+              "number": "5%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer falloff range"
             }
           ], 
           "header": "Amarr Battleship bonuses (per skill level):"
@@ -6252,6 +6272,10 @@
             {
               "number": "10%", 
               "text": "エネルギーノスフェラトゥとエネルギーニュートラライザーの最適射程距離にボーナス"
+            }, 
+            {
+              "number": "5%", 
+              "text": "エネルギーノスフェラトゥとエネルギーニュートラライザーの精度低下範囲にボーナス"
             }
           ], 
           "header": "アマー戦艦ボーナス(スキルレベルごとに):"
@@ -6290,6 +6314,10 @@
             {
               "number": "10%", 
               "text": "에너지 노스페라투, 에너지 뉴트럴라이저 최적사거리 증가"
+            }, 
+            {
+              "number": "5%", 
+              "text": "에너지 노스페라투 및 에너지 뉴트럴라이저 유효사거리 증가"
             }
           ], 
           "header": "아마르 배틀쉽 보너스 (스킬 레벨당):"
@@ -6328,6 +6356,10 @@
             {
               "number": "на 10%", 
               "text": "бонус к оптимальной дальности энергопоглощения и дистанционных нейтрализаторов заряда"
+            }, 
+            {
+              "number": "на 5%", 
+              "text": "бонус к остаточной дальности модулей паразитной подзарядки и энергонейтрализаторов"
             }
           ], 
           "header": "За каждую степень освоения навыка Амаррские линкоры:"
@@ -6366,6 +6398,10 @@
             {
               "number": "10%", 
               "text": "掠能器和能量中和器最佳射程加成"
+            }, 
+            {
+              "number": "5%", 
+              "text": "掠能器和能量中和器失准范围加成"
             }
           ], 
           "header": "艾玛战列舰操作每升一级："
@@ -23590,6 +23626,315 @@
   }, 
   {
     "traits_de": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "Funktionsbonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Energy Turret, Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer optimal range"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer falloff range"
+            }
+          ], 
+          "header": "Amarr Destroyer Boni (je Skillstufe):"
+        }
+      ]
+    }, 
+    "traits_en-us": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Energy Turret, Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer optimal range"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer falloff range"
+            }
+          ], 
+          "header": "Amarr Destroyer bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_es": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "Bonificación por función:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Energy Turret, Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer optimal range"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer falloff range"
+            }
+          ], 
+          "header": "Bonificaciones de Destructor amarriano (por nivel de habilidad):"
+        }
+      ]
+    }, 
+    "traits_fr": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "Bonus de rôle :"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Energy Turret, Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer optimal range"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer falloff range"
+            }
+          ], 
+          "header": " Bonus (par niveau de compétence) Destroyer amarr :"
+        }
+      ]
+    }, 
+    "traits_it": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Energy Turret, Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer optimal range"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer falloff range"
+            }
+          ], 
+          "header": "Amarr Destroyer bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_ja": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "性能ボーナス："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Energy Turret, Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer optimal range"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer falloff range"
+            }
+          ], 
+          "header": "アマー駆逐艦ボーナス(スキルレベルごとに):"
+        }
+      ]
+    }, 
+    "traits_ko": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "역할 보너스:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Energy Turret, Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer optimal range"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer falloff range"
+            }
+          ], 
+          "header": "아마르 디스트로이어 보너스 (스킬 레벨당):"
+        }
+      ]
+    }, 
+    "traits_ru": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "на 25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "Профильные особенности проекта:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "на 10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "на 10%", 
+              "text": "bonus to Small Energy Turret, Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "на 20%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer optimal range"
+            }, 
+            {
+              "number": "на 10%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer falloff range"
+            }
+          ], 
+          "header": "За каждую степень освоения навыка Амаррские эсминцы:"
+        }
+      ]
+    }, 
+    "traits_zh": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "特有加成："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Energy Turret, Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer optimal range"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Energy Nosferatu and Energy Neutralizer falloff range"
+            }
+          ], 
+          "header": "艾玛驱逐舰操作每升一级："
+        }
+      ]
+    }, 
+    "typeID": 91775
+  }, 
+  {
+    "traits_de": {
       "skills": [
         {
           "bonuses": [
@@ -31037,8 +31382,12 @@
             "text": "Bonus auf die Feuerrate von mittelgroßen Projektilgeschütztürmen"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "Bonus auf die Warpgeschwindigkeit und Warpbeschleunigung"
+          }, 
+          {
+            "number": "75%", 
+            "text": "Reduktion der Nachladezeit von Projektilwaffen"
           }
         ], 
         "header": "Funktionsbonus:"
@@ -31072,8 +31421,12 @@
             "text": "bonus to Medium Projectile Turret rate of fire"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "bonus to warp speed and warp acceleration"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -31107,8 +31460,12 @@
             "text": "de bonificación a la cadencia de tiro de la torreta de proyectiles mediana."
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "de bonificación a la velocidad y la aceleración de warp."
+          }, 
+          {
+            "number": "75%", 
+            "text": "de reducción del tiempo de recarga del arma de proyectiles."
           }
         ], 
         "header": "Bonificación por función:"
@@ -31142,8 +31499,12 @@
             "text": "de bonus à la cadence de tir des tourelles à projectiles intermédiaires"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "bonus à la vitesse et à l'accélération du warp"
+          }, 
+          {
+            "number": "75%", 
+            "text": "de réduction au temps de rechargement des armes à projectiles"
           }
         ], 
         "header": "Bonus de rôle :"
@@ -31177,8 +31538,12 @@
             "text": "bonus to Medium Projectile Turret rate of fire"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "bonus to warp speed and warp acceleration"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -31212,8 +31577,12 @@
             "text": "中型プロジェクタイルタレットの発射間隔が短縮"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "ワープ速度とワープ加速が上昇"
+          }, 
+          {
+            "number": "75%", 
+            "text": "プロジェクタイル兵器のリロード時間が短縮"
           }
         ], 
         "header": "性能ボーナス："
@@ -31247,8 +31616,12 @@
             "text": "중형 발사체 터렛 연사속도 증가"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "워프 속도 및 워프 가속도 증가"
+          }, 
+          {
+            "number": "75%", 
+            "text": "발사체 무기 재장전 시간 감소"
           }
         ], 
         "header": "역할 보너스:"
@@ -31282,8 +31655,12 @@
             "text": "повышается скорострельность средних баллистических орудий"
           }, 
           {
-            "number": "на 25%", 
+            "number": "на 50%", 
             "text": "повышается скорость полёта и ускорение корабля (только в варп-режиме)"
+          }, 
+          {
+            "number": "на 75%", 
+            "text": "ускорение перезарядки баллистических орудий"
           }
         ], 
         "header": "Профильные особенности проекта:"
@@ -31317,8 +31694,12 @@
             "text": "中型射弹炮台射速加成"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "跃迁速度和跃迁加速加成"
+          }, 
+          {
+            "number": "75%", 
+            "text": "减少射弹武器的装填时间"
           }
         ], 
         "header": "特有加成："
@@ -39916,6 +40297,1326 @@
       "role": {
         "bonuses": [
           {
+            "text": "·Es können integrierte Sensor-Anlagen ausgerüstet werden"
+          }, 
+          {
+            "text": "·Kann Capital-Mikrosprungantrieb und Capital-Mikrosprungfeldgenerator ausstatten"
+          }, 
+          {
+            "text": "·Kann drei Kommandostrahlen-Module ausrüsten"
+          }, 
+          {
+            "number": "200%", 
+            "text": "Bonus auf die Reichweite des Wirkungsbereichs von Kommandostrahlen"
+          }, 
+          {
+            "number": "20%", 
+            "text": "Bonus auf die maximale Schiffssprung-Energiespeicher von Capital-Mikrosprungfeldgenerator"
+          }, 
+          {
+            "text": "·Kann leichte und Unterstützungs-Jäger starten"
+          }, 
+          {
+            "text": "·Kann auf größere Entfernungen Ziele erfassen"
+          }, 
+          {
+            "text": "·Gruppensprung-fähig"
+          }, 
+          {
+            "number": "5x", 
+            "text": "Abzug zur Dauer des Entosis-Netzwerks"
+          }
+        ], 
+        "header": "Funktionsbonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "30%", 
+              "text": "Bonus auf die HP von Unterstützungsjäger-Schilden"
+            }, 
+            {
+              "number": "10%", 
+              "text": "Bonus auf die Warpstörungsreichweite von Sirenen-Unterstützungsjägern"
+            }, 
+            {
+              "number": "10%", 
+              "text": "Bonus auf die Nachbrennergeschwindigkeit von Sirenen-Unterstützungsjägern"
+            }, 
+            {
+              "number": "20%", 
+              "text": "Erhöhung der Gruppensprung-Kapazität"
+            }
+          ], 
+          "header": "Gallente Carrier Boni (je Skillstufe):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "Bonus auf Stärke und Dauer von Panzerungskommando-Strahlen"
+            }, 
+            {
+              "number": "5%", 
+              "text": "Reduktion des Hochfahrens für Capital-Mikrosprungantrieb und Capital-Mikrosprungfeldgenerator"
+            }
+          ], 
+          "header": "Kommandoträgerschiffe Boni (je Skillstufe):"
+        }
+      ]
+    }, 
+    "traits_en-us": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Can fit Integrated Sensor Array"
+          }, 
+          {
+            "text": "·Can fit Capital Micro Jump Drive and Capital Micro Jump Field Generator"
+          }, 
+          {
+            "text": "·Can fit three Command Burst modules"
+          }, 
+          {
+            "number": "200%", 
+            "text": "bonus to Command Burst area of effect range"
+          }, 
+          {
+            "number": "20%", 
+            "text": "bonus to Capital Micro Jump Field Generator maximum ship jump cap"
+          }, 
+          {
+            "text": "·Can launch Light and Support Fighters"
+          }, 
+          {
+            "text": "·Can lock at extended ranges"
+          }, 
+          {
+            "text": "·Conduit Jump capable"
+          }, 
+          {
+            "number": "5x", 
+            "text": "penalty to Entosis Link duration"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "30%", 
+              "text": "bonus to Support Fighter shield hitpoints"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Siren Support Fighter warp disruption range"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Siren Support Fighter afterburner speed bonus"
+            }, 
+            {
+              "number": "20%", 
+              "text": "increase in Conduit Jump capacity"
+            }
+          ], 
+          "header": "Gallente Carrier bonuses (per skill level):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "bonus to Armored Command and Skirmish Command burst strength and duration"
+            }, 
+            {
+              "number": "5%", 
+              "text": "reduction in Capital Micro Jump Drive and Capital Micro Jump Field Generator spool up"
+            }
+          ], 
+          "header": "Command Carriers bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_es": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Es posible equipar una red de sensores integrados."
+          }, 
+          {
+            "text": "·Es posible equipar un motor de microsalto capital y un generador de campo de microsalto capital."
+          }, 
+          {
+            "text": "·Es posible equipar tres módulos de estallido de mando."
+          }, 
+          {
+            "number": "200%", 
+            "text": "de bonificación al alcance del radio de acción del estallido de mando."
+          }, 
+          {
+            "number": "20%", 
+            "text": "de bonificación al límite máx. de salto de nave del generador de campo de microsalto capital."
+          }, 
+          {
+            "text": "·Puede lanzar cazas ligeros y de apoyo."
+          }, 
+          {
+            "text": "·Puede fijar objetivos a mayores distancias."
+          }, 
+          {
+            "text": "·Capaz de salto conductivo."
+          }, 
+          {
+            "number": "5x", 
+            "text": "de penalización a la duración del enlace de entosis."
+          }
+        ], 
+        "header": "Bonificación por función:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "30%", 
+              "text": "de bonificación a los puntos de vida de los escudos del caza de apoyo."
+            }, 
+            {
+              "number": "10%", 
+              "text": "de bonificación al alcance de disrupción de warp de los cazas de apoyo Siren."
+            }, 
+            {
+              "number": "10%", 
+              "text": "de bonificación al extra de velocidad del posquemador de los cazas de apoyo Siren."
+            }, 
+            {
+              "number": "20%", 
+              "text": "de aumento a la capacidad de salto conductivo."
+            }
+          ], 
+          "header": "Bonificaciones de Portanaves gallente (por nivel de habilidad):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "de bonificación a la intensidad y la duración del estallido de mando de blindaje."
+            }, 
+            {
+              "number": "5%", 
+              "text": "de reducción de la carga del motor de microsalto capital y un generador de campo de microsalto capital."
+            }
+          ], 
+          "header": "Bonificaciones de Portanaves de mando (por nivel de habilidad):"
+        }
+      ]
+    }, 
+    "traits_fr": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Peut être équipé d'un module de détection intégré"
+          }, 
+          {
+            "text": "·Peut être équipé d'un propulseur de microsaut capital et d'un générateur de champ de microsaut capital"
+          }, 
+          {
+            "text": "·Peut être équipé de trois modules de salve de commandement"
+          }, 
+          {
+            "number": "200%", 
+            "text": "de bonus à la portée de l'effet de zone des salves de commandement"
+          }, 
+          {
+            "number": "20%", 
+            "text": "de bonus à la limite max de sauts de vaisseaux du générateur de champ de microsaut capital"
+          }, 
+          {
+            "text": "·Peut lancer des chasseurs légers et de secours"
+          }, 
+          {
+            "text": "·Peut se verrouiller à des distances prolongées"
+          }, 
+          {
+            "text": "·Capacité de saut de groupe"
+          }, 
+          {
+            "number": "5x", 
+            "text": "de pénalité à la durée de la liaison Entosis"
+          }
+        ], 
+        "header": "Bonus de rôle :"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "30%", 
+              "text": "de bonus aux points de vie du bouclier des chasseurs de secours"
+            }, 
+            {
+              "number": "10%", 
+              "text": "de bonus à la portée de perturbation de warp du chasseur de secours Siren"
+            }, 
+            {
+              "number": "10%", 
+              "text": "de bonus à la vitesse de la post-combustion du chasseur de secours Siren"
+            }, 
+            {
+              "number": "20%", 
+              "text": "d'augmentation de la capacité de saut de groupe"
+            }
+          ], 
+          "header": " Bonus (par niveau de compétence) Porte-vaisseaux gallente :"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "de bonus à la puissance et à la durée des salves de commandement de blindage"
+            }, 
+            {
+              "number": "5%", 
+              "text": "de réduction au temps de réactivation du propulseur de microsaut capital et du générateur de champ de microsaut capital"
+            }
+          ], 
+          "header": " Bonus (par niveau de compétence) Porte-vaisseaux de commandement :"
+        }
+      ]
+    }, 
+    "traits_it": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Can fit Integrated Sensor Array"
+          }, 
+          {
+            "text": "·Can fit Capital Micro Jump Drive and Capital Micro Jump Field Generator"
+          }, 
+          {
+            "text": "·Can fit three Command Burst modules"
+          }, 
+          {
+            "number": "200%", 
+            "text": "bonus to Command Burst area of effect range"
+          }, 
+          {
+            "number": "20%", 
+            "text": "bonus to Capital Micro Jump Field Generator maximum ship jump cap"
+          }, 
+          {
+            "text": "·Can launch Light and Support Fighters"
+          }, 
+          {
+            "text": "·Can lock at extended ranges"
+          }, 
+          {
+            "text": "·Conduit Jump capable"
+          }, 
+          {
+            "number": "5x", 
+            "text": "penalty to Entosis Link duration"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "30%", 
+              "text": "bonus to Support Fighter shield hitpoints"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Siren Support Fighter warp disruption range"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Siren Support Fighter afterburner speed bonus"
+            }, 
+            {
+              "number": "20%", 
+              "text": "increase in Conduit Jump capacity"
+            }
+          ], 
+          "header": "Gallente Carrier bonuses (per skill level):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "bonus to Armored Command and Skirmish Command burst strength and duration"
+            }, 
+            {
+              "number": "5%", 
+              "text": "reduction in Capital Micro Jump Drive and Capital Micro Jump Field Generator spool up"
+            }
+          ], 
+          "header": "Command Carriers bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_ja": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·統合型センサーアレイを装備可能"
+          }, 
+          {
+            "text": "·キャピタルマイクロジャンプドライブとキャピタル・マイクロジャンプフィールドジェネレーターを装備可能"
+          }, 
+          {
+            "text": "·コマンドバーストモジュール3個装備可能"
+          }, 
+          {
+            "number": "200%", 
+            "text": "コマンドバーストの有効範囲を拡大"
+          }, 
+          {
+            "number": "20%", 
+            "text": "キャピタル・マイクロジャンプフィールドジェネレーターの最大艦船ジャンプ能力にボーナス"
+          }, 
+          {
+            "text": "·軽戦闘機と支援 戦闘機が発艦可能"
+          }, 
+          {
+            "text": "·より遠距離でロック可能"
+          }, 
+          {
+            "text": "·コンジットジャンプに対応"
+          }, 
+          {
+            "number": "5x", 
+            "text": "エントーシスリンクの持続時間にペナルティ"
+          }
+        ], 
+        "header": "性能ボーナス："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "30%", 
+              "text": "支援戦闘機シールドHPにボーナス"
+            }, 
+            {
+              "number": "10%", 
+              "text": "支援戦闘機「サイレン」のワープ妨害範囲にボーナス"
+            }, 
+            {
+              "number": "10%", 
+              "text": "支援戦闘機「サイレン」のアフターバーナー速度にボーナス"
+            }, 
+            {
+              "number": "20%", 
+              "text": "コンジットジャンプの容量が増加"
+            }
+          ], 
+          "header": "ガレンテ艦載機母艦ボーナス(スキルレベルごとに):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "装甲戦コマンドバーストの効果と持続時間にボーナス"
+            }, 
+            {
+              "number": "5%", 
+              "text": "キャピタルマイクロジャンプドライブとキャピタル・マイクロジャンプフィールドジェネレーターのスプールアップタイムを短縮"
+            }
+          ], 
+          "header": "指揮型艦載機母艦ボーナス(スキルレベルごとに):"
+        }
+      ]
+    }, 
+    "traits_ko": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·통합 센서 장비 장착 가능"
+          }, 
+          {
+            "text": "·캐피탈 마이크로 점프 드라이브 및 캐피탈 마이크로 점프 필드 생성기 피팅 가능"
+          }, 
+          {
+            "text": "·세 개의 커맨드 버스트 모듈 장착 가능"
+          }, 
+          {
+            "number": "200%", 
+            "text": "커맨드 버스트 효과 반경 증가"
+          }, 
+          {
+            "number": "20%", 
+            "text": "캐피탈 마이크로 점프 필드 생성기 최대 함선 점프 수량 증가"
+          }, 
+          {
+            "text": "·라이트 파이터 및 서포트 파이터 사출 가능"
+          }, 
+          {
+            "text": "·타겟 거리 증가"
+          }, 
+          {
+            "text": "·전송기 점프 가능"
+          }, 
+          {
+            "number": "5x", 
+            "text": "엔토시스 링크 지속시간 감소"
+          }
+        ], 
+        "header": "역할 보너스:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "30%", 
+              "text": "서포트 파이터 실드 내구도 증가"
+            }, 
+            {
+              "number": "10%", 
+              "text": "사이렌 서포트 파이터 워프 디스럽션 사거리 증가"
+            }, 
+            {
+              "number": "10%", 
+              "text": "사이렌 서포트 파이터 애프터버너 속도 증가"
+            }, 
+            {
+              "number": "20%", 
+              "text": "전송기 점프 수용력 증가"
+            }
+          ], 
+          "header": "갈란테 캐리어 보너스 (스킬 레벨당):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "장갑 버스트 강도 및 지속시간 증가"
+            }, 
+            {
+              "number": "5%", 
+              "text": "캐피탈 마이크로 점프 드라이브 및 캐피탈 마이크로 점프 필드 생성기 예열 감소"
+            }
+          ], 
+          "header": "커맨드 캐리어 보너스 (스킬 레벨당):"
+        }
+      ]
+    }, 
+    "traits_ru": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Можно оснастить интегрированным усилителем сенсоров"
+          }, 
+          {
+            "text": "·Можно оснастить маневровым гипердвигателем КБТ и генератором разгонного поля КБТ"
+          }, 
+          {
+            "text": "·Можно оснастить 3 импульсными оптимизаторами"
+          }, 
+          {
+            "number": "на 200%", 
+            "text": "бонус к области действия импульсного оптимизатора"
+          }, 
+          {
+            "number": "на 20%", 
+            "text": "бонус к максимуму кораблей для прыжка при активации генератора разгонного поля КБТ"
+          }, 
+          {
+            "text": "·Подходит для запуска лёгких истребителей и истребителей поддержки"
+          }, 
+          {
+            "text": "·Доступен захват целей с дальнего расстояния"
+          }, 
+          {
+            "text": "·Может совершить групповой прыжок"
+          }, 
+          {
+            "number": "на 5х", 
+            "text": "штраф к длительности действия энтоз-передатчика"
+          }
+        ], 
+        "header": "Профильные особенности проекта:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "на 30%", 
+              "text": "бонус к прочности щитов истребителей поддержки"
+            }, 
+            {
+              "number": "на 10%", 
+              "text": "бонус к дальности действия варп-помех для истребителей поддержки Siren"
+            }, 
+            {
+              "number": "на 10%", 
+              "text": "бонус к мощности форсажных ускорителей для истребителей поддержки Siren"
+            }, 
+            {
+              "number": "на 20%", 
+              "text": "увеличение вместимости для группового прыжка"
+            }
+          ], 
+          "header": "За каждую степень освоения навыка Галлентские КАРы:"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "на 5%", 
+              "text": "бонус к мощности и времени работы импульсного оптимизатора брони"
+            }, 
+            {
+              "number": "на 5%", 
+              "text": "сокращение раскрутки маневровых гипердвигателей КБТ и генераторов разгонного поля КБТ"
+            }
+          ], 
+          "header": "За каждую степень освоения навыка Command Carriers:"
+        }
+      ]
+    }, 
+    "traits_zh": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·可装配集成传感器阵列"
+          }, 
+          {
+            "text": "·可以装配旗舰级微型跳跃引擎和旗舰级微型跳跃力场发生器"
+          }, 
+          {
+            "text": "·可以装配三个指挥脉冲波装备"
+          }, 
+          {
+            "number": "200%", 
+            "text": "指挥脉冲波效果范围加成"
+          }, 
+          {
+            "number": "20%", 
+            "text": "旗舰级微型跳跃力场发生器最大舰船跳跃数上限加成"
+          }, 
+          {
+            "text": "·可发射轻型和后勤铁骑舰载机"
+          }, 
+          {
+            "text": "·可在更大范围内锁定"
+          }, 
+          {
+            "text": "·可以进行导管跳跃"
+          }, 
+          {
+            "number": "5x", 
+            "text": "侵噬链接运转周期惩罚"
+          }
+        ], 
+        "header": "特有加成："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "30%", 
+              "text": "后勤铁骑舰载机护盾值加成"
+            }, 
+            {
+              "number": "10%", 
+              "text": "塞壬后勤铁骑舰载机跃迁干扰范围加成"
+            }, 
+            {
+              "number": "10%", 
+              "text": "塞壬后勤铁骑舰载机加力燃烧器速度加成"
+            }, 
+            {
+              "number": "20%", 
+              "text": "导管跳跃容量增加"
+            }
+          ], 
+          "header": "盖伦特航空母舰操作每升一级："
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "装甲指挥脉冲波强度和持续时间加成"
+            }, 
+            {
+              "number": "5%", 
+              "text": "旗舰级微型跳跃引擎和旗舰级微型跳跃力场发生器加速时间减少"
+            }
+          ], 
+          "header": "指挥航母每升一级："
+        }
+      ]
+    }, 
+    "typeID": 92824
+  }, 
+  {
+    "traits_de": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Es können integrierte Sensor-Anlagen ausgerüstet werden"
+          }, 
+          {
+            "text": "·Kann Capital-Mikrosprungantrieb und Capital-Mikrosprungfeldgenerator ausstatten"
+          }, 
+          {
+            "text": "·Kann drei Kommandostrahlen-Module ausrüsten"
+          }, 
+          {
+            "number": "200%", 
+            "text": "Bonus auf die Reichweite des Wirkungsbereichs von Kommandostrahlen"
+          }, 
+          {
+            "number": "20%", 
+            "text": "Bonus auf die maximale Schiffssprung-Energiespeicher von Capital-Mikrosprungfeldgenerator"
+          }, 
+          {
+            "text": "·Kann leichte und Unterstützungs-Jäger starten"
+          }, 
+          {
+            "text": "·Kann auf größere Entfernungen Ziele erfassen"
+          }, 
+          {
+            "text": "·Gruppensprung-fähig"
+          }, 
+          {
+            "number": "5x", 
+            "text": "Abzug zur Dauer des Entosis-Netzwerks"
+          }
+        ], 
+        "header": "Funktionsbonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "Bonus auf die Geschwindigkeit von Unterstützungsjägern"
+            }, 
+            {
+              "number": "20%", 
+              "text": "Bonus auf die HP von Unterstützungsjäger-Schilden"
+            }, 
+            {
+              "number": "10%", 
+              "text": "Bonus auf die Stasisnetzstärke und Reichweite von Dromi-Unterstützungsjägern"
+            }, 
+            {
+              "number": "20%", 
+              "text": "Erhöhung der Gruppensprung-Kapazität"
+            }
+          ], 
+          "header": "Minmatar Carrier Boni (je Skillstufe):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "Bonus auf die Stärke und Dauer von Schildkommando-Strahlen"
+            }, 
+            {
+              "number": "5%", 
+              "text": "Reduktion des Hochfahrens für Capital-Mikrosprungantrieb und Capital-Mikrosprungfeldgenerator"
+            }
+          ], 
+          "header": "Kommandoträgerschiffe Boni (je Skillstufe):"
+        }
+      ]
+    }, 
+    "traits_en-us": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Can fit Integrated Sensor Array"
+          }, 
+          {
+            "text": "·Can fit Capital Micro Jump Drive and Capital Micro Jump Field Generator"
+          }, 
+          {
+            "text": "·Can fit three Command Burst modules"
+          }, 
+          {
+            "number": "200%", 
+            "text": "bonus to Command Burst area of effect range"
+          }, 
+          {
+            "number": "20%", 
+            "text": "bonus to Capital Micro Jump Field Generator maximum ship jump cap"
+          }, 
+          {
+            "text": "·Can launch Light and Support Fighters"
+          }, 
+          {
+            "text": "·Can lock at extended ranges"
+          }, 
+          {
+            "text": "·Conduit Jump capable"
+          }, 
+          {
+            "number": "5x", 
+            "text": "penalty to Entosis Link duration"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Support Fighter velocity"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Support Fighter shield hitpoints"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Dromi Support Fighter stasis webification strength and range"
+            }, 
+            {
+              "number": "20%", 
+              "text": "increase in Conduit Jump capacity"
+            }
+          ], 
+          "header": "Minmatar Carrier bonuses (per skill level):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "bonus to Shield Command and Skirmish Command burst strength and duration"
+            }, 
+            {
+              "number": "5%", 
+              "text": "reduction in Capital Micro Jump Drive and Capital Micro Jump Field Generator spool up"
+            }
+          ], 
+          "header": "Command Carriers bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_es": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Es posible equipar una red de sensores integrados."
+          }, 
+          {
+            "text": "·Es posible equipar un motor de microsalto capital y un generador de campo de microsalto capital."
+          }, 
+          {
+            "text": "·Es posible equipar tres módulos de estallido de mando."
+          }, 
+          {
+            "number": "200%", 
+            "text": "de bonificación al alcance del radio de acción del estallido de mando."
+          }, 
+          {
+            "number": "20%", 
+            "text": "de bonificación al límite máx. de salto de nave del generador de campo de microsalto capital."
+          }, 
+          {
+            "text": "·Puede lanzar cazas ligeros y de apoyo."
+          }, 
+          {
+            "text": "·Puede fijar objetivos a mayores distancias."
+          }, 
+          {
+            "text": "·Capaz de salto conductivo."
+          }, 
+          {
+            "number": "5x", 
+            "text": "de penalización a la duración del enlace de entosis."
+          }
+        ], 
+        "header": "Bonificación por función:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "de bonificación a la velocidad de los cazas de apoyo."
+            }, 
+            {
+              "number": "20%", 
+              "text": "de bonificación a los puntos de vida de los escudos del caza de apoyo."
+            }, 
+            {
+              "number": "10%", 
+              "text": "de bonificación a la intensidad de la red ralentizadora y alcance de los cazas de apoyo Dromi."
+            }, 
+            {
+              "number": "20%", 
+              "text": "de aumento a la capacidad de salto conductivo."
+            }
+          ], 
+          "header": "Bonificaciones de Portanaves minmatariana (por nivel de habilidad):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "de bonificación a la intensidad y la duración del estallido de mando de escudo."
+            }, 
+            {
+              "number": "5%", 
+              "text": "de reducción de la carga del motor de microsalto capital y un generador de campo de microsalto capital."
+            }
+          ], 
+          "header": "Bonificaciones de Portanaves de mando (por nivel de habilidad):"
+        }
+      ]
+    }, 
+    "traits_fr": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Peut être équipé d'un module de détection intégré"
+          }, 
+          {
+            "text": "·Peut être équipé d'un propulseur de microsaut capital et d'un générateur de champ de microsaut capital"
+          }, 
+          {
+            "text": "·Peut être équipé de trois modules de salve de commandement"
+          }, 
+          {
+            "number": "200%", 
+            "text": "de bonus à la portée de l'effet de zone des salves de commandement"
+          }, 
+          {
+            "number": "20%", 
+            "text": "de bonus à la limite max de sauts de vaisseaux du générateur de champ de microsaut capital"
+          }, 
+          {
+            "text": "·Peut lancer des chasseurs légers et de secours"
+          }, 
+          {
+            "text": "·Peut se verrouiller à des distances prolongées"
+          }, 
+          {
+            "text": "·Capacité de saut de groupe"
+          }, 
+          {
+            "number": "5x", 
+            "text": "de pénalité à la durée de la liaison Entosis"
+          }
+        ], 
+        "header": "Bonus de rôle :"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "de bonus à la vitesse des chasseurs de secours"
+            }, 
+            {
+              "number": "20%", 
+              "text": "de bonus aux points de vie du bouclier des chasseurs de secours"
+            }, 
+            {
+              "number": "10%", 
+              "text": "de bonus à la puissance et à la portée de génération de stase des chasseurs de secours Dromi"
+            }, 
+            {
+              "number": "20%", 
+              "text": "d'augmentation de la capacité de saut de groupe"
+            }
+          ], 
+          "header": " Bonus (par niveau de compétence) Porte-vaisseaux minmatar :"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "de bonus à la puissance et à la durée des salves de commandement de bouclier"
+            }, 
+            {
+              "number": "5%", 
+              "text": "de réduction au temps de réactivation du propulseur de microsaut capital et du générateur de champ de microsaut capital"
+            }
+          ], 
+          "header": " Bonus (par niveau de compétence) Porte-vaisseaux de commandement :"
+        }
+      ]
+    }, 
+    "traits_it": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Can fit Integrated Sensor Array"
+          }, 
+          {
+            "text": "·Can fit Capital Micro Jump Drive and Capital Micro Jump Field Generator"
+          }, 
+          {
+            "text": "·Can fit three Command Burst modules"
+          }, 
+          {
+            "number": "200%", 
+            "text": "bonus to Command Burst area of effect range"
+          }, 
+          {
+            "number": "20%", 
+            "text": "bonus to Capital Micro Jump Field Generator maximum ship jump cap"
+          }, 
+          {
+            "text": "·Can launch Light and Support Fighters"
+          }, 
+          {
+            "text": "·Can lock at extended ranges"
+          }, 
+          {
+            "text": "·Conduit Jump capable"
+          }, 
+          {
+            "number": "5x", 
+            "text": "penalty to Entosis Link duration"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Support Fighter velocity"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Support Fighter shield hitpoints"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Dromi Support Fighter stasis webification strength and range"
+            }, 
+            {
+              "number": "20%", 
+              "text": "increase in Conduit Jump capacity"
+            }
+          ], 
+          "header": "Minmatar Carrier bonuses (per skill level):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "bonus to Shield Command and Skirmish Command burst strength and duration"
+            }, 
+            {
+              "number": "5%", 
+              "text": "reduction in Capital Micro Jump Drive and Capital Micro Jump Field Generator spool up"
+            }
+          ], 
+          "header": "Command Carriers bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_ja": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·統合型センサーアレイを装備可能"
+          }, 
+          {
+            "text": "·キャピタルマイクロジャンプドライブとキャピタル・マイクロジャンプフィールドジェネレーターを装備可能"
+          }, 
+          {
+            "text": "·コマンドバーストモジュール3個装備可能"
+          }, 
+          {
+            "number": "200%", 
+            "text": "コマンドバーストの有効範囲を拡大"
+          }, 
+          {
+            "number": "20%", 
+            "text": "キャピタル・マイクロジャンプフィールドジェネレーターの最大艦船ジャンプ能力にボーナス"
+          }, 
+          {
+            "text": "·軽戦闘機と支援 戦闘機が発艦可能"
+          }, 
+          {
+            "text": "·より遠距離でロック可能"
+          }, 
+          {
+            "text": "·コンジットジャンプに対応"
+          }, 
+          {
+            "number": "5x", 
+            "text": "エントーシスリンクの持続時間にペナルティ"
+          }
+        ], 
+        "header": "性能ボーナス："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "支援戦闘機速度にボーナス"
+            }, 
+            {
+              "number": "20%", 
+              "text": "支援戦闘機シールドHPにボーナス"
+            }, 
+            {
+              "number": "10%", 
+              "text": "支援戦闘機「ドローミ」のステイシスウェブ強度と射程距離にボーナス"
+            }, 
+            {
+              "number": "20%", 
+              "text": "コンジットジャンプの容量が増加"
+            }
+          ], 
+          "header": "ミンマター艦載機母艦ボーナス(スキルレベルごとに):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "シールドコマンドバーストの効果と持続時間にボーナス"
+            }, 
+            {
+              "number": "5%", 
+              "text": "キャピタルマイクロジャンプドライブとキャピタル・マイクロジャンプフィールドジェネレーターのスプールアップタイムを短縮"
+            }
+          ], 
+          "header": "指揮型艦載機母艦ボーナス(スキルレベルごとに):"
+        }
+      ]
+    }, 
+    "traits_ko": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·통합 센서 장비 장착 가능"
+          }, 
+          {
+            "text": "·캐피탈 마이크로 점프 드라이브 및 캐피탈 마이크로 점프 필드 생성기 피팅 가능"
+          }, 
+          {
+            "text": "·세 개의 커맨드 버스트 모듈 장착 가능"
+          }, 
+          {
+            "number": "200%", 
+            "text": "커맨드 버스트 효과 반경 증가"
+          }, 
+          {
+            "number": "20%", 
+            "text": "캐피탈 마이크로 점프 필드 생성기 최대 함선 점프 수량 증가"
+          }, 
+          {
+            "text": "·라이트 파이터 및 서포트 파이터 사출 가능"
+          }, 
+          {
+            "text": "·타겟 거리 증가"
+          }, 
+          {
+            "text": "·전송기 점프 가능"
+          }, 
+          {
+            "number": "5x", 
+            "text": "엔토시스 링크 지속시간 감소"
+          }
+        ], 
+        "header": "역할 보너스:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "서포트 파이터 속도 증가"
+            }, 
+            {
+              "number": "20%", 
+              "text": "서포트 파이터 실드 내구도 증가"
+            }, 
+            {
+              "number": "10%", 
+              "text": "드로미 서포트 파이터 스테이시스 웹 강도 및 사거리 증가"
+            }, 
+            {
+              "number": "20%", 
+              "text": "전송기 점프 수용력 증가"
+            }
+          ], 
+          "header": "민마타 캐리어 보너스 (스킬 레벨당):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "실드 버스트 강도 및 지속시간 증가"
+            }, 
+            {
+              "number": "5%", 
+              "text": "캐피탈 마이크로 점프 드라이브 및 캐피탈 마이크로 점프 필드 생성기 예열 감소"
+            }
+          ], 
+          "header": "커맨드 캐리어 보너스 (스킬 레벨당):"
+        }
+      ]
+    }, 
+    "traits_ru": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Можно оснастить интегрированным усилителем сенсоров"
+          }, 
+          {
+            "text": "·Можно оснастить маневровым гипердвигателем КБТ и генератором разгонного поля КБТ"
+          }, 
+          {
+            "text": "·Можно оснастить 3 импульсными оптимизаторами"
+          }, 
+          {
+            "number": "на 200%", 
+            "text": "бонус к области действия импульсного оптимизатора"
+          }, 
+          {
+            "number": "на 20%", 
+            "text": "бонус к максимуму кораблей для прыжка при активации генератора разгонного поля КБТ"
+          }, 
+          {
+            "text": "·Подходит для запуска лёгких истребителей и истребителей поддержки"
+          }, 
+          {
+            "text": "·Доступен захват целей с дальнего расстояния"
+          }, 
+          {
+            "text": "·Может совершить групповой прыжок"
+          }, 
+          {
+            "number": "на 5х", 
+            "text": "штраф к длительности действия энтоз-передатчика"
+          }
+        ], 
+        "header": "Профильные особенности проекта:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "на 10%", 
+              "text": "бонус к скорости истребителей поддержки"
+            }, 
+            {
+              "number": "на 20%", 
+              "text": "бонус к прочности щитов истребителей поддержки"
+            }, 
+            {
+              "number": "на 10%", 
+              "text": "бонус к мощности и дальности стазис-индукторов для истребителей поддержки Dromi"
+            }, 
+            {
+              "number": "на 20%", 
+              "text": "увеличение вместимости для группового прыжка"
+            }
+          ], 
+          "header": "За каждую степень освоения навыка Минматарские КАРы:"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "на 5%", 
+              "text": "бонус к мощности и времени работы импульсного оптимизатора щитов"
+            }, 
+            {
+              "number": "на 5%", 
+              "text": "сокращение раскрутки маневровых гипердвигателей КБТ и генераторов разгонного поля КБТ"
+            }
+          ], 
+          "header": "За каждую степень освоения навыка Command Carriers:"
+        }
+      ]
+    }, 
+    "traits_zh": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·可装配集成传感器阵列"
+          }, 
+          {
+            "text": "·可以装配旗舰级微型跳跃引擎和旗舰级微型跳跃力场发生器"
+          }, 
+          {
+            "text": "·可以装配三个指挥脉冲波装备"
+          }, 
+          {
+            "number": "200%", 
+            "text": "指挥脉冲波效果范围加成"
+          }, 
+          {
+            "number": "20%", 
+            "text": "旗舰级微型跳跃力场发生器最大舰船跳跃数上限加成"
+          }, 
+          {
+            "text": "·可发射轻型和后勤铁骑舰载机"
+          }, 
+          {
+            "text": "·可在更大范围内锁定"
+          }, 
+          {
+            "text": "·可以进行导管跳跃"
+          }, 
+          {
+            "number": "5x", 
+            "text": "侵噬链接运转周期惩罚"
+          }
+        ], 
+        "header": "特有加成："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "后勤铁骑舰载机速度加成"
+            }, 
+            {
+              "number": "20%", 
+              "text": "后勤铁骑舰载机护盾值加成"
+            }, 
+            {
+              "number": "10%", 
+              "text": "德洛米后勤铁骑舰载机停滞缠绕强度和范围加成"
+            }, 
+            {
+              "number": "20%", 
+              "text": "导管跳跃容量增加"
+            }
+          ], 
+          "header": "米玛塔尔航空母舰操作每升一级："
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "护盾指挥脉冲波强度和持续时间加成"
+            }, 
+            {
+              "number": "5%", 
+              "text": "旗舰级微型跳跃引擎和旗舰级微型跳跃力场发生器加速时间减少"
+            }
+          ], 
+          "header": "指挥航母每升一级："
+        }
+      ]
+    }, 
+    "typeID": 92825
+  }, 
+  {
+    "traits_de": {
+      "role": {
+        "bonuses": [
+          {
             "text": "·Kann ein Kommandostrahlen-Modul verwenden"
           }, 
           {
@@ -39933,6 +41634,10 @@
           {
             "number": "25%", 
             "text": "Bonus auf die optimale Reichweite und den Präzisionsabfall von mittleren Projektilgeschütztürmen"
+          }, 
+          {
+            "number": "75%", 
+            "text": "Reduktion der Nachladezeit von Projektilwaffen"
           }
         ], 
         "header": "Funktionsbonus:"
@@ -39979,6 +41684,10 @@
           {
             "number": "25%", 
             "text": "bonus to Medium Projectile Turret optimal range and falloff"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -40025,6 +41734,10 @@
           {
             "number": "25%", 
             "text": "de bonificación a los alcances óptimo y efectivo de la torreta de proyectiles mediana."
+          }, 
+          {
+            "number": "75%", 
+            "text": "de reducción del tiempo de recarga del arma de proyectiles."
           }
         ], 
         "header": "Bonificación por función:"
@@ -40071,6 +41784,10 @@
           {
             "number": "25%", 
             "text": "de bonus à la portée optimale et à la distance de perte des tourelles à projectiles intermédiaires"
+          }, 
+          {
+            "number": "75%", 
+            "text": "de réduction au temps de rechargement des armes à projectiles"
           }
         ], 
         "header": "Bonus de rôle :"
@@ -40117,6 +41834,10 @@
           {
             "number": "25%", 
             "text": "bonus to Medium Projectile Turret optimal range and falloff"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -40163,6 +41884,10 @@
           {
             "number": "25%", 
             "text": "中型プロジェクタイルタレットの最適射程距離と精度低下範囲にボーナス"
+          }, 
+          {
+            "number": "75%", 
+            "text": "プロジェクタイル兵器のリロード時間が短縮"
           }
         ], 
         "header": "性能ボーナス："
@@ -40209,6 +41934,10 @@
           {
             "number": "25%", 
             "text": "중형 발사체 터렛 최적사거리 및 유효사거리 증가"
+          }, 
+          {
+            "number": "75%", 
+            "text": "발사체 무기 재장전 시간 감소"
           }
         ], 
         "header": "역할 보너스:"
@@ -40255,6 +41984,10 @@
           {
             "number": "на 25%", 
             "text": "бонус к оптимальной и остаточной дальности средних баллистических орудий"
+          }, 
+          {
+            "number": "на 75%", 
+            "text": "ускорение перезарядки баллистических орудий"
           }
         ], 
         "header": "Профильные особенности проекта:"
@@ -40301,6 +42034,10 @@
           {
             "number": "25%", 
             "text": "中型射弹炮台最佳射程和失准范围加成"
+          }, 
+          {
+            "number": "75%", 
+            "text": "减少射弹武器的装填时间"
           }
         ], 
         "header": "特有加成："
@@ -40327,6 +42064,1326 @@
       ]
     }, 
     "typeID": 78369
+  }, 
+  {
+    "traits_de": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Es können integrierte Sensor-Anlagen ausgerüstet werden"
+          }, 
+          {
+            "text": "·Kann Capital-Mikrosprungantrieb und Capital-Mikrosprungfeldgenerator ausstatten"
+          }, 
+          {
+            "text": "·Kann drei Kommandostrahlen-Module ausrüsten"
+          }, 
+          {
+            "number": "200%", 
+            "text": "Bonus auf die Reichweite des Wirkungsbereichs von Kommandostrahlen"
+          }, 
+          {
+            "number": "20%", 
+            "text": "Bonus auf die maximale Schiffssprung-Energiespeicher von Capital-Mikrosprungfeldgenerator"
+          }, 
+          {
+            "text": "·Kann leichte und Unterstützungs-Jäger starten"
+          }, 
+          {
+            "text": "·Kann auf größere Entfernungen Ziele erfassen"
+          }, 
+          {
+            "text": "·Gruppensprung-fähig"
+          }, 
+          {
+            "number": "5x", 
+            "text": "Abzug zur Dauer des Entosis-Netzwerks"
+          }
+        ], 
+        "header": "Funktionsbonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "Bonus auf alle Panzerungsresistenzen"
+            }, 
+            {
+              "number": "20%", 
+              "text": "Bonus auf die HP von Unterstützungsjäger-Schilden"
+            }, 
+            {
+              "number": "10%", 
+              "text": "Bonus auf die Neutralisierungsstärke und optimale Reichweite von Cenobite-Unterstützungsjägern"
+            }, 
+            {
+              "number": "20%", 
+              "text": "Erhöhung der Gruppensprung-Kapazität"
+            }
+          ], 
+          "header": "Amarr Carrier Boni (je Skillstufe):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "Bonus auf Stärke und Dauer von Panzerungskommando-Strahlen"
+            }, 
+            {
+              "number": "5%", 
+              "text": "Reduktion der Hochfahrzeit für Capital-Mikrosprungantrieb und Capital-Mikrosprungfeldgenerator"
+            }
+          ], 
+          "header": "Kommandoträgerschiffe Boni (je Skillstufe):"
+        }
+      ]
+    }, 
+    "traits_en-us": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Can fit Integrated Sensor Array"
+          }, 
+          {
+            "text": "·Can fit Capital Micro Jump Drive and Capital Micro Jump Field Generator"
+          }, 
+          {
+            "text": "·Can fit three Command Burst modules"
+          }, 
+          {
+            "number": "200%", 
+            "text": "bonus to Command Burst area of effect range"
+          }, 
+          {
+            "number": "20%", 
+            "text": "bonus to Capital Micro Jump Field Generator maximum ship jump cap"
+          }, 
+          {
+            "text": "·Can launch Light and Support Fighters"
+          }, 
+          {
+            "text": "·Can lock at extended ranges"
+          }, 
+          {
+            "text": "·Conduit Jump capable"
+          }, 
+          {
+            "number": "5x", 
+            "text": "penalty to Entosis Link duration"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "bonus to all armor resistances"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Support Fighter shield hitpoints"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Cenobite Support Fighter neutralization strength and optimal range"
+            }, 
+            {
+              "number": "20%", 
+              "text": "increase in Conduit Jump capacity"
+            }
+          ], 
+          "header": "Amarr Carrier bonuses (per skill level):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "bonus to Armored Command and Information Command burst strength and duration"
+            }, 
+            {
+              "number": "5%", 
+              "text": "reduction in Capital Micro Jump Drive and Capital Micro Jump Field Generator spool up time"
+            }
+          ], 
+          "header": "Command Carriers bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_es": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Es posible equipar una red de sensores integrados."
+          }, 
+          {
+            "text": "·Es posible equipar un motor de microsalto capital y un generador de campo de microsalto capital."
+          }, 
+          {
+            "text": "·Es posible equipar tres módulos de estallido de mando."
+          }, 
+          {
+            "number": "200%", 
+            "text": "de bonificación al alcance del radio de acción del estallido de mando."
+          }, 
+          {
+            "number": "20%", 
+            "text": "de bonificación al límite máx. de salto de nave del generador de campo de microsalto capital."
+          }, 
+          {
+            "text": "·Puede lanzar cazas ligeros y de apoyo."
+          }, 
+          {
+            "text": "·Puede fijar objetivos a mayores distancias."
+          }, 
+          {
+            "text": "·Capaz de salto conductivo."
+          }, 
+          {
+            "number": "5x", 
+            "text": "de penalización a la duración del enlace de entosis."
+          }
+        ], 
+        "header": "Bonificación por función:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "de bonificación a todas las resistencias de blindaje."
+            }, 
+            {
+              "number": "20%", 
+              "text": "de bonificación a los puntos de vida de los escudos del caza de apoyo."
+            }, 
+            {
+              "number": "10%", 
+              "text": "de bonificación a la intensidad de neutralización y alcance óptimo del caza de apoyo Cenobite."
+            }, 
+            {
+              "number": "20%", 
+              "text": "de aumento a la capacidad de salto conductivo."
+            }
+          ], 
+          "header": "Bonificaciones de Portanaves amarriano (por nivel de habilidad):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "de bonificación a la intensidad y la duración del estallido de mando de blindaje."
+            }, 
+            {
+              "number": "5%", 
+              "text": "de reducción del tiempo de carga del motor de microsalto capital y un generador de campo de microsalto capital."
+            }
+          ], 
+          "header": "Bonificaciones de Portanaves de mando (por nivel de habilidad):"
+        }
+      ]
+    }, 
+    "traits_fr": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Peut être équipé d'un module de détection intégré"
+          }, 
+          {
+            "text": "·Peut être équipé d'un propulseur de microsaut capital et d'un générateur de champ de microsaut capital"
+          }, 
+          {
+            "text": "·Peut être équipé de trois modules de salve de commandement"
+          }, 
+          {
+            "number": "200%", 
+            "text": "de bonus à la portée de l'effet de zone des salves de commandement"
+          }, 
+          {
+            "number": "20%", 
+            "text": "de bonus à la limite max de sauts de vaisseaux du générateur de champ de microsaut capital"
+          }, 
+          {
+            "text": "·Peut lancer des chasseurs légers et de secours"
+          }, 
+          {
+            "text": "·Peut se verrouiller à des distances prolongées"
+          }, 
+          {
+            "text": "·Capacité de saut de groupe"
+          }, 
+          {
+            "number": "5x", 
+            "text": "de pénalité à la durée de la liaison Entosis"
+          }
+        ], 
+        "header": "Bonus de rôle :"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "de bonus à toutes les résistances de blindage"
+            }, 
+            {
+              "number": "20%", 
+              "text": "de bonus aux points de vie du bouclier des chasseurs de secours"
+            }, 
+            {
+              "number": "10%", 
+              "text": "de bonus à la puissance de neutralisation et à la portée optimale des chasseurs de secours Cenobite"
+            }, 
+            {
+              "number": "20%", 
+              "text": "d'augmentation de la capacité de saut de groupe"
+            }
+          ], 
+          "header": " Bonus (par niveau de compétence) Porte-vaisseaux amarr :"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "de bonus à la puissance et à la durée des salves de commandement de blindage"
+            }, 
+            {
+              "number": "5%", 
+              "text": "de réduction au temps de réactivation du propulseur de microsaut capital et du générateur de champ de microsaut capital"
+            }
+          ], 
+          "header": " Bonus (par niveau de compétence) Porte-vaisseaux de commandement :"
+        }
+      ]
+    }, 
+    "traits_it": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Can fit Integrated Sensor Array"
+          }, 
+          {
+            "text": "·Can fit Capital Micro Jump Drive and Capital Micro Jump Field Generator"
+          }, 
+          {
+            "text": "·Can fit three Command Burst modules"
+          }, 
+          {
+            "number": "200%", 
+            "text": "bonus to Command Burst area of effect range"
+          }, 
+          {
+            "number": "20%", 
+            "text": "bonus to Capital Micro Jump Field Generator maximum ship jump cap"
+          }, 
+          {
+            "text": "·Can launch Light and Support Fighters"
+          }, 
+          {
+            "text": "·Can lock at extended ranges"
+          }, 
+          {
+            "text": "·Conduit Jump capable"
+          }, 
+          {
+            "number": "5x", 
+            "text": "penalty to Entosis Link duration"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "bonus to all armor resistances"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Support Fighter shield hitpoints"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Cenobite Support Fighter neutralization strength and optimal range"
+            }, 
+            {
+              "number": "20%", 
+              "text": "increase in Conduit Jump capacity"
+            }
+          ], 
+          "header": "Amarr Carrier bonuses (per skill level):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "bonus to Armored Command and Information Command burst strength and duration"
+            }, 
+            {
+              "number": "5%", 
+              "text": "reduction in Capital Micro Jump Drive and Capital Micro Jump Field Generator spool up time"
+            }
+          ], 
+          "header": "Command Carriers bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_ja": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·統合型センサーアレイを装備可能"
+          }, 
+          {
+            "text": "·キャピタルマイクロジャンプドライブとキャピタル・マイクロジャンプフィールドジェネレーターを装備可能"
+          }, 
+          {
+            "text": "·コマンドバーストモジュール3個装備可能"
+          }, 
+          {
+            "number": "200%", 
+            "text": "コマンドバーストの有効範囲を拡大"
+          }, 
+          {
+            "number": "20%", 
+            "text": "キャピタル・マイクロジャンプフィールドジェネレーターの最大艦船ジャンプ能力にボーナス"
+          }, 
+          {
+            "text": "·軽戦闘機と支援 戦闘機が発艦可能"
+          }, 
+          {
+            "text": "·より遠距離でロック可能"
+          }, 
+          {
+            "text": "·コンジットジャンプに対応"
+          }, 
+          {
+            "number": "5x", 
+            "text": "エントーシスリンクの持続時間にペナルティ"
+          }
+        ], 
+        "header": "性能ボーナス："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "全てのアーマーレジスタンスが増加"
+            }, 
+            {
+              "number": "20%", 
+              "text": "支援戦闘機シールドHPにボーナス"
+            }, 
+            {
+              "number": "10%", 
+              "text": "支援戦闘機「セノバイト」のニュートラライザー強度と最適射程距離にボーナス"
+            }, 
+            {
+              "number": "20%", 
+              "text": "コンジットジャンプの容量が増加"
+            }
+          ], 
+          "header": "アマー艦載機母艦ボーナス(スキルレベルごとに):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "装甲戦コマンドバーストの効果と持続時間にボーナス"
+            }, 
+            {
+              "number": "5%", 
+              "text": "キャピタルマイクロジャンプドライブとキャピタル・マイクロジャンプフィールドジェネレーターのスプールアップタイムを短縮"
+            }
+          ], 
+          "header": "指揮型艦載機母艦ボーナス(スキルレベルごとに):"
+        }
+      ]
+    }, 
+    "traits_ko": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·통합 센서 장비 장착 가능"
+          }, 
+          {
+            "text": "·캐피탈 마이크로 점프 드라이브 및 캐피탈 마이크로 점프 필드 생성기 피팅 가능"
+          }, 
+          {
+            "text": "·세 개의 커맨드 버스트 모듈 장착 가능"
+          }, 
+          {
+            "number": "200%", 
+            "text": "커맨드 버스트 효과 반경 증가"
+          }, 
+          {
+            "number": "20%", 
+            "text": "캐피탈 마이크로 점프 필드 생성기 최대 함선 점프 수량 증가"
+          }, 
+          {
+            "text": "·라이트 파이터 및 서포트 파이터 사출 가능"
+          }, 
+          {
+            "text": "·타겟 거리 증가"
+          }, 
+          {
+            "text": "·전송기 점프 가능"
+          }, 
+          {
+            "number": "5x", 
+            "text": "엔토시스 링크 지속시간 감소"
+          }
+        ], 
+        "header": "역할 보너스:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "모든 장갑 저항력 증가"
+            }, 
+            {
+              "number": "20%", 
+              "text": "서포트 파이터 실드 내구도 증가"
+            }, 
+            {
+              "number": "10%", 
+              "text": "세노바이트 서포트 파이터 에너지 뉴트럴라이저 강도 및 최적사거리 증가"
+            }, 
+            {
+              "number": "20%", 
+              "text": "전송기 점프 수용력 증가"
+            }
+          ], 
+          "header": "아마르 캐리어 보너스 (스킬 레벨당):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "장갑 버스트 강도 및 지속시간 증가"
+            }, 
+            {
+              "number": "5%", 
+              "text": "캐피탈 마이크로 점프 드라이브 및 캐피탈 마이크로 점프 필드 생성기 예열 시간 감소"
+            }
+          ], 
+          "header": "커맨드 캐리어 보너스 (스킬 레벨당):"
+        }
+      ]
+    }, 
+    "traits_ru": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Можно оснастить интегрированным усилителем сенсоров"
+          }, 
+          {
+            "text": "·Можно оснастить маневровым гипердвигателем КБТ и генератором разгонного поля КБТ"
+          }, 
+          {
+            "text": "·Можно оснастить 3 импульсными оптимизаторами"
+          }, 
+          {
+            "number": "на 200%", 
+            "text": "бонус к области действия импульсного оптимизатора"
+          }, 
+          {
+            "number": "на 20%", 
+            "text": "бонус к максимуму кораблей для прыжка при активации генератора разгонного поля КБТ"
+          }, 
+          {
+            "text": "·Подходит для запуска лёгких истребителей и истребителей поддержки"
+          }, 
+          {
+            "text": "·Доступен захват целей с дальнего расстояния"
+          }, 
+          {
+            "text": "·Может совершить групповой прыжок"
+          }, 
+          {
+            "number": "на 5х", 
+            "text": "штраф к длительности действия энтоз-передатчика"
+          }
+        ], 
+        "header": "Профильные особенности проекта:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "на 4%", 
+              "text": "бонус к общей сопротивляемости брони"
+            }, 
+            {
+              "number": "на 20%", 
+              "text": "бонус к прочности щитов истребителей поддержки"
+            }, 
+            {
+              "number": "на 10%", 
+              "text": "бонус к мощности и оптимальной дальности энергонейтрализаторов для истребителей поддержки Cenobite"
+            }, 
+            {
+              "number": "на 20%", 
+              "text": "увеличение вместимости для группового прыжка"
+            }
+          ], 
+          "header": "За каждую степень освоения навыка Амаррские КАРы:"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "на 5%", 
+              "text": "бонус к мощности и времени работы импульсного оптимизатора брони"
+            }, 
+            {
+              "number": "на 5%", 
+              "text": "сокращение времени раскрутки маневровых гипердвигателей КБТ и генераторов разгонного поля КБТ"
+            }
+          ], 
+          "header": "За каждую степень освоения навыка Command Carriers:"
+        }
+      ]
+    }, 
+    "traits_zh": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·可装配集成传感器阵列"
+          }, 
+          {
+            "text": "·可以装配旗舰级微型跳跃引擎和旗舰级微型跳跃力场发生器"
+          }, 
+          {
+            "text": "·可以装配三个指挥脉冲波装备"
+          }, 
+          {
+            "number": "200%", 
+            "text": "指挥脉冲波效果范围加成"
+          }, 
+          {
+            "number": "20%", 
+            "text": "旗舰级微型跳跃力场发生器最大舰船跳跃数上限加成"
+          }, 
+          {
+            "text": "·可发射轻型和后勤铁骑舰载机"
+          }, 
+          {
+            "text": "·可在更大范围内锁定"
+          }, 
+          {
+            "text": "·可以进行导管跳跃"
+          }, 
+          {
+            "number": "5x", 
+            "text": "侵噬链接运转周期惩罚"
+          }
+        ], 
+        "header": "特有加成："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "装甲抗性加成"
+            }, 
+            {
+              "number": "20%", 
+              "text": "后勤铁骑舰载机护盾值加成"
+            }, 
+            {
+              "number": "10%", 
+              "text": "修道士后勤铁骑舰载机能量中和强度和最佳射程加成"
+            }, 
+            {
+              "number": "20%", 
+              "text": "导管跳跃容量增加"
+            }
+          ], 
+          "header": "艾玛航空母舰操作每升一级："
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "装甲指挥脉冲波强度和持续时间加成"
+            }, 
+            {
+              "number": "5%", 
+              "text": "旗舰级微型跳跃引擎和旗舰级微型跳跃力场发生器加速时间减少"
+            }
+          ], 
+          "header": "指挥航母每升一级："
+        }
+      ]
+    }, 
+    "typeID": 92822
+  }, 
+  {
+    "traits_de": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Es können integrierte Sensor-Anlagen ausgerüstet werden"
+          }, 
+          {
+            "text": "·Kann Capital-Mikrosprungantrieb und Capital-Mikrosprungfeldgenerator ausstatten"
+          }, 
+          {
+            "text": "·Kann drei Kommandostrahlen-Module ausrüsten"
+          }, 
+          {
+            "number": "200%", 
+            "text": "Bonus auf die Reichweite des Wirkungsbereichs von Kommandostrahlen"
+          }, 
+          {
+            "number": "20%", 
+            "text": "Bonus auf die maximale Schiffssprung-Energiespeicher von Capital-Mikrosprungfeldgenerator"
+          }, 
+          {
+            "text": "·Kann leichte und Unterstützungs-Jäger starten"
+          }, 
+          {
+            "text": "·Kann auf größere Entfernungen Ziele erfassen"
+          }, 
+          {
+            "text": "·Gruppensprung-fähig"
+          }, 
+          {
+            "number": "5x", 
+            "text": "Abzug zur Dauer des Entosis-Netzwerks"
+          }
+        ], 
+        "header": "Funktionsbonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "Bonus auf alle Schildresistenzen"
+            }, 
+            {
+              "number": "20%", 
+              "text": "Bonus auf die HP von Unterstützungsjäger-Schilden"
+            }, 
+            {
+              "number": "10%", 
+              "text": "Bonus auf die Stärke und optimale Reichweite von Scarab-Unterstützungsjäger-ECM"
+            }, 
+            {
+              "number": "20%", 
+              "text": "Erhöhung der Gruppensprung-Kapazität"
+            }
+          ], 
+          "header": "Caldari Carrier Boni (je Skillstufe):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "Bonus auf die Stärke und Dauer von Schildkommando-Strahlen"
+            }, 
+            {
+              "number": "5%", 
+              "text": "Reduktion des Hochfahrens für Capital-Mikrosprungantrieb und Capital-Mikrosprungfeldgenerator"
+            }
+          ], 
+          "header": "Kommandoträgerschiffe Boni (je Skillstufe):"
+        }
+      ]
+    }, 
+    "traits_en-us": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Can fit Integrated Sensor Array"
+          }, 
+          {
+            "text": "·Can fit Capital Micro Jump Drive and Capital Micro Jump Field Generator"
+          }, 
+          {
+            "text": "·Can fit three Command Burst modules"
+          }, 
+          {
+            "number": "200%", 
+            "text": "bonus to Command Burst area of effect range"
+          }, 
+          {
+            "number": "20%", 
+            "text": "bonus to Capital Micro Jump Field Generator maximum ship jump cap"
+          }, 
+          {
+            "text": "·Can launch Light and Support Fighters"
+          }, 
+          {
+            "text": "·Can lock at extended ranges"
+          }, 
+          {
+            "text": "·Conduit Jump capable"
+          }, 
+          {
+            "number": "5x", 
+            "text": "penalty to Entosis Link duration"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "bonus to all shield resistances"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Support Fighter shield hitpoints"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Scarab Support Fighter ECM strength and optimal range"
+            }, 
+            {
+              "number": "20%", 
+              "text": "increase in Conduit Jump capacity"
+            }
+          ], 
+          "header": "Caldari Carrier bonuses (per skill level):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "bonus to Shield Command and Information Command burst strength and duration"
+            }, 
+            {
+              "number": "5%", 
+              "text": "reduction in Capital Micro Jump Drive and Capital Micro Jump Field Generator spool up"
+            }
+          ], 
+          "header": "Command Carriers bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_es": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Es posible equipar una red de sensores integrados."
+          }, 
+          {
+            "text": "·Es posible equipar un motor de microsalto capital y un generador de campo de microsalto capital."
+          }, 
+          {
+            "text": "·Es posible equipar tres módulos de estallido de mando."
+          }, 
+          {
+            "number": "200%", 
+            "text": "de bonificación al alcance del radio de acción del estallido de mando."
+          }, 
+          {
+            "number": "20%", 
+            "text": "de bonificación al límite máx. de salto de nave del generador de campo de microsalto capital."
+          }, 
+          {
+            "text": "·Puede lanzar cazas ligeros y de apoyo."
+          }, 
+          {
+            "text": "·Puede fijar objetivos a mayores distancias."
+          }, 
+          {
+            "text": "·Capaz de salto conductivo."
+          }, 
+          {
+            "number": "5x", 
+            "text": "de penalización a la duración del enlace de entosis."
+          }
+        ], 
+        "header": "Bonificación por función:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "de bonificación a todas las resistencias de escudo."
+            }, 
+            {
+              "number": "20%", 
+              "text": "de bonificación a los puntos de vida de los escudos del caza de apoyo."
+            }, 
+            {
+              "number": "10%", 
+              "text": "de bonificación a la intensidad de las contramedidas electrónicas y alcance óptimo de los cazas de apoyo Scarab."
+            }, 
+            {
+              "number": "20%", 
+              "text": "de aumento a la capacidad de salto conductivo."
+            }
+          ], 
+          "header": "Bonificaciones de Portanaves caldari (por nivel de habilidad):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "de bonificación a la intensidad y la duración del estallido de mando de escudo."
+            }, 
+            {
+              "number": "5%", 
+              "text": "de reducción de la carga del motor de microsalto capital y un generador de campo de microsalto capital."
+            }
+          ], 
+          "header": "Bonificaciones de Portanaves de mando (por nivel de habilidad):"
+        }
+      ]
+    }, 
+    "traits_fr": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Peut être équipé d'un module de détection intégré"
+          }, 
+          {
+            "text": "·Peut être équipé d'un propulseur de microsaut capital et d'un générateur de champ de microsaut capital"
+          }, 
+          {
+            "text": "·Peut être équipé de trois modules de salve de commandement"
+          }, 
+          {
+            "number": "200%", 
+            "text": "de bonus à la portée de l'effet de zone des salves de commandement"
+          }, 
+          {
+            "number": "20%", 
+            "text": "de bonus à la limite max de sauts de vaisseaux du générateur de champ de microsaut capital"
+          }, 
+          {
+            "text": "·Peut lancer des chasseurs légers et de secours"
+          }, 
+          {
+            "text": "·Peut se verrouiller à des distances prolongées"
+          }, 
+          {
+            "text": "·Capacité de saut de groupe"
+          }, 
+          {
+            "number": "5x", 
+            "text": "de pénalité à la durée de la liaison Entosis"
+          }
+        ], 
+        "header": "Bonus de rôle :"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "de bonus à toutes les résistances du bouclier"
+            }, 
+            {
+              "number": "20%", 
+              "text": "de bonus aux points de vie du bouclier des chasseurs de secours"
+            }, 
+            {
+              "number": "10%", 
+              "text": "de bonus à la puissance des CME et à la portée optimale des chasseurs de secours Scarab"
+            }, 
+            {
+              "number": "20%", 
+              "text": "d'augmentation de la capacité de saut de groupe"
+            }
+          ], 
+          "header": " Bonus (par niveau de compétence) Porte-vaisseaux caldari :"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "de bonus à la puissance et à la durée des salves de commandement de bouclier"
+            }, 
+            {
+              "number": "5%", 
+              "text": "de réduction au temps de réactivation du propulseur de microsaut capital et du générateur de champ de microsaut capital"
+            }
+          ], 
+          "header": " Bonus (par niveau de compétence) Porte-vaisseaux de commandement :"
+        }
+      ]
+    }, 
+    "traits_it": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Can fit Integrated Sensor Array"
+          }, 
+          {
+            "text": "·Can fit Capital Micro Jump Drive and Capital Micro Jump Field Generator"
+          }, 
+          {
+            "text": "·Can fit three Command Burst modules"
+          }, 
+          {
+            "number": "200%", 
+            "text": "bonus to Command Burst area of effect range"
+          }, 
+          {
+            "number": "20%", 
+            "text": "bonus to Capital Micro Jump Field Generator maximum ship jump cap"
+          }, 
+          {
+            "text": "·Can launch Light and Support Fighters"
+          }, 
+          {
+            "text": "·Can lock at extended ranges"
+          }, 
+          {
+            "text": "·Conduit Jump capable"
+          }, 
+          {
+            "number": "5x", 
+            "text": "penalty to Entosis Link duration"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "bonus to all shield resistances"
+            }, 
+            {
+              "number": "20%", 
+              "text": "bonus to Support Fighter shield hitpoints"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Scarab Support Fighter ECM strength and optimal range"
+            }, 
+            {
+              "number": "20%", 
+              "text": "increase in Conduit Jump capacity"
+            }
+          ], 
+          "header": "Caldari Carrier bonuses (per skill level):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "bonus to Shield Command and Information Command burst strength and duration"
+            }, 
+            {
+              "number": "5%", 
+              "text": "reduction in Capital Micro Jump Drive and Capital Micro Jump Field Generator spool up"
+            }
+          ], 
+          "header": "Command Carriers bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_ja": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·統合型センサーアレイを装備可能"
+          }, 
+          {
+            "text": "·キャピタルマイクロジャンプドライブとキャピタル・マイクロジャンプフィールドジェネレーターを装備可能"
+          }, 
+          {
+            "text": "·コマンドバーストモジュール3個装備可能"
+          }, 
+          {
+            "number": "200%", 
+            "text": "コマンドバーストの有効範囲を拡大"
+          }, 
+          {
+            "number": "20%", 
+            "text": "キャピタル・マイクロジャンプフィールドジェネレーターの最大艦船ジャンプ能力にボーナス"
+          }, 
+          {
+            "text": "·軽戦闘機と支援 戦闘機が発艦可能"
+          }, 
+          {
+            "text": "·より遠距離でロック可能"
+          }, 
+          {
+            "text": "·コンジットジャンプに対応"
+          }, 
+          {
+            "number": "5x", 
+            "text": "エントーシスリンクの持続時間にペナルティ"
+          }
+        ], 
+        "header": "性能ボーナス："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "全てのシールドレジスタンスが増加"
+            }, 
+            {
+              "number": "20%", 
+              "text": "支援戦闘機シールドHPにボーナス"
+            }, 
+            {
+              "number": "10%", 
+              "text": "支援戦闘機「スカラベ」のECM強度と最適射程距離にボーナス"
+            }, 
+            {
+              "number": "20%", 
+              "text": "コンジットジャンプの容量が増加"
+            }
+          ], 
+          "header": "カルダリ艦載機母艦ボーナス(スキルレベルごとに):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "シールドコマンドバーストの効果と持続時間にボーナス"
+            }, 
+            {
+              "number": "5%", 
+              "text": "キャピタルマイクロジャンプドライブとキャピタル・マイクロジャンプフィールドジェネレーターのスプールアップタイムを短縮"
+            }
+          ], 
+          "header": "指揮型艦載機母艦ボーナス(スキルレベルごとに):"
+        }
+      ]
+    }, 
+    "traits_ko": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·통합 센서 장비 장착 가능"
+          }, 
+          {
+            "text": "·캐피탈 마이크로 점프 드라이브 및 캐피탈 마이크로 점프 필드 생성기 피팅 가능"
+          }, 
+          {
+            "text": "·세 개의 커맨드 버스트 모듈 장착 가능"
+          }, 
+          {
+            "number": "200%", 
+            "text": "커맨드 버스트 효과 반경 증가"
+          }, 
+          {
+            "number": "20%", 
+            "text": "캐피탈 마이크로 점프 필드 생성기 최대 함선 점프 수량 증가"
+          }, 
+          {
+            "text": "·라이트 파이터 및 서포트 파이터 사출 가능"
+          }, 
+          {
+            "text": "·타겟 거리 증가"
+          }, 
+          {
+            "text": "·전송기 점프 가능"
+          }, 
+          {
+            "number": "5x", 
+            "text": "엔토시스 링크 지속시간 감소"
+          }
+        ], 
+        "header": "역할 보너스:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "모든 실드 저항력 증가"
+            }, 
+            {
+              "number": "20%", 
+              "text": "서포트 파이터 실드 내구도 증가"
+            }, 
+            {
+              "number": "10%", 
+              "text": "스캐럽 서포트 파이터 ECM 강도 및 최적사거리 증가"
+            }, 
+            {
+              "number": "20%", 
+              "text": "전송기 점프 수용력 증가"
+            }
+          ], 
+          "header": "칼다리 캐리어 보너스 (스킬 레벨당):"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "실드 버스트 강도 및 지속시간 증가"
+            }, 
+            {
+              "number": "5%", 
+              "text": "캐피탈 마이크로 점프 드라이브 및 캐피탈 마이크로 점프 필드 생성기 예열 감소"
+            }
+          ], 
+          "header": "커맨드 캐리어 보너스 (스킬 레벨당):"
+        }
+      ]
+    }, 
+    "traits_ru": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·Можно оснастить интегрированным усилителем сенсоров"
+          }, 
+          {
+            "text": "·Можно оснастить маневровым гипердвигателем КБТ и генератором разгонного поля КБТ"
+          }, 
+          {
+            "text": "·Можно оснастить 3 импульсными оптимизаторами"
+          }, 
+          {
+            "number": "на 200%", 
+            "text": "бонус к области действия импульсного оптимизатора"
+          }, 
+          {
+            "number": "на 20%", 
+            "text": "бонус к максимуму кораблей для прыжка при активации генератора разгонного поля КБТ"
+          }, 
+          {
+            "text": "·Подходит для запуска лёгких истребителей и истребителей поддержки"
+          }, 
+          {
+            "text": "·Доступен захват целей с дальнего расстояния"
+          }, 
+          {
+            "text": "·Может совершить групповой прыжок"
+          }, 
+          {
+            "number": "на 5х", 
+            "text": "штраф к длительности действия энтоз-передатчика"
+          }
+        ], 
+        "header": "Профильные особенности проекта:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "на 4%", 
+              "text": "бонус к общей сопротивляемости щитов"
+            }, 
+            {
+              "number": "на 20%", 
+              "text": "бонус к прочности щитов истребителей поддержки"
+            }, 
+            {
+              "number": "на 10%", 
+              "text": "бонус к мощности и оптимальной дальности МЭП для истребителей поддержки Scarab"
+            }, 
+            {
+              "number": "на 20%", 
+              "text": "увеличение вместимости для группового прыжка"
+            }
+          ], 
+          "header": "За каждую степень освоения навыка Калдарские КАРы:"
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "на 5%", 
+              "text": "бонус к мощности и времени работы импульсного оптимизатора щитов"
+            }, 
+            {
+              "number": "на 5%", 
+              "text": "сокращение раскрутки маневровых гипердвигателей КБТ и генераторов разгонного поля КБТ"
+            }
+          ], 
+          "header": "За каждую степень освоения навыка Command Carriers:"
+        }
+      ]
+    }, 
+    "traits_zh": {
+      "role": {
+        "bonuses": [
+          {
+            "text": "·可装配集成传感器阵列"
+          }, 
+          {
+            "text": "·可以装配旗舰级微型跳跃引擎和旗舰级微型跳跃力场发生器"
+          }, 
+          {
+            "text": "·可以装配三个指挥脉冲波装备"
+          }, 
+          {
+            "number": "200%", 
+            "text": "指挥脉冲波效果范围加成"
+          }, 
+          {
+            "number": "20%", 
+            "text": "旗舰级微型跳跃力场发生器最大舰船跳跃数上限加成"
+          }, 
+          {
+            "text": "·可发射轻型和后勤铁骑舰载机"
+          }, 
+          {
+            "text": "·可在更大范围内锁定"
+          }, 
+          {
+            "text": "·可以进行导管跳跃"
+          }, 
+          {
+            "number": "5x", 
+            "text": "侵噬链接运转周期惩罚"
+          }
+        ], 
+        "header": "特有加成："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "4%", 
+              "text": "护盾抗性加成"
+            }, 
+            {
+              "number": "20%", 
+              "text": "后勤铁骑舰载机护盾值加成"
+            }, 
+            {
+              "number": "10%", 
+              "text": "圣甲虫后勤铁骑舰载机ECM强度和最佳射程加成"
+            }, 
+            {
+              "number": "20%", 
+              "text": "导管跳跃容量增加"
+            }
+          ], 
+          "header": "加达里航空母舰操作每升一级："
+        }, 
+        {
+          "bonuses": [
+            {
+              "number": "5%", 
+              "text": "护盾指挥脉冲波强度和持续时间加成"
+            }, 
+            {
+              "number": "5%", 
+              "text": "旗舰级微型跳跃引擎和旗舰级微型跳跃力场发生器加速时间减少"
+            }
+          ], 
+          "header": "指挥航母每升一级："
+        }
+      ]
+    }, 
+    "typeID": 92823
   }, 
   {
     "traits_de": {
@@ -47851,6 +50908,414 @@
       "role": {
         "bonuses": [
           {
+            "number": "80%", 
+            "text": "Reduktion in der Reaktivierungsverzögerung des Anti-Unterbrechers und max. Erfassungsreichweitenabzug"
+          }, 
+          {
+            "text": "·Zusätzliche Basiswerte"
+          }, 
+          {
+            "text": "·+1 Low Slot"
+          }, 
+          {
+            "text": "·+0,1 Trägheitsmodifikator"
+          }, 
+          {
+            "text": "·-20 km Max. Zielerfassungsreichweite"
+          }, 
+          {
+            "text": "·+20 m Signaturradius"
+          }, 
+          {
+            "number": "100%", 
+            "text": "Bonus auf die Dauer des Anti-Unterbrechers"
+          }
+        ], 
+        "header": "Funktionsbonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "Bonus auf die Warpgeschwindigkeit und Beschleunigung"
+            }, 
+            {
+              "number": "15%", 
+              "text": "Reduktion des Energiespeicherverbrauchs bei der Warpsprung-Initiierung"
+            }
+          ], 
+          "header": "Amarr Propulsion Systems Boni (je Skillstufe):"
+        }
+      ]
+    }, 
+    "traits_en-us": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "80%", 
+            "text": "reduction in Interdiction Nullifier reactivation delay and max lock range penalty"
+          }, 
+          {
+            "text": "·Additional Base Stats"
+          }, 
+          {
+            "text": "·+1 Low Slot"
+          }, 
+          {
+            "text": "·+0.1 Inertia Modifier"
+          }, 
+          {
+            "text": "·-20km Max Targeting Range"
+          }, 
+          {
+            "text": "·+20m Signature Radius"
+          }, 
+          {
+            "number": "100%", 
+            "text": "bonus to Interdiction Nullifier duration"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to warp velocity and acceleration"
+            }, 
+            {
+              "number": "15%", 
+              "text": "reduction in capacitor need when initiating warp"
+            }
+          ], 
+          "header": "Amarr Propulsion Systems bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_es": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "80%", 
+            "text": "de reducción de la demora de reactivación y de penalización al alcance de fijación máximo del anulador de interdicción."
+          }, 
+          {
+            "text": "·Estadísticas básicas adicionales"
+          }, 
+          {
+            "text": "·+1 ranura inferior"
+          }, 
+          {
+            "text": "·+0,1 al modificador de inercia"
+          }, 
+          {
+            "text": "·-20 km a la distancia-objetivo máxima"
+          }, 
+          {
+            "text": "·+20 m al radio de la señal"
+          }, 
+          {
+            "number": "100%", 
+            "text": "de bonificación a la duración del anulador de interdicción."
+          }
+        ], 
+        "header": "Bonificación por función:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "de bonificación a la aceleración y la velocidad de warp."
+            }, 
+            {
+              "number": "15%", 
+              "text": "de reducción de la necesidad del condensador al iniciar el warp."
+            }
+          ], 
+          "header": "Bonificaciones de Sistemas de propulsión amarrianos (por nivel de habilidad):"
+        }
+      ]
+    }, 
+    "traits_fr": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "80%", 
+            "text": "de réduction au délai de réactivation de la contremesure d’interdiction et à la pénalité de portée de verrouillage maximale"
+          }, 
+          {
+            "text": "·Stats de base supplémentaires"
+          }, 
+          {
+            "text": "·+1 Emplacement inférieur"
+          }, 
+          {
+            "text": "·Modificateur d'inertie +0,1"
+          }, 
+          {
+            "text": "·Portée max du système de ciblage -20 km"
+          }, 
+          {
+            "text": "·Rayon de signature +20 m"
+          }, 
+          {
+            "number": "100%", 
+            "text": "de bonus à la durée de la contremesure d’interdiction"
+          }
+        ], 
+        "header": "Bonus de rôle :"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "de bonus à la vitesse de warp et à l'accélération de warp"
+            }, 
+            {
+              "number": "15%", 
+              "text": "de réduction des besoins énergétiques du capaciteur au moment d'initier le warp"
+            }
+          ], 
+          "header": " Bonus (par niveau de compétence) Systèmes de propulsion amarr :"
+        }
+      ]
+    }, 
+    "traits_it": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "80%", 
+            "text": "reduction in Interdiction Nullifier reactivation delay and max lock range penalty"
+          }, 
+          {
+            "text": "·Additional Base Stats"
+          }, 
+          {
+            "text": "·+1 Low Slot"
+          }, 
+          {
+            "text": "·+0.1 Inertia Modifier"
+          }, 
+          {
+            "text": "·-20km Max Targeting Range"
+          }, 
+          {
+            "text": "·+20m Signature Radius"
+          }, 
+          {
+            "number": "100%", 
+            "text": "bonus to Interdiction Nullifier duration"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to warp velocity and acceleration"
+            }, 
+            {
+              "number": "15%", 
+              "text": "reduction in capacitor need when initiating warp"
+            }
+          ], 
+          "header": "Amarr Propulsion Systems bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_ja": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "80%", 
+            "text": "インターディクション無効化の再起動遅延と最大ロック射程のペナルティ減少"
+          }, 
+          {
+            "text": "·追加ベース統計"
+          }, 
+          {
+            "text": "·ロースロット+1"
+          }, 
+          {
+            "text": "·慣性乗数+0.1"
+          }, 
+          {
+            "text": "·最大ターゲット範囲-20km"
+          }, 
+          {
+            "text": "·シグネチャ半径+20m"
+          }, 
+          {
+            "number": "100%", 
+            "text": "インターディクション無効化の持続時間にボーナス"
+          }
+        ], 
+        "header": "性能ボーナス："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "ワープ速度と加速度が上昇"
+            }, 
+            {
+              "number": "15%", 
+              "text": "ワープ時のキャパシタ消費が減少"
+            }
+          ], 
+          "header": "アマー推進力システムボーナス(スキルレベルごとに):"
+        }
+      ]
+    }, 
+    "traits_ko": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "80%", 
+            "text": "인터딕션 무효화 장치 재활성화 대기시간 및 최대 타겟팅 거리 페널티 감소"
+          }, 
+          {
+            "text": "·추가 기본 능력치"
+          }, 
+          {
+            "text": "·로우 슬롯 +1"
+          }, 
+          {
+            "text": "·관성 계수 +0.1"
+          }, 
+          {
+            "text": "·최대 타겟팅 거리 -20 km"
+          }, 
+          {
+            "text": "·시그니처 반경 +20m"
+          }, 
+          {
+            "number": "100%", 
+            "text": "인터딕션 무효화 장치 지속시간 보너스"
+          }
+        ], 
+        "header": "역할 보너스:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "워프 속도 및 가속도 증가"
+            }, 
+            {
+              "number": "15%", 
+              "text": "워프 시전 시 캐패시터 소모량 감소"
+            }
+          ], 
+          "header": "아마르 추진기 시스템 보너스 (스킬 레벨당):"
+        }
+      ]
+    }, 
+    "traits_ru": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "на 80%", 
+            "text": "уменьшение задержки повторного включения нейтрализатора варп-заграждений и штрафа к максимальной дальности захвата цели"
+          }, 
+          {
+            "text": "·Кроме того:"
+          }, 
+          {
+            "text": "·+1 разъём малой мощности"
+          }, 
+          {
+            "text": "·+0,1 к инертности конструкции"
+          }, 
+          {
+            "text": "·-20 километров к максимальной дальности захвата целей"
+          }, 
+          {
+            "text": "·+20 метров размера сигнатуры"
+          }, 
+          {
+            "number": "на 100%", 
+            "text": "бонус к длительности действия нейтрализатора варп-заграждений"
+          }
+        ], 
+        "header": "Профильные особенности проекта:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "на 10%", 
+              "text": "повышается скорость полёта и ускорение корабля (только в варп-режиме)"
+            }, 
+            {
+              "number": "на 15%", 
+              "text": "сокращается расход энергии при включении варп-двигателя"
+            }
+          ], 
+          "header": "За каждую степень освоения навыка Амаррские двигательные подсистемы:"
+        }
+      ]
+    }, 
+    "traits_zh": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "80%", 
+            "text": "拦截失效装置重启延迟和最大锁定距离惩罚降低"
+          }, 
+          {
+            "text": "·附加基础数值"
+          }, 
+          {
+            "text": "·低槽+1"
+          }, 
+          {
+            "text": "·惯性调整系数+0.1"
+          }, 
+          {
+            "text": "·最大锁定距离减少20km"
+          }, 
+          {
+            "text": "·信号半径+20m"
+          }, 
+          {
+            "number": "100%", 
+            "text": "拦截失效装置持续时间加成"
+          }
+        ], 
+        "header": "特有加成："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "跃迁速度和跃迁加速加成"
+            }, 
+            {
+              "number": "15%", 
+              "text": "跃迁启动电容量减耗"
+            }
+          ], 
+          "header": "艾玛推进子系统每升一级："
+        }
+      ]
+    }, 
+    "typeID": 45610
+  }, 
+  {
+    "traits_de": {
+      "role": {
+        "bonuses": [
+          {
             "number": "100%", 
             "text": "Bonus auf die Reichweite von Panzerungs-Fernreparatursystemen"
           }, 
@@ -49638,15 +53103,15 @@
           "bonuses": [
             {
               "number": "7.5%", 
-              "text": "Bonus auf die Präzisionsabfall-Reichweite von schweren Stasisgreifarmen"
+              "text": "Bonus auf die Nachführung von großen Projektilwaffentürmen"
             }, 
             {
               "number": "7.5%", 
-              "text": "Bonus auf den Präzisionsabfall von großen Projektilwaffentürmen"
+              "text": "Bonus auf die Präzisionsabfall Reichweite von großen Projektilwaffentürmen"
             }, 
             {
               "number": "20%", 
-              "text": "bonus to Heavy Stasis Grappler optimal range"
+              "text": "Bonus auf die optimale Reichweite von schweren Stasisgreifarmen"
             }
           ], 
           "header": "Black Ops Boni (je Skillstufe):"
@@ -49766,7 +53231,7 @@
           "bonuses": [
             {
               "number": "7.5%", 
-              "text": "de bonificación al alcance efectivo de los anquilizadores de estasis pesados."
+              "text": "de bonificación al rastreo de la torreta de proyectiles grande."
             }, 
             {
               "number": "7.5%", 
@@ -49774,7 +53239,7 @@
             }, 
             {
               "number": "20%", 
-              "text": "bonus to Heavy Stasis Grappler optimal range"
+              "text": "de bonificación al alcance óptimo de los anquilizadores de estasis pesados."
             }
           ], 
           "header": "Bonificaciones de Operaciones secretas (por nivel de habilidad):"
@@ -49830,15 +53295,15 @@
           "bonuses": [
             {
               "number": "7.5%", 
-              "text": "de bonus à la portée de déperdition de l'entrave de stase lourde"
+              "text": "de bonus à la poursuite des grandes tourelles à projectiles"
             }, 
             {
               "number": "7.5%", 
-              "text": "de bonus à la déperdition des grandes tourelles à projectiles"
+              "text": "de bonus à la portée de déperdition des grandes tourelles à projectiles"
             }, 
             {
               "number": "20%", 
-              "text": "bonus to Heavy Stasis Grappler optimal range"
+              "text": "de bonus à la portée optimale de l'entrave de stase lourde"
             }
           ], 
           "header": " Bonus (par niveau de compétence) Forces spéciales :"
@@ -49958,15 +53423,15 @@
           "bonuses": [
             {
               "number": "7.5%", 
-              "text": "ヘビーステイシスグラップラーの精度低下範囲にボーナス"
+              "text": "大型プロジェクタイルタレットのトラッキング能力にボーナス"
             }, 
             {
               "number": "7.5%", 
-              "text": "大型プロジェクタイルタレットの精度低下範囲が拡大"
+              "text": "大型プロジェクタイルタレットの精度低下範囲にボーナス"
             }, 
             {
               "number": "20%", 
-              "text": "bonus to Heavy Stasis Grappler optimal range"
+              "text": "ヘビーステイシスグラップラーの最適射程距離にボーナス"
             }
           ], 
           "header": "秘密工作艦ボーナス(スキルレベルごとに):"
@@ -50022,7 +53487,7 @@
           "bonuses": [
             {
               "number": "7.5%", 
-              "text": "헤비 스테이시스 그래플러 유효사거리 증가"
+              "text": "대형 발사체 터렛 트래킹 속도 증가"
             }, 
             {
               "number": "7.5%", 
@@ -50030,7 +53495,7 @@
             }, 
             {
               "number": "20%", 
-              "text": "bonus to Heavy Stasis Grappler optimal range"
+              "text": "헤비 스테이시스 그래플러 최적사거리 증가"
             }
           ], 
           "header": "블랙옵스 보너스 (스킬 레벨당):"
@@ -50086,15 +53551,15 @@
           "bonuses": [
             {
               "number": "на 7.5%", 
-              "text": "бонус к остаточной дальности тяжёлых стазис-захватов"
+              "text": "бонус к скорости наведения баллистических орудий большого калибра"
             }, 
             {
               "number": "на 7.5%", 
-              "text": "бонус к остаточной дальности баллистических орудий большого калибра"
+              "text": "бонус к остаточной дальности баллистических орудий большого калибра"
             }, 
             {
               "number": "на 20%", 
-              "text": "bonus to Heavy Stasis Grappler optimal range"
+              "text": "бонус к оптимальной дальности тяжёлых стазис-захватов"
             }
           ], 
           "header": "За каждую степень освоения навыка Тяжёлые диверсионные корабли:"
@@ -50150,7 +53615,7 @@
           "bonuses": [
             {
               "number": "7.5%", 
-              "text": "重型停滞捕捉光束失准范围加成"
+              "text": "大型射弹炮台跟踪速度加成"
             }, 
             {
               "number": "7.5%", 
@@ -50158,7 +53623,7 @@
             }, 
             {
               "number": "20%", 
-              "text": "bonus to Heavy Stasis Grappler optimal range"
+              "text": "重型停滞捕捉光束最佳射程加成"
             }
           ], 
           "header": "黑隐特勤舰操作每升一级："
@@ -50468,7 +53933,7 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
+              "number": "7.5%", 
               "text": "Bonus auf den Schaden von kleinen Hybridgeschütztürmen"
             }, 
             {
@@ -50498,7 +53963,7 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
+              "number": "7.5%", 
               "text": "bonus to Small Hybrid Turret damage"
             }, 
             {
@@ -50528,7 +53993,7 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
+              "number": "7.5%", 
               "text": "de bonificación al daño de la torreta híbrida pequeña."
             }, 
             {
@@ -50558,7 +54023,7 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
+              "number": "7.5%", 
               "text": "bonus to Small Hybrid Turret damage"
             }, 
             {
@@ -50588,7 +54053,7 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
+              "number": "7.5%", 
               "text": "bonus to Small Hybrid Turret damage"
             }, 
             {
@@ -50618,7 +54083,7 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
+              "number": "7.5%", 
               "text": "小型ハイブリッドタレットのダメージにボーナス"
             }, 
             {
@@ -50648,7 +54113,7 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
+              "number": "7.5%", 
               "text": "소형 하이브리드 터렛 피해량 증가"
             }, 
             {
@@ -50678,7 +54143,7 @@
         {
           "bonuses": [
             {
-              "number": "на 5%", 
+              "number": "на 7.5%", 
               "text": "бонус к урону малых гибридных орудий"
             }, 
             {
@@ -50708,7 +54173,7 @@
         {
           "bonuses": [
             {
-              "number": "5%", 
+              "number": "7.5%", 
               "text": "小型混合炮台伤害加成"
             }, 
             {
@@ -56182,7 +59647,7 @@
       "misc": {
         "bonuses": [
           {
-            "number": "-85%", 
+            "number": "-70%", 
             "text": "Schadensabzug bei Drohnen"
           }, 
           {
@@ -56212,7 +59677,7 @@
       "misc": {
         "bonuses": [
           {
-            "number": "-85%", 
+            "number": "-70%", 
             "text": "penalty to Drone damage"
           }, 
           {
@@ -56242,7 +59707,7 @@
       "misc": {
         "bonuses": [
           {
-            "number": "-85%", 
+            "number": "-70%", 
             "text": "de penalización al daño de los drones."
           }, 
           {
@@ -56272,7 +59737,7 @@
       "misc": {
         "bonuses": [
           {
-            "number": "-85%", 
+            "number": "-70%", 
             "text": "pénalité de dégâts de drone"
           }, 
           {
@@ -56302,7 +59767,7 @@
       "misc": {
         "bonuses": [
           {
-            "number": "-85%", 
+            "number": "-70%", 
             "text": "penalty to Drone damage"
           }, 
           {
@@ -56332,7 +59797,7 @@
       "misc": {
         "bonuses": [
           {
-            "number": "-85%", 
+            "number": "-70%", 
             "text": "ドローンダメージにペナルティ"
           }, 
           {
@@ -56362,7 +59827,7 @@
       "misc": {
         "bonuses": [
           {
-            "number": "-85%", 
+            "number": "-70%", 
             "text": "드론 피해량 감소"
           }, 
           {
@@ -56392,7 +59857,7 @@
       "misc": {
         "bonuses": [
           {
-            "number": "на -85%", 
+            "number": "на -70%", 
             "text": "штраф к урону от дронов"
           }, 
           {
@@ -56422,7 +59887,7 @@
       "misc": {
         "bonuses": [
           {
-            "number": "-85%", 
+            "number": "-70%", 
             "text": "无人机伤害惩罚"
           }, 
           {
@@ -70781,6 +74246,10 @@
           {
             "number": "5x", 
             "text": "Abzug auf Durchlaufzeit von Entosis-Netzwerk"
+          }, 
+          {
+            "number": "75%", 
+            "text": "Reduktion der Nachladezeit von Projektilwaffen"
           }
         ], 
         "header": "Funktionsbonus:"
@@ -70832,6 +74301,10 @@
           {
             "number": "5x", 
             "text": "penalty to Entosis Link cycle time"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -70883,6 +74356,10 @@
           {
             "number": "5x", 
             "text": "de penalización al tiempo de ciclo del enlace de entosis."
+          }, 
+          {
+            "number": "75%", 
+            "text": "de reducción del tiempo de recarga del arma de proyectiles."
           }
         ], 
         "header": "Bonificación por función:"
@@ -70934,6 +74411,10 @@
           {
             "number": "5x", 
             "text": "de pénalité au temps de cycle de la liaison Entosis"
+          }, 
+          {
+            "number": "75%", 
+            "text": "de réduction au temps de rechargement des armes à projectiles"
           }
         ], 
         "header": "Bonus de rôle :"
@@ -70985,6 +74466,10 @@
           {
             "number": "5x", 
             "text": "penalty to Entosis Link cycle time"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -71036,6 +74521,10 @@
           {
             "number": "5x", 
             "text": "エントーシスリンクのサイクル時間にペナルティ"
+          }, 
+          {
+            "number": "75%", 
+            "text": "プロジェクタイル兵器のリロード時間が短縮"
           }
         ], 
         "header": "性能ボーナス："
@@ -71087,6 +74576,10 @@
           {
             "number": "5x", 
             "text": "엔토시스 링크 사이클 시간 증가"
+          }, 
+          {
+            "number": "75%", 
+            "text": "발사체 무기 재장전 시간 감소"
           }
         ], 
         "header": "역할 보너스:"
@@ -71138,6 +74631,10 @@
           {
             "number": "на 5х", 
             "text": "штраф ко времени цикла энтоз-передатчиков"
+          }, 
+          {
+            "number": "на 75%", 
+            "text": "ускорение перезарядки баллистических орудий"
           }
         ], 
         "header": "Профильные особенности проекта:"
@@ -71189,6 +74686,10 @@
           {
             "number": "5x", 
             "text": "侵噬链接循环周期惩罚"
+          }, 
+          {
+            "number": "75%", 
+            "text": "减少射弹武器的装填时间"
           }
         ], 
         "header": "特有加成："
@@ -98168,8 +101669,12 @@
             "text": "Bonus auf den Schaden von kleinen Projektilgeschütztürmen"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "Bonus auf die Warpgeschwindigkeit und Warpbeschleunigung"
+          }, 
+          {
+            "number": "75%", 
+            "text": "Reduktion der Nachladezeit von Projektilwaffen"
           }
         ], 
         "header": "Funktionsbonus:"
@@ -98203,8 +101708,12 @@
             "text": "bonus to Small Projectile Turret damage"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "bonus to warp speed and warp acceleration"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -98238,8 +101747,12 @@
             "text": "de bonificación al daño de la torreta de proyectiles pequeña."
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "de bonificación a la velocidad y la aceleración de warp."
+          }, 
+          {
+            "number": "75%", 
+            "text": "de reducción del tiempo de recarga del arma de proyectiles."
           }
         ], 
         "header": "Bonificación por función:"
@@ -98273,8 +101786,12 @@
             "text": "de bonus aux dégâts des petites tourelles à projectiles"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "bonus à la vitesse et à l'accélération du warp"
+          }, 
+          {
+            "number": "75%", 
+            "text": "de réduction au temps de rechargement des armes à projectiles"
           }
         ], 
         "header": "Bonus de rôle :"
@@ -98308,8 +101825,12 @@
             "text": "bonus to Small Projectile Turret damage"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "bonus to warp speed and warp acceleration"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -98343,8 +101864,12 @@
             "text": "小型プロジェクタイルタレットのダメージが増加"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "ワープ速度とワープ加速が上昇"
+          }, 
+          {
+            "number": "75%", 
+            "text": "プロジェクタイル兵器のリロード時間が短縮"
           }
         ], 
         "header": "性能ボーナス："
@@ -98378,8 +101903,12 @@
             "text": "소형 발사체 터렛 피해량 증가"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "워프 속도 및 워프 가속도 증가"
+          }, 
+          {
+            "number": "75%", 
+            "text": "발사체 무기 재장전 시간 감소"
           }
         ], 
         "header": "역할 보너스:"
@@ -98413,8 +101942,12 @@
             "text": "увеличивается урон боеприпасов малых баллистических орудий"
           }, 
           {
-            "number": "на 25%", 
+            "number": "на 50%", 
             "text": "повышается скорость полёта и ускорение корабля (только в варп-режиме)"
+          }, 
+          {
+            "number": "на 75%", 
+            "text": "ускорение перезарядки баллистических орудий"
           }
         ], 
         "header": "Профильные особенности проекта:"
@@ -98448,8 +101981,12 @@
             "text": "小型射弹炮台伤害加成"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "跃迁速度和跃迁加速加成"
+          }, 
+          {
+            "number": "75%", 
+            "text": "减少射弹武器的装填时间"
           }
         ], 
         "header": "特有加成："
@@ -116707,6 +120244,279 @@
       "role": {
         "bonuses": [
           {
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
+          }
+        ], 
+        "header": "Funktionsbonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket rate of fire"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Shield Booster amount"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket explosion velocity"
+            }
+          ], 
+          "header": "Minmatar Destroyer Boni (je Skillstufe):"
+        }
+      ]
+    }, 
+    "traits_en-us": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket rate of fire"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Shield Booster amount"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket explosion velocity"
+            }
+          ], 
+          "header": "Minmatar Destroyer bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_es": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
+          }
+        ], 
+        "header": "Bonificación por función:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket rate of fire"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Shield Booster amount"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket explosion velocity"
+            }
+          ], 
+          "header": "Bonificaciones de Destructor minmatariano (por nivel de habilidad):"
+        }
+      ]
+    }, 
+    "traits_fr": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
+          }
+        ], 
+        "header": "Bonus de rôle :"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket rate of fire"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Shield Booster amount"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket explosion velocity"
+            }
+          ], 
+          "header": " Bonus (par niveau de compétence) Destroyer minmatar :"
+        }
+      ]
+    }, 
+    "traits_it": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket rate of fire"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Shield Booster amount"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket explosion velocity"
+            }
+          ], 
+          "header": "Minmatar Destroyer bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_ja": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
+          }
+        ], 
+        "header": "性能ボーナス："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket rate of fire"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Shield Booster amount"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket explosion velocity"
+            }
+          ], 
+          "header": "ミンマター駆逐艦ボーナス(スキルレベルごとに):"
+        }
+      ]
+    }, 
+    "traits_ko": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
+          }
+        ], 
+        "header": "역할 보너스:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket rate of fire"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Shield Booster amount"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket explosion velocity"
+            }
+          ], 
+          "header": "민마타 디스트로이어 보너스 (스킬 레벨당):"
+        }
+      ]
+    }, 
+    "traits_ru": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "на 50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
+          }
+        ], 
+        "header": "Профильные особенности проекта:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "на 7.5%", 
+              "text": "bonus to Light Missile and Rocket rate of fire"
+            }, 
+            {
+              "number": "на 7.5%", 
+              "text": "bonus to Shield Booster amount"
+            }, 
+            {
+              "number": "на 7.5%", 
+              "text": "bonus to Light Missile and Rocket explosion velocity"
+            }
+          ], 
+          "header": "За каждую степень освоения навыка Минматарские эсминцы:"
+        }
+      ]
+    }, 
+    "traits_zh": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
+          }
+        ], 
+        "header": "特有加成："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket rate of fire"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Shield Booster amount"
+            }, 
+            {
+              "number": "7.5%", 
+              "text": "bonus to Light Missile and Rocket explosion velocity"
+            }
+          ], 
+          "header": "米玛塔尔驱逐舰操作每升一级："
+        }
+      ]
+    }, 
+    "typeID": 91858
+  }, 
+  {
+    "traits_de": {
+      "role": {
+        "bonuses": [
+          {
             "number": "90%", 
             "text": "Reduktion der effektiv zurückgelegten Distanz für die Sprungerschöpfung"
           }
@@ -120315,8 +124125,12 @@
             "text": "·Die Verzögerung bei Reaktivierung von Tarnmodulen wird auf 5 Sekunden reduziert."
           }, 
           {
-            "number": "60%", 
+            "number": "140%", 
             "text": "Bonus auf die Warpgeschwindigkeit und Warpbeschleunigung"
+          }, 
+          {
+            "number": "75%", 
+            "text": "Reduktion der Nachladezeit von Projektilwaffen"
           }
         ], 
         "header": "Funktionsbonus:"
@@ -120376,8 +124190,12 @@
             "text": "·Cloak reactivation delay reduced to 5 seconds"
           }, 
           {
-            "number": "60%", 
+            "number": "140%", 
             "text": "bonus to warp speed and warp acceleration"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -120437,8 +124255,12 @@
             "text": "·Reducción de la demora de reactivación del camuflaje a 5 segundos."
           }, 
           {
-            "number": "60%", 
+            "number": "140%", 
             "text": "de bonificación a la velocidad y la aceleración de warp."
+          }, 
+          {
+            "number": "75%", 
+            "text": "de reducción del tiempo de recarga del arma de proyectiles."
           }
         ], 
         "header": "Bonificación por función:"
@@ -120498,8 +124320,12 @@
             "text": "·Délai de réactivation du camouflage réduit à 5 secondes"
           }, 
           {
-            "number": "60%", 
+            "number": "140%", 
             "text": "de bonus à la vitesse de warp et à l'accélération de warp"
+          }, 
+          {
+            "number": "75%", 
+            "text": "de réduction au temps de rechargement des armes à projectiles"
           }
         ], 
         "header": "Bonus de rôle :"
@@ -120559,8 +124385,12 @@
             "text": "·Cloak reactivation delay reduced to 5 seconds"
           }, 
           {
-            "number": "60%", 
+            "number": "140%", 
             "text": "bonus to warp speed and warp acceleration"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -120620,8 +124450,12 @@
             "text": "·遮蔽装置の再起動遅延が5秒に短縮"
           }, 
           {
-            "number": "60%", 
+            "number": "140%", 
             "text": "ワープ速度とワープ加速度が上昇"
+          }, 
+          {
+            "number": "75%", 
+            "text": "プロジェクタイル兵器のリロード時間が短縮"
           }
         ], 
         "header": "性能ボーナス："
@@ -120681,8 +124515,12 @@
             "text": "·클로킹 재가동 지연 시간 5초로 감소"
           }, 
           {
-            "number": "60%", 
+            "number": "140%", 
             "text": "워프 속도 및 워프 가속도 증가"
+          }, 
+          {
+            "number": "75%", 
+            "text": "발사체 무기 재장전 시간 감소"
           }
         ], 
         "header": "역할 보너스:"
@@ -120742,8 +124580,12 @@
             "text": "·Задержка повторного включения систем маскировки сокращена до 5 секунд"
           }, 
           {
-            "number": "на 60%", 
+            "number": "на 140%", 
             "text": "бонус к разгону и скорости хода (в варп-режиме)"
+          }, 
+          {
+            "number": "на 75%", 
+            "text": "ускорение перезарядки баллистических орудий"
           }
         ], 
         "header": "Профильные особенности проекта:"
@@ -120803,8 +124645,12 @@
             "text": "·隐形装置重启延时降到5秒"
           }, 
           {
-            "number": "60%", 
+            "number": "140%", 
             "text": "跃迁速度和跃迁加速加成"
+          }, 
+          {
+            "number": "75%", 
+            "text": "减少射弹武器的装填时间"
           }
         ], 
         "header": "特有加成："
@@ -120855,6 +124701,14 @@
           {
             "number": "25%", 
             "text": "Bonus auf die Feuerrate von mittelgroßen Projektilgeschütztürmen"
+          }, 
+          {
+            "number": "50%", 
+            "text": "Bonus auf die Warpgeschwindigkeit und Warpbeschleunigung"
+          }, 
+          {
+            "number": "75%", 
+            "text": "Reduktion der Nachladezeit von Projektilwaffen"
           }
         ], 
         "header": "Funktionsbonus:"
@@ -120902,6 +124756,14 @@
           {
             "number": "25%", 
             "text": "bonus to Medium Projectile Turret rate of fire"
+          }, 
+          {
+            "number": "50%", 
+            "text": "bonus to warp speed and warp acceleration"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -120949,6 +124811,14 @@
           {
             "number": "25%", 
             "text": "de bonificación a la cadencia de tiro de la torreta de proyectiles mediana."
+          }, 
+          {
+            "number": "50%", 
+            "text": "de bonificación a la velocidad y la aceleración de warp."
+          }, 
+          {
+            "number": "75%", 
+            "text": "de reducción del tiempo de recarga del arma de proyectiles."
           }
         ], 
         "header": "Bonificación por función:"
@@ -120996,6 +124866,14 @@
           {
             "number": "25%", 
             "text": "bonus à la cadence de tir de la tourelle à projectiles intermédiaire"
+          }, 
+          {
+            "number": "50%", 
+            "text": "de bonus à la vitesse de warp et à l'accélération de warp"
+          }, 
+          {
+            "number": "75%", 
+            "text": "de réduction au temps de rechargement des armes à projectiles"
           }
         ], 
         "header": "Bonus de rôle :"
@@ -121043,6 +124921,14 @@
           {
             "number": "25%", 
             "text": "bonus to Medium Projectile Turret rate of fire"
+          }, 
+          {
+            "number": "50%", 
+            "text": "bonus to warp speed and warp acceleration"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -121090,6 +124976,14 @@
           {
             "number": "25%", 
             "text": "中型プロジェクタイルタレットの発射間隔が短縮"
+          }, 
+          {
+            "number": "50%", 
+            "text": "ワープ速度およびワープ加速度にボーナス"
+          }, 
+          {
+            "number": "75%", 
+            "text": "プロジェクタイル兵器のリロード時間が短縮"
           }
         ], 
         "header": "性能ボーナス："
@@ -121137,6 +125031,14 @@
           {
             "number": "25%", 
             "text": "중형 발사체 터렛 연사속도 증가"
+          }, 
+          {
+            "number": "50%", 
+            "text": "워프 속도 및 워프 가속도 증가"
+          }, 
+          {
+            "number": "75%", 
+            "text": "발사체 무기 재장전 시간 감소"
           }
         ], 
         "header": "역할 보너스:"
@@ -121184,6 +125086,14 @@
           {
             "number": "на 25%", 
             "text": "повышается скорострельность средних баллистических орудий"
+          }, 
+          {
+            "number": "на 50%", 
+            "text": "бонус к разгону и скорости хода (в варп-режиме)"
+          }, 
+          {
+            "number": "на 75%", 
+            "text": "ускорение перезарядки баллистических орудий"
           }
         ], 
         "header": "Профильные особенности проекта:"
@@ -121231,6 +125141,14 @@
           {
             "number": "25%", 
             "text": "中型射弹炮台射速加成"
+          }, 
+          {
+            "number": "50%", 
+            "text": "跃迁速度和跃迁加速加成"
+          }, 
+          {
+            "number": "75%", 
+            "text": "减少射弹武器的装填时间"
           }
         ], 
         "header": "特有加成："
@@ -121284,8 +125202,12 @@
             "text": "Bonus auf den Präzisionsabfall von kleinen Projektilwaffentürmen"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "Bonus auf die Warpgeschwindigkeit und Warpbeschleunigung"
+          }, 
+          {
+            "number": "75%", 
+            "text": "Reduktion der Nachladezeit von Projektilwaffen"
           }
         ], 
         "header": "Funktionsbonus:"
@@ -121323,8 +125245,12 @@
             "text": "bonus to Small Projectile Turret falloff"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "bonus to warp speed and warp acceleration"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -121362,8 +125288,12 @@
             "text": "de bonificación al alcance efectivo de la torreta de proyectiles pequeña."
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "de bonificación a la velocidad y la aceleración de warp."
+          }, 
+          {
+            "number": "75%", 
+            "text": "de reducción del tiempo de recarga del arma de proyectiles."
           }
         ], 
         "header": "Bonificación por función:"
@@ -121401,8 +125331,12 @@
             "text": "de bonus à la déperdition des petites tourelles à projectiles"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "de bonus à la vitesse de warp et à l'accélération de warp"
+          }, 
+          {
+            "number": "75%", 
+            "text": "de réduction au temps de rechargement des armes à projectiles"
           }
         ], 
         "header": "Bonus de rôle :"
@@ -121440,8 +125374,12 @@
             "text": "bonus to Small Projectile Turret falloff"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "bonus to warp speed and warp acceleration"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -121479,8 +125417,12 @@
             "text": "小型プロジェクタイルタレットの精度低下範囲にボーナス"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "ワープ速度とワープ加速度が上昇"
+          }, 
+          {
+            "number": "75%", 
+            "text": "プロジェクタイル兵器のリロード時間が短縮"
           }
         ], 
         "header": "性能ボーナス："
@@ -121518,8 +125460,12 @@
             "text": "소형 발사체 터렛 유효사거리 증가"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "워프 속도 및 워프 가속도 증가"
+          }, 
+          {
+            "number": "75%", 
+            "text": "발사체 무기 재장전 시간 감소"
           }
         ], 
         "header": "역할 보너스:"
@@ -121557,8 +125503,12 @@
             "text": "бонус к остаточной дальности малых баллистических орудий"
           }, 
           {
-            "number": "на 25%", 
+            "number": "на 50%", 
             "text": "бонус к разгону и скорости хода (в варп-режиме)"
+          }, 
+          {
+            "number": "на 75%", 
+            "text": "ускорение перезарядки баллистических орудий"
           }
         ], 
         "header": "Профильные особенности проекта:"
@@ -121596,8 +125546,12 @@
             "text": "小型射弹炮台失准范围加成"
           }, 
           {
-            "number": "25%", 
+            "number": "50%", 
             "text": "跃迁速度和跃迁加速加成"
+          }, 
+          {
+            "number": "75%", 
+            "text": "减少射弹武器的装填时间"
           }
         ], 
         "header": "特有加成："
@@ -124408,27 +128362,8 @@
       "role": {
         "bonuses": [
           {
-            "number": "80%", 
-            "text": "Reduktion in der Reaktivierungsverzögerung des Anti-Unterbrechers und max. Erfassungsreichweitenabzug"
-          }, 
-          {
-            "text": "·Zusätzliche Basiswerte"
-          }, 
-          {
-            "text": "·+1 Low Slot"
-          }, 
-          {
-            "text": "·+0,1 Trägheitsmodifikator"
-          }, 
-          {
-            "text": "·-20 km Max. Zielerfassungsreichweite"
-          }, 
-          {
-            "text": "·+20 m Signaturradius"
-          }, 
-          {
-            "number": "100%", 
-            "text": "Bonus auf die Dauer des Anti-Unterbrechers"
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
           }
         ], 
         "header": "Funktionsbonus:"
@@ -124438,14 +128373,18 @@
           "bonuses": [
             {
               "number": "10%", 
-              "text": "Bonus auf die Warpgeschwindigkeit und Beschleunigung"
+              "text": "bonus to kinetic Light Missile and Rocket damage"
             }, 
             {
-              "number": "15%", 
-              "text": "Reduktion des Energiespeicherverbrauchs bei der Warpsprung-Initiierung"
+              "number": "5%", 
+              "text": "bonus to EM, explosive, thermal Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "5%", 
+              "text": "bonus to Light Missile and Rocket explosion radius"
             }
           ], 
-          "header": "Amarr Propulsion Systems Boni (je Skillstufe):"
+          "header": "Caldari Destroyer Boni (je Skillstufe):"
         }
       ]
     }, 
@@ -124453,27 +128392,8 @@
       "role": {
         "bonuses": [
           {
-            "number": "80%", 
-            "text": "reduction in Interdiction Nullifier reactivation delay and max lock range penalty"
-          }, 
-          {
-            "text": "·Additional Base Stats"
-          }, 
-          {
-            "text": "·+1 Low Slot"
-          }, 
-          {
-            "text": "·+0.1 Inertia Modifier"
-          }, 
-          {
-            "text": "·-20km Max Targeting Range"
-          }, 
-          {
-            "text": "·+20m Signature Radius"
-          }, 
-          {
-            "number": "100%", 
-            "text": "bonus to Interdiction Nullifier duration"
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
           }
         ], 
         "header": "Role Bonus:"
@@ -124483,14 +128403,18 @@
           "bonuses": [
             {
               "number": "10%", 
-              "text": "bonus to warp velocity and acceleration"
+              "text": "bonus to kinetic Light Missile and Rocket damage"
             }, 
             {
-              "number": "15%", 
-              "text": "reduction in capacitor need when initiating warp"
+              "number": "5%", 
+              "text": "bonus to EM, explosive, thermal Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "5%", 
+              "text": "bonus to Light Missile and Rocket explosion radius"
             }
           ], 
-          "header": "Amarr Propulsion Systems bonuses (per skill level):"
+          "header": "Caldari Destroyer bonuses (per skill level):"
         }
       ]
     }, 
@@ -124498,27 +128422,8 @@
       "role": {
         "bonuses": [
           {
-            "number": "80%", 
-            "text": "de reducción de la demora de reactivación y de penalización al alcance de fijación máximo del anulador de interdicción."
-          }, 
-          {
-            "text": "·Estadísticas básicas adicionales"
-          }, 
-          {
-            "text": "·+1 ranura inferior"
-          }, 
-          {
-            "text": "·+0,1 al modificador de inercia"
-          }, 
-          {
-            "text": "·-20 km a la distancia-objetivo máxima"
-          }, 
-          {
-            "text": "·+20 m al radio de la señal"
-          }, 
-          {
-            "number": "100%", 
-            "text": "de bonificación a la duración del anulador de interdicción."
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
           }
         ], 
         "header": "Bonificación por función:"
@@ -124528,14 +128433,18 @@
           "bonuses": [
             {
               "number": "10%", 
-              "text": "de bonificación a la aceleración y la velocidad de warp."
+              "text": "bonus to kinetic Light Missile and Rocket damage"
             }, 
             {
-              "number": "15%", 
-              "text": "de reducción de la necesidad del condensador al iniciar el warp."
+              "number": "5%", 
+              "text": "bonus to EM, explosive, thermal Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "5%", 
+              "text": "bonus to Light Missile and Rocket explosion radius"
             }
           ], 
-          "header": "Bonificaciones de Sistemas de propulsión amarrianos (por nivel de habilidad):"
+          "header": "Bonificaciones de Destructor caldari (por nivel de habilidad):"
         }
       ]
     }, 
@@ -124543,27 +128452,8 @@
       "role": {
         "bonuses": [
           {
-            "number": "80%", 
-            "text": "de réduction au délai de réactivation de la contremesure d’interdiction et à la pénalité de portée de verrouillage maximale"
-          }, 
-          {
-            "text": "·Stats de base supplémentaires"
-          }, 
-          {
-            "text": "·+1 Emplacement inférieur"
-          }, 
-          {
-            "text": "·Modificateur d'inertie +0,1"
-          }, 
-          {
-            "text": "·Portée max du système de ciblage -20 km"
-          }, 
-          {
-            "text": "·Rayon de signature +20 m"
-          }, 
-          {
-            "number": "100%", 
-            "text": "de bonus à la durée de la contremesure d’interdiction"
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
           }
         ], 
         "header": "Bonus de rôle :"
@@ -124573,14 +128463,18 @@
           "bonuses": [
             {
               "number": "10%", 
-              "text": "de bonus à la vitesse de warp et à l'accélération de warp"
+              "text": "bonus to kinetic Light Missile and Rocket damage"
             }, 
             {
-              "number": "15%", 
-              "text": "de réduction des besoins énergétiques du capaciteur au moment d'initier le warp"
+              "number": "5%", 
+              "text": "bonus to EM, explosive, thermal Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "5%", 
+              "text": "bonus to Light Missile and Rocket explosion radius"
             }
           ], 
-          "header": " Bonus (par niveau de compétence) Systèmes de propulsion amarr :"
+          "header": " Bonus (par niveau de compétence) Destroyer caldari :"
         }
       ]
     }, 
@@ -124588,27 +128482,8 @@
       "role": {
         "bonuses": [
           {
-            "number": "80%", 
-            "text": "reduction in Interdiction Nullifier reactivation delay and max lock range penalty"
-          }, 
-          {
-            "text": "·Additional Base Stats"
-          }, 
-          {
-            "text": "·+1 Low Slot"
-          }, 
-          {
-            "text": "·+0.1 Inertia Modifier"
-          }, 
-          {
-            "text": "·-20km Max Targeting Range"
-          }, 
-          {
-            "text": "·+20m Signature Radius"
-          }, 
-          {
-            "number": "100%", 
-            "text": "bonus to Interdiction Nullifier duration"
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
           }
         ], 
         "header": "Role Bonus:"
@@ -124618,14 +128493,18 @@
           "bonuses": [
             {
               "number": "10%", 
-              "text": "bonus to warp velocity and acceleration"
+              "text": "bonus to kinetic Light Missile and Rocket damage"
             }, 
             {
-              "number": "15%", 
-              "text": "reduction in capacitor need when initiating warp"
+              "number": "5%", 
+              "text": "bonus to EM, explosive, thermal Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "5%", 
+              "text": "bonus to Light Missile and Rocket explosion radius"
             }
           ], 
-          "header": "Amarr Propulsion Systems bonuses (per skill level):"
+          "header": "Caldari Destroyer bonuses (per skill level):"
         }
       ]
     }, 
@@ -124633,27 +128512,8 @@
       "role": {
         "bonuses": [
           {
-            "number": "80%", 
-            "text": "インターディクション無効化の再起動遅延と最大ロック射程のペナルティ減少"
-          }, 
-          {
-            "text": "·追加ベース統計"
-          }, 
-          {
-            "text": "·ロースロット+1"
-          }, 
-          {
-            "text": "·慣性乗数+0.1"
-          }, 
-          {
-            "text": "·最大ターゲット範囲-20km"
-          }, 
-          {
-            "text": "·シグネチャ半径+20m"
-          }, 
-          {
-            "number": "100%", 
-            "text": "インターディクション無効化の持続時間にボーナス"
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
           }
         ], 
         "header": "性能ボーナス："
@@ -124663,14 +128523,18 @@
           "bonuses": [
             {
               "number": "10%", 
-              "text": "ワープ速度と加速度が上昇"
+              "text": "bonus to kinetic Light Missile and Rocket damage"
             }, 
             {
-              "number": "15%", 
-              "text": "ワープ時のキャパシタ消費が減少"
+              "number": "5%", 
+              "text": "bonus to EM, explosive, thermal Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "5%", 
+              "text": "bonus to Light Missile and Rocket explosion radius"
             }
           ], 
-          "header": "アマー推進力システムボーナス(スキルレベルごとに):"
+          "header": "カルダリ駆逐艦ボーナス(スキルレベルごとに):"
         }
       ]
     }, 
@@ -124678,27 +128542,8 @@
       "role": {
         "bonuses": [
           {
-            "number": "80%", 
-            "text": "인터딕션 무효화 장치 재활성화 대기시간 및 최대 타겟팅 거리 페널티 감소"
-          }, 
-          {
-            "text": "·추가 기본 능력치"
-          }, 
-          {
-            "text": "·로우 슬롯 +1"
-          }, 
-          {
-            "text": "·관성 계수 +0.1"
-          }, 
-          {
-            "text": "·최대 타겟팅 거리 -20 km"
-          }, 
-          {
-            "text": "·시그니처 반경 +20m"
-          }, 
-          {
-            "number": "100%", 
-            "text": "인터딕션 무효화 장치 지속시간 보너스"
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
           }
         ], 
         "header": "역할 보너스:"
@@ -124708,14 +128553,18 @@
           "bonuses": [
             {
               "number": "10%", 
-              "text": "워프 속도 및 가속도 증가"
+              "text": "bonus to kinetic Light Missile and Rocket damage"
             }, 
             {
-              "number": "15%", 
-              "text": "워프 시전 시 캐패시터 소모량 감소"
+              "number": "5%", 
+              "text": "bonus to EM, explosive, thermal Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "5%", 
+              "text": "bonus to Light Missile and Rocket explosion radius"
             }
           ], 
-          "header": "아마르 추진기 시스템 보너스 (스킬 레벨당):"
+          "header": "칼다리 디스트로이어 보너스 (스킬 레벨당):"
         }
       ]
     }, 
@@ -124723,27 +128572,8 @@
       "role": {
         "bonuses": [
           {
-            "number": "на 80%", 
-            "text": "уменьшение задержки повторного включения нейтрализатора варп-заграждений и штрафа к максимальной дальности захвата цели"
-          }, 
-          {
-            "text": "·Кроме того:"
-          }, 
-          {
-            "text": "·+1 разъём малой мощности"
-          }, 
-          {
-            "text": "·+0,1 к инертности конструкции"
-          }, 
-          {
-            "text": "·-20 километров к максимальной дальности захвата целей"
-          }, 
-          {
-            "text": "·+20 метров размера сигнатуры"
-          }, 
-          {
-            "number": "на 100%", 
-            "text": "бонус к длительности действия нейтрализатора варп-заграждений"
+            "number": "на 50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
           }
         ], 
         "header": "Профильные особенности проекта:"
@@ -124753,14 +128583,18 @@
           "bonuses": [
             {
               "number": "на 10%", 
-              "text": "повышается скорость полёта и ускорение корабля (только в варп-режиме)"
+              "text": "bonus to kinetic Light Missile and Rocket damage"
             }, 
             {
-              "number": "на 15%", 
-              "text": "сокращается расход энергии при включении варп-двигателя"
+              "number": "на 5%", 
+              "text": "bonus to EM, explosive, thermal Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "на 5%", 
+              "text": "bonus to Light Missile and Rocket explosion radius"
             }
           ], 
-          "header": "За каждую степень освоения навыка Амаррские двигательные подсистемы:"
+          "header": "За каждую степень освоения навыка Калдарские эсминцы:"
         }
       ]
     }, 
@@ -124768,27 +128602,8 @@
       "role": {
         "bonuses": [
           {
-            "number": "80%", 
-            "text": "拦截失效装置重启延迟和最大锁定距离惩罚降低"
-          }, 
-          {
-            "text": "·附加基础数值"
-          }, 
-          {
-            "text": "·低槽+1"
-          }, 
-          {
-            "text": "·惯性调整系数+0.1"
-          }, 
-          {
-            "text": "·最大锁定距离减少20km"
-          }, 
-          {
-            "text": "·信号半径+20m"
-          }, 
-          {
-            "number": "100%", 
-            "text": "拦截失效装置持续时间加成"
+            "number": "50%", 
+            "text": "bonus to Light Missile and Rocket max velocity"
           }
         ], 
         "header": "特有加成："
@@ -124798,18 +128613,22 @@
           "bonuses": [
             {
               "number": "10%", 
-              "text": "跃迁速度和跃迁加速加成"
+              "text": "bonus to kinetic Light Missile and Rocket damage"
             }, 
             {
-              "number": "15%", 
-              "text": "跃迁启动电容量减耗"
+              "number": "5%", 
+              "text": "bonus to EM, explosive, thermal Light Missile and Rocket damage"
+            }, 
+            {
+              "number": "5%", 
+              "text": "bonus to Light Missile and Rocket explosion radius"
             }
           ], 
-          "header": "艾玛推进子系统每升一级："
+          "header": "加达里驱逐舰操作每升一级："
         }
       ]
     }, 
-    "typeID": 45610
+    "typeID": 91857
   }, 
   {
     "traits_de": {
@@ -157918,6 +161737,279 @@
   }, 
   {
     "traits_de": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "Funktionsbonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Hybrid Turret damage and tracking speed"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Stasis Webifier Drone factor of velocity decrease and hitpoints"
+            }
+          ], 
+          "header": "Gallente Destroyer Boni (je Skillstufe):"
+        }
+      ]
+    }, 
+    "traits_en-us": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Hybrid Turret damage and tracking speed"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Stasis Webifier Drone factor of velocity decrease and hitpoints"
+            }
+          ], 
+          "header": "Gallente Destroyer bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_es": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "Bonificación por función:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Hybrid Turret damage and tracking speed"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Stasis Webifier Drone factor of velocity decrease and hitpoints"
+            }
+          ], 
+          "header": "Bonificaciones de Destructor gallente (por nivel de habilidad):"
+        }
+      ]
+    }, 
+    "traits_fr": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "Bonus de rôle :"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Hybrid Turret damage and tracking speed"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Stasis Webifier Drone factor of velocity decrease and hitpoints"
+            }
+          ], 
+          "header": " Bonus (par niveau de compétence) Destroyer gallente :"
+        }
+      ]
+    }, 
+    "traits_it": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "Role Bonus:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Hybrid Turret damage and tracking speed"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Stasis Webifier Drone factor of velocity decrease and hitpoints"
+            }
+          ], 
+          "header": "Gallente Destroyer bonuses (per skill level):"
+        }
+      ]
+    }, 
+    "traits_ja": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "性能ボーナス："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Hybrid Turret damage and tracking speed"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Stasis Webifier Drone factor of velocity decrease and hitpoints"
+            }
+          ], 
+          "header": "ガレンテ駆逐艦ボーナス(スキルレベルごとに):"
+        }
+      ]
+    }, 
+    "traits_ko": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "역할 보너스:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Hybrid Turret damage and tracking speed"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Stasis Webifier Drone factor of velocity decrease and hitpoints"
+            }
+          ], 
+          "header": "갈란테 디스트로이어 보너스 (스킬 레벨당):"
+        }
+      ]
+    }, 
+    "traits_ru": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "на 25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "Профильные особенности проекта:"
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "на 10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "на 10%", 
+              "text": "bonus to Small Hybrid Turret damage and tracking speed"
+            }, 
+            {
+              "number": "на 10%", 
+              "text": "bonus to Stasis Webifier Drone factor of velocity decrease and hitpoints"
+            }
+          ], 
+          "header": "За каждую степень освоения навыка Галлентские эсминцы:"
+        }
+      ]
+    }, 
+    "traits_zh": {
+      "role": {
+        "bonuses": [
+          {
+            "number": "25%", 
+            "text": "bonus to Drone max velocity"
+          }
+        ], 
+        "header": "特有加成："
+      }, 
+      "skills": [
+        {
+          "bonuses": [
+            {
+              "number": "10%", 
+              "text": "bonus to Drone hitpoints and damage"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Small Hybrid Turret damage and tracking speed"
+            }, 
+            {
+              "number": "10%", 
+              "text": "bonus to Stasis Webifier Drone factor of velocity decrease and hitpoints"
+            }
+          ], 
+          "header": "盖伦特驱逐舰操作每升一级："
+        }
+      ]
+    }, 
+    "typeID": 91849
+  }, 
+  {
+    "traits_de": {
       "skills": [
         {
           "bonuses": [
@@ -181090,6 +185182,10 @@
           {
             "number": "5%", 
             "text": "zusätzlicher Bonus auf HP der Verstärkten Schottwand"
+          }, 
+          {
+            "number": "75%", 
+            "text": "Reduktion der Nachladezeit von Projektilwaffen"
           }
         ], 
         "header": "Funktionsbonus:"
@@ -181137,6 +185233,10 @@
           {
             "number": "5%", 
             "text": "additional bonus to Reinforced Bulkhead hitpoints"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -181184,6 +185284,10 @@
           {
             "number": "5%", 
             "text": "de bonificación adicional a los puntos de vida del mamparo reforzado."
+          }, 
+          {
+            "number": "75%", 
+            "text": "de reducción del tiempo de recarga del arma de proyectiles."
           }
         ], 
         "header": "Bonificación por función:"
@@ -181231,6 +185335,10 @@
           {
             "number": "5%", 
             "text": "de bonus supplémentaire aux points de vie de la cloison renforcée"
+          }, 
+          {
+            "number": "75%", 
+            "text": "de réduction au temps de rechargement des armes à projectiles"
           }
         ], 
         "header": "Bonus de rôle :"
@@ -181278,6 +185386,10 @@
           {
             "number": "5%", 
             "text": "additional bonus to Reinforced Bulkhead hitpoints"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -181325,6 +185437,10 @@
           {
             "number": "5%", 
             "text": "強化隔壁HPがさらに増加"
+          }, 
+          {
+            "number": "75%", 
+            "text": "プロジェクタイル兵器のリロード時間が短縮"
           }
         ], 
         "header": "性能ボーナス："
@@ -181372,6 +185488,10 @@
           {
             "number": "5%", 
             "text": "강화 격벽 내구도 증가"
+          }, 
+          {
+            "number": "75%", 
+            "text": "발사체 무기 재장전 시간 감소"
           }
         ], 
         "header": "역할 보너스:"
@@ -181419,6 +185539,10 @@
           {
             "number": "на 5%", 
             "text": "дополнительный бонус к прочности укреплённой переборки"
+          }, 
+          {
+            "number": "на 75%", 
+            "text": "ускорение перезарядки баллистических орудий"
           }
         ], 
         "header": "Профильные особенности проекта:"
@@ -181466,6 +185590,10 @@
           {
             "number": "5%", 
             "text": "强化舱隔壁结构值加成"
+          }, 
+          {
+            "number": "75%", 
+            "text": "减少射弹武器的装填时间"
           }
         ], 
         "header": "特有加成："
@@ -193111,6 +197239,10 @@
           {
             "number": "5x", 
             "text": "Abzug zur Dauer des Entosis-Netzwerks"
+          }, 
+          {
+            "number": "75%", 
+            "text": "Reduktion der Nachladezeit von Projektilwaffen"
           }
         ], 
         "header": "Funktionsbonus:"
@@ -193201,6 +197333,10 @@
           {
             "number": "5x", 
             "text": "penalty to Entosis Link duration"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -193291,6 +197427,10 @@
           {
             "number": "5x", 
             "text": "de penalización a la duración del enlace de entosis."
+          }, 
+          {
+            "number": "75%", 
+            "text": "de reducción del tiempo de recarga del arma de proyectiles."
           }
         ], 
         "header": "Bonificación por función:"
@@ -193381,6 +197521,10 @@
           {
             "number": "5x", 
             "text": "de pénalité à la durée de la liaison Entosis"
+          }, 
+          {
+            "number": "75%", 
+            "text": "de réduction au temps de rechargement des armes à projectiles"
           }
         ], 
         "header": "Bonus de rôle :"
@@ -193471,6 +197615,10 @@
           {
             "number": "5x", 
             "text": "penalty to Entosis Link duration"
+          }, 
+          {
+            "number": "75%", 
+            "text": "reduction in projectile weapon reload time"
           }
         ], 
         "header": "Role Bonus:"
@@ -193561,6 +197709,10 @@
           {
             "number": "5x", 
             "text": "エントーシスリンクの持続時間にペナルティ"
+          }, 
+          {
+            "number": "75%", 
+            "text": "プロジェクタイル兵器のリロード時間が短縮"
           }
         ], 
         "header": "性能ボーナス："
@@ -193651,6 +197803,10 @@
           {
             "number": "5x", 
             "text": "엔토시스 링크 지속시간 감소"
+          }, 
+          {
+            "number": "75%", 
+            "text": "발사체 무기 재장전 시간 감소"
           }
         ], 
         "header": "역할 보너스:"
@@ -193741,6 +197897,10 @@
           {
             "number": "на 5х", 
             "text": "штраф к длительности действия энтоз-передатчика"
+          }, 
+          {
+            "number": "на 75%", 
+            "text": "ускорение перезарядки баллистических орудий"
           }
         ], 
         "header": "Профильные особенности проекта:"
@@ -193831,6 +197991,10 @@
           {
             "number": "5x", 
             "text": "侵噬链接运转周期惩罚"
+          }, 
+          {
+            "number": "75%", 
+            "text": "减少射弹武器的装填时间"
           }
         ], 
         "header": "特有加成："
